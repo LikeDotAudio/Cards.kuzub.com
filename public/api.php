@@ -123,6 +123,29 @@ function requireInitials($pdo, $ip, $userId, $initials) {
     }
 }
 
+// FULL BACKUP (tools/backup_db.py): every table, only with the X-Backup-Token header
+if ($action === 'backup') {
+    $token = $config['backup_token'] ?? '';
+    if ($token === '') {
+        fail('Unknown action');
+    }
+    if (countEvents($pdo, 'bad_backup', 'ip', $ip, 60) >= 5) {
+        fail('Too many wrong attempts. Try again later.', 429);
+    }
+    if (!hash_equals($token, $_SERVER['HTTP_X_BACKUP_TOKEN'] ?? '')) {
+        recordEvent($pdo, 'bad_backup', $ip);
+        fail('Forbidden', 403);
+    }
+    $tables = [];
+    foreach (['cards', 'users', 'collections', 'user_collection'] as $table) {
+        $create = $pdo->query("SHOW CREATE TABLE `$table`")->fetch(PDO::FETCH_NUM)[1];
+        $rows = $pdo->query("SELECT * FROM `$table`")->fetchAll();
+        $tables[$table] = ['create' => $create, 'rows' => $rows];
+    }
+    echo json_encode(['created_at' => date('c'), 'database' => $db, 'tables' => $tables]);
+    exit;
+}
+
 // LIST COLLECTORS
 if ($action === 'get_users') {
     $stmt = $pdo->query("SELECT id, collector_name FROM users ORDER BY collector_name");
