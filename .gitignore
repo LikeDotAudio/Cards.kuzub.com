@@ -4,3 +4,4 @@ node_modules/
 public/db_config.php
 .backup_token
 backups/
+tools/
