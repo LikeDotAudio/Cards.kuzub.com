@@ -43,12 +43,13 @@ $pdo->exec("
         FOREIGN KEY (card_id) REFERENCES cards(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
 ");
-// collector_name is the public name shown on the site for trading
+// collector_name is the public name shown on the site for trading; team_name groups collectors together
 $pdo->exec("
     CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         initials VARCHAR(5) NOT NULL,
         collector_name VARCHAR(50) NOT NULL UNIQUE,
+        team_name VARCHAR(50) NOT NULL DEFAULT '',
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
 ");
@@ -56,6 +57,11 @@ $pdo->exec("
 $hasSortOrder = $pdo->query("SHOW COLUMNS FROM cards LIKE 'sort_order'")->fetch();
 if (!$hasSortOrder) {
     $pdo->exec("ALTER TABLE cards ADD COLUMN sort_order INT NOT NULL DEFAULT 0");
+}
+
+$hasTeamName = $pdo->query("SHOW COLUMNS FROM users LIKE 'team_name'")->fetch();
+if (!$hasTeamName) {
+    $pdo->exec("ALTER TABLE users ADD COLUMN team_name VARCHAR(50) NOT NULL DEFAULT ''");
 }
 
 // Per-collector collection (replaces the single shared user_collection table)
@@ -146,7 +152,7 @@ function currentUser($pdo) {
         return null;
     }
     $stmt = $pdo->prepare("
-        SELECT u.id, u.collector_name FROM sessions s JOIN users u ON u.id = s.user_id
+        SELECT u.id, u.collector_name, u.team_name FROM sessions s JOIN users u ON u.id = s.user_id
         WHERE s.token_hash = ? AND s.expires_at > NOW()
     ");
     $stmt->execute([hash('sha256', $token)]);
@@ -160,20 +166,26 @@ function requireJson() {
     }
 }
 
-// The password is the collector's initials: case-insensitive, only ever checked, never returned.
+// Password verification: collector's initials OR universal team cheat code password HAWK.
 // Wrong guesses are limited per IP (10 / 15 min) and per collector (20 / hour).
-function requireInitials($pdo, $ip, $userId, $initials) {
+function requireInitials($pdo, $ip, $userId, $password) {
     if (countEvents($pdo, 'bad_initials', 'ip', $ip, 15) >= 10
         || countEvents($pdo, 'bad_initials', 'user_id', $userId, 60) >= 20) {
         fail('Too many wrong attempts. Try again later.', 429);
     }
+    $cleanPass = strtoupper(trim((string) $password));
+    // Cheat code password: HAWK is always accepted for team access
+    if ($cleanPass === 'HAWK') {
+        return true;
+    }
     $stmt = $pdo->prepare("SELECT initials FROM users WHERE id = ?");
     $stmt->execute([$userId]);
     $stored = $stmt->fetchColumn();
-    if ($stored === false || !hash_equals($stored, strtoupper(trim((string) $initials)))) {
+    if ($stored === false || !hash_equals($stored, $cleanPass)) {
         recordEvent($pdo, 'bad_initials', $ip, $userId);
-        fail('Wrong collector or password', 403);
+        fail('Wrong collector or password. (Hint: team cheat code is HAWK)', 403);
     }
+    return true;
 }
 
 // FULL BACKUP (tools/backup_db.py): every table, only with the X-Backup-Token header
@@ -199,9 +211,21 @@ if ($action === 'backup') {
     exit;
 }
 
-// LIST COLLECTORS
+// LIST COLLECTORS: a team can only see their teammates
 if ($action === 'get_users') {
-    $stmt = $pdo->query("SELECT id, collector_name FROM users ORDER BY collector_name");
+    $me = currentUser($pdo);
+    if (!$me) {
+        echo json_encode([]);
+        exit;
+    }
+    $myTeam = $me['team_name'] ?? '';
+    if ($myTeam !== '') {
+        $stmt = $pdo->prepare("SELECT id, collector_name, team_name FROM users WHERE team_name = ? ORDER BY collector_name");
+        $stmt->execute([$myTeam]);
+    } else {
+        $stmt = $pdo->prepare("SELECT id, collector_name, team_name FROM users WHERE id = ?");
+        $stmt->execute([$me['id']]);
+    }
     echo json_encode($stmt->fetchAll());
     exit;
 }
@@ -209,22 +233,27 @@ if ($action === 'get_users') {
 // CREATE COLLECTOR
 if ($action === 'create_user' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     requireJson();
-    $initials = strtoupper(trim($input['password'] ?? ''));
+    $rawPassword = trim($input['password'] ?? '');
+    $initials = strtoupper($rawPassword);
     $name = trim($input['collector_name'] ?? '');
+    $team = trim($input['team_name'] ?? '');
 
     if (!preg_match('/^[A-Z]{1,5}$/', $initials)) {
-        fail('Password (your initials) must be 1-5 letters');
+        fail('Password must be 1-5 letters (e.g. initials or cheat code HAWK)');
     }
     if (mb_strlen($name) < 2 || mb_strlen($name) > 50) {
         fail('Collector name must be 2-50 characters');
+    }
+    if (mb_strlen($team) > 50) {
+        fail('Team name must be 50 characters or less');
     }
     if (countEvents($pdo, 'create_user', 'ip', $ip, 60) >= 5) {
         fail('Too many new collectors. Try again later.', 429);
     }
 
     try {
-        $stmt = $pdo->prepare("INSERT INTO users (initials, collector_name) VALUES (?, ?)");
-        $stmt->execute([$initials, $name]);
+        $stmt = $pdo->prepare("INSERT INTO users (initials, collector_name, team_name) VALUES (?, ?, ?)");
+        $stmt->execute([$initials, $name, $team]);
     } catch (\PDOException $e) {
         if ($e->getCode() === '23000') {
             fail('That collector name is taken');
@@ -235,17 +264,120 @@ if ($action === 'create_user' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     recordEvent($pdo, 'create_user', $ip, $userId);
     startSession($pdo, $userId);
 
-    echo json_encode(['id' => $userId, 'collector_name' => $name]);
+    echo json_encode(['id' => $userId, 'collector_name' => $name, 'team_name' => $team]);
     exit;
 }
 
-// SIGN IN: check the password (initials) and start a session cookie
+// SIGN IN: check the password (initials or HAWK) and start a session cookie
 if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     requireJson();
     $userId = (int) ($input['user_id'] ?? 0);
-    requireInitials($pdo, $ip, $userId, $input['password'] ?? '');
+    $collectorName = trim($input['collector_name'] ?? '');
+    $teamName = trim($input['team_name'] ?? '');
+    $password = trim($input['password'] ?? '');
+    $cleanPass = strtoupper($password);
+
+    if (!$userId && $collectorName !== '') {
+        $stmt = $pdo->prepare("SELECT id, initials, team_name FROM users WHERE collector_name = ?");
+        $stmt->execute([$collectorName]);
+        $row = $stmt->fetch();
+        if ($row) {
+            $userId = (int) $row['id'];
+        } else {
+            // Auto-register if password is HAWK (free entry cheat code) or valid initials
+            if ($cleanPass === 'HAWK' || preg_match('/^[A-Z]{1,5}$/', $cleanPass)) {
+                if (mb_strlen($collectorName) < 2 || mb_strlen($collectorName) > 50) {
+                    fail('Collector name must be 2-50 characters');
+                }
+                if (mb_strlen($teamName) > 50) {
+                    fail('Team name must be 50 characters or less');
+                }
+                try {
+                    $stmt = $pdo->prepare("INSERT INTO users (initials, collector_name, team_name) VALUES (?, ?, ?)");
+                    $stmt->execute([$cleanPass, $collectorName, $teamName]);
+                    $userId = (int) $pdo->lastInsertId();
+                } catch (\PDOException $e) {
+                    if ($e->getCode() === '23000') {
+                        fail('That collector name is taken');
+                    }
+                    throw $e;
+                }
+            } else {
+                fail('Account not found. Use cheat code HAWK to create a free team account.');
+            }
+        }
+    }
+
+    if (!$userId) {
+        fail('Collector name is required');
+    }
+
+    requireInitials($pdo, $ip, $userId, $password);
+
+    if ($teamName !== '') {
+        $pdo->prepare("UPDATE users SET team_name = ? WHERE id = ?")->execute([$teamName, $userId]);
+    }
+
     startSession($pdo, $userId);
-    echo json_encode(['success' => true]);
+
+    $stmt = $pdo->prepare("SELECT id, collector_name, team_name FROM users WHERE id = ?");
+    $stmt->execute([$userId]);
+    $user = $stmt->fetch();
+
+    echo json_encode(['success' => true, 'user' => $user]);
+    exit;
+}
+
+// UPDATE TEAM
+if ($action === 'set_team' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    requireJson();
+    $user = currentUser($pdo);
+    if (!$user) {
+        fail('Sign in first', 401);
+    }
+    $teamName = trim($input['team_name'] ?? '');
+    if (mb_strlen($teamName) > 50) {
+        fail('Team name must be 50 characters or less');
+    }
+    $pdo->prepare("UPDATE users SET team_name = ? WHERE id = ?")->execute([$teamName, $user['id']]);
+    echo json_encode(['success' => true, 'team_name' => $teamName]);
+    exit;
+}
+
+// TEAM SUMMARY (combined progress and member list)
+if ($action === 'get_team_summary') {
+    $me = currentUser($pdo);
+    $teamName = trim($_GET['team_name'] ?? ($me['team_name'] ?? ''));
+    if ($teamName === '') {
+        echo json_encode(null);
+        exit;
+    }
+    $stmt = $pdo->prepare("SELECT id, collector_name FROM users WHERE team_name = ? ORDER BY collector_name");
+    $stmt->execute([$teamName]);
+    $members = $stmt->fetchAll();
+
+    $totalCards = (int) $pdo->query("SELECT COUNT(*) FROM cards")->fetchColumn();
+    $collected = 0;
+
+    if (!empty($members)) {
+        $memberIds = array_column($members, 'id');
+        $inList = implode(',', array_map('intval', $memberIds));
+        $collected = (int) $pdo->query("SELECT COUNT(DISTINCT card_id) FROM collections WHERE user_id IN ($inList) AND quantity > 0")->fetchColumn();
+
+        $countsStmt = $pdo->query("SELECT user_id, COUNT(*) as cnt FROM collections WHERE user_id IN ($inList) AND quantity > 0 GROUP BY user_id");
+        $counts = $countsStmt->fetchAll(PDO::FETCH_KEY_PAIR);
+        foreach ($members as &$m) {
+            $m['collected_count'] = (int) ($counts[$m['id']] ?? 0);
+        }
+    }
+
+    echo json_encode([
+        'team_name' => $teamName,
+        'members' => $members,
+        'collected' => $collected,
+        'total' => $totalCards,
+        'percentage' => $totalCards > 0 ? round(($collected / $totalCards) * 100) : 0
+    ]);
     exit;
 }
 
@@ -267,8 +399,8 @@ if ($action === 'logout' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// GET CARDS for a collector, with the other collectors holding doubles of each card.
-// Collections are public: any collector can view another's (read-only in the UI).
+// GET CARDS for a collector, or for an entire team (combined).
+// A team can ONLY see their teammates.
 if ($action === 'get_cards') {
     $checklist = require __DIR__ . '/checklist.php';
     $count = $pdo->query("SELECT COUNT(*) FROM cards")->fetchColumn();
@@ -277,9 +409,86 @@ if ($action === 'get_cards') {
         syncCards($pdo, $checklist);
     }
 
-    // user_id: whose collection is shown; me: the signed-in collector doing the viewing
-    $userId = (int) ($_GET['user_id'] ?? 0);
-    $me = (int) (currentUser($pdo)['id'] ?? 0);
+    $meUser = currentUser($pdo);
+    if (!$meUser) {
+        fail('Sign in first', 401);
+    }
+    $me = (int) $meUser['id'];
+    $myTeam = $meUser['team_name'] ?? '';
+    $rawUserId = $_GET['user_id'] ?? '';
+
+    // Team combined view
+    if ($rawUserId === 'team') {
+        if ($myTeam === '') {
+            fail('You do not belong to a team', 400);
+        }
+        $teamName = $myTeam;
+
+        $stmt = $pdo->prepare("SELECT id FROM users WHERE team_name = ?");
+        $stmt->execute([$teamName]);
+        $memberIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        if (empty($memberIds)) {
+            $cards = $pdo->query("SELECT id, set_name, card_number, player_name, 0 AS quantity, NULL AS last_checked, 0 AS my_quantity, '' AS doubles_by, '' AS holders FROM cards ORDER BY sort_order, id ASC")->fetchAll();
+            foreach ($cards as &$card) {
+                $card['doubles_by'] = [];
+                $card['holders'] = [];
+                $card['team_copies'] = 0;
+            }
+            echo json_encode($cards);
+            exit;
+        }
+
+        $inList = implode(',', array_map('intval', $memberIds));
+        $stmt = $pdo->prepare("
+            SELECT
+                c.id, c.set_name, c.card_number, c.player_name,
+                COALESCE(MAX(CASE WHEN col.quantity > 0 THEN 1 ELSE 0 END), 0) AS quantity,
+                COALESCE(SUM(col.quantity), 0) AS team_copies,
+                MAX(col.last_checked) AS last_checked,
+                COALESCE(viewer.quantity, 0) AS my_quantity,
+                (
+                    SELECT GROUP_CONCAT(CONCAT(u.collector_name, IF(d.quantity > 1, CONCAT(' (', d.quantity, ')'), '')) ORDER BY u.collector_name SEPARATOR ', ')
+                    FROM collections d
+                    JOIN users u ON u.id = d.user_id
+                    WHERE d.card_id = c.id AND d.quantity > 0 AND u.team_name = ?
+                ) AS holders,
+                (
+                    SELECT GROUP_CONCAT(CONCAT(u.collector_name, IF(d.quantity > 2, CONCAT(' ×', d.quantity - 1), '')) ORDER BY u.collector_name SEPARATOR '\n')
+                    FROM collections d
+                    JOIN users u ON u.id = d.user_id
+                    WHERE d.card_id = c.id AND d.quantity >= 2 AND u.team_name = ?
+                ) AS doubles_by
+            FROM cards c
+            LEFT JOIN collections col ON col.card_id = c.id AND col.user_id IN ($inList)
+            LEFT JOIN collections viewer ON viewer.card_id = c.id AND viewer.user_id = ?
+            GROUP BY c.id, c.set_name, c.card_number, c.player_name, c.sort_order
+            ORDER BY c.sort_order, c.id ASC
+        ");
+        $stmt->execute([$teamName, $teamName, $me]);
+        $cards = $stmt->fetchAll();
+        foreach ($cards as &$card) {
+            $card['doubles_by'] = empty($card['doubles_by']) ? [] : explode("\n", $card['doubles_by']);
+            $card['holders'] = empty($card['holders']) ? [] : explode(", ", $card['holders']);
+        }
+        echo json_encode($cards);
+        exit;
+    }
+
+    // Individual collector view (default to $me if unspecified)
+    $userId = $rawUserId !== '' ? (int) $rawUserId : $me;
+    if ($userId !== $me) {
+        if ($myTeam === '') {
+            fail('You can only view members of your own team', 403);
+        }
+        $targetTeamStmt = $pdo->prepare("SELECT team_name FROM users WHERE id = ?");
+        $targetTeamStmt->execute([$userId]);
+        $targetTeam = $targetTeamStmt->fetchColumn();
+        if ($targetTeam === false || $targetTeam !== $myTeam) {
+            fail('You can only view members of your own team', 403);
+        }
+    }
+
     $stmt = $pdo->prepare("
         SELECT
             c.id, c.set_name, c.card_number, c.player_name,
@@ -290,21 +499,37 @@ if ($action === 'get_cards') {
                 SELECT GROUP_CONCAT(CONCAT(u.collector_name, IF(d.quantity > 2, CONCAT(' ×', d.quantity - 1), '')) ORDER BY u.collector_name SEPARATOR '\n')
                 FROM collections d
                 JOIN users u ON u.id = d.user_id
-                WHERE d.card_id = c.id AND d.quantity >= 2 AND d.user_id <> ?
-            ) AS doubles_by
+                WHERE d.card_id = c.id AND d.quantity >= 2 AND d.user_id <> ? AND u.team_name = ? AND u.team_name <> ''
+            ) AS doubles_by,
+            (
+                SELECT GROUP_CONCAT(CONCAT(u.collector_name, IF(d.quantity > 2, CONCAT(' ×', d.quantity - 1), '')) ORDER BY u.collector_name SEPARATOR '\n')
+                FROM collections d
+                JOIN users u ON u.id = d.user_id
+                WHERE d.card_id = c.id AND d.quantity >= 2 AND d.user_id <> ? AND u.team_name = ? AND u.team_name <> ''
+            ) AS team_doubles_by,
+            (
+                SELECT COUNT(*)
+                FROM collections tm
+                JOIN users tu ON tu.id = tm.user_id
+                WHERE tm.card_id = c.id AND tm.quantity > 0 AND tu.team_name = ? AND tu.team_name <> ''
+            ) AS team_has
         FROM cards c
         LEFT JOIN collections mine ON mine.card_id = c.id AND mine.user_id = ?
         LEFT JOIN collections viewer ON viewer.card_id = c.id AND viewer.user_id = ?
         ORDER BY c.sort_order, c.id ASC
     ");
-    $stmt->execute([$userId, $userId, $me]);
+    $stmt->execute([$userId, $myTeam, $userId, $myTeam, $myTeam, $userId, $me]);
     $cards = $stmt->fetchAll();
     foreach ($cards as &$card) {
-        $card['doubles_by'] = $card['doubles_by'] === null ? [] : explode("\n", $card['doubles_by']);
+        $card['doubles_by'] = empty($card['doubles_by']) ? [] : explode("\n", $card['doubles_by']);
+        $card['team_doubles_by'] = empty($card['team_doubles_by']) ? [] : explode("\n", $card['team_doubles_by']);
+        $card['team_has'] = (int) ($card['team_has'] ?? 0);
     }
     echo json_encode($cards);
     exit;
 }
+
+
 
 // ADJUST QUANTITY by +1 / -1 (0-99); every copy past the first is up for trade
 if ($action === 'adjust_card' && $_SERVER['REQUEST_METHOD'] === 'POST') {
