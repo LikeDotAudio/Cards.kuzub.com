@@ -41,13 +41,20 @@ $pdo->exec("
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
 ");
 
+$hasSortOrder = $pdo->query("SHOW COLUMNS FROM cards LIKE 'sort_order'")->fetch();
+if (!$hasSortOrder) {
+    $pdo->exec("ALTER TABLE cards ADD COLUMN sort_order INT NOT NULL DEFAULT 0");
+}
+
 $action = $_GET['action'] ?? '';
 
 // GET CARDS (Includes auto-seed if table is empty)
 if ($action === 'get_cards') {
+    $checklist = require __DIR__ . '/checklist.php';
     $count = $pdo->query("SELECT COUNT(*) FROM cards")->fetchColumn();
-    if ($count == 0) {
-        seedCards($pdo);
+    $unsorted = $pdo->query("SELECT COUNT(*) FROM cards WHERE sort_order = 0")->fetchColumn();
+    if ($count != count($checklist) || $unsorted > 0) {
+        syncCards($pdo, $checklist);
     }
 
     $stmt = $pdo->query("
@@ -57,7 +64,7 @@ if ($action === 'get_cards') {
             u.last_checked
         FROM cards c
         LEFT JOIN user_collection u ON c.id = u.card_id
-        ORDER BY c.set_name, c.id ASC
+        ORDER BY c.sort_order, c.id ASC
     ");
     echo json_encode($stmt->fetchAll());
     exit;
@@ -103,42 +110,30 @@ if ($action === 'toggle_card' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// SEEDER FUNCTION (Populates the 2026-27 Checklist)
-function seedCards($pdo) {
-    $cards = [
-        // Base Checklist (sample shown, add full 120 as desired)
-        ['Base', '1', 'Tim Horton'], ['Base', '2', 'Evan Bouchard'], ['Base', '3', 'Leo Carlsson'],
-        ['Base', '4', 'Miro Heiskanen'], ['Base', '5', 'Andrei Vasilevskiy'], ['Base', '6', 'Brock Boeser'],
-        ['Base', '7', 'Brady Tkachuk'], ['Base', '8', 'Jordan Kyrou'], ['Base', '9', 'Jack Eichel'],
-        ['Base', '10', 'Zach Werenski'], ['Base', '34', 'Auston Matthews'], ['Base', '87', 'Sidney Crosby'],
-        ['Base', '97', 'Connor McDavid'], ['Base', '98', 'Connor Bedard'], ['Base', '100', 'Leon Draisaitl'],
+// SYNC CHECKLIST: insert missing cards, fix names and ordering of existing ones.
+// Numbered cards match on set + number; unnumbered ones match on set + player.
+// Existing rows keep their ids, so collection status is preserved.
+function syncCards($pdo, $checklist) {
+    $findNumbered = $pdo->prepare("SELECT id FROM cards WHERE set_name = ? AND card_number = ?");
+    $findUnnumbered = $pdo->prepare("SELECT id FROM cards WHERE set_name = ? AND card_number = '' AND player_name = ?");
+    $update = $pdo->prepare("UPDATE cards SET player_name = ?, sort_order = ? WHERE id = ?");
+    $insert = $pdo->prepare("INSERT INTO cards (set_name, card_number, player_name, sort_order) VALUES (?, ?, ?, ?)");
 
-        // Above the Ice
-        ['Above the Ice', 'AI-1', 'Dustin Wolf'], ['Above the Ice', 'AI-2', 'Leon Draisaitl'],
-        ['Above the Ice', 'AI-3', 'Lane Hutson'], ['Above the Ice', 'AI-10', 'Macklin Celebrini'],
-
-        // Attack Angle
-        ['Attack Angle', 'AA-1', 'Tim Stützle'], ['Attack Angle', 'AA-17', 'Sidney Crosby'],
-        ['Attack Angle', 'AA-18', 'Connor Bedard'],
-
-        // First Liners
-        ['First Liners', 'FL-1', 'Shea Theodore'], ['First Liners', 'FL-17', 'Sidney Crosby'],
-        ['First Liners', 'FL-18', 'Nathan MacKinnon'],
-
-        // Next Gen Phenoms
-        ['Next Gen Phenoms', 'NG-1', 'Connor Bedard'], ['Next Gen Phenoms', 'NG-2', 'Macklin Celebrini'],
-        ['Next Gen Phenoms', 'NG-3', 'Matthew Schaefer'], ['Next Gen Phenoms', 'NG-4', 'Ivan Demidov'],
-
-        // Powerhouse Pillars
-        ['Powerhouse Pillars', 'PO-1', 'Connor McDavid'], ['Powerhouse Pillars', 'PO-2', 'Sidney Crosby'],
-
-        // Sidekicks
-        ['Sidekicks', 'SK-1', 'Nathan MacKinnon / Cale Makar'], ['Sidekicks', 'SK-6', 'Connor McDavid / Leon Draisaitl'],
-        ['Sidekicks', 'SK-9', 'Nick Suzuki / Cole Caufield']
-    ];
-
-    $stmt = $pdo->prepare("INSERT INTO cards (set_name, card_number, player_name) VALUES (?, ?, ?)");
-    foreach ($cards as $c) {
-        $stmt->execute($c);
+    $pdo->beginTransaction();
+    foreach ($checklist as $i => [$set, $number, $player]) {
+        $order = $i + 1;
+        if ($number !== '') {
+            $findNumbered->execute([$set, $number]);
+            $id = $findNumbered->fetchColumn();
+        } else {
+            $findUnnumbered->execute([$set, $player]);
+            $id = $findUnnumbered->fetchColumn();
+        }
+        if ($id) {
+            $update->execute([$player, $order, $id]);
+        } else {
+            $insert->execute([$set, $number, $player, $order]);
+        }
     }
+    $pdo->commit();
 }
