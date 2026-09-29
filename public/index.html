@@ -186,7 +186,9 @@
 <header>
     <div class="bar">
         <h1>2026-27 UD Tim Hortons Checklist</h1>
-        <select id="userSelect" aria-label="Collector"></select>
+        <span class="overall" id="who"></span>
+        <button id="signInBtn" class="primary">Sign in</button>
+        <button id="signOutBtn" hidden>Sign out</button>
         <button id="newUserBtn">+ Collector</button>
         <label class="overall">Viewing <select id="viewSelect" aria-label="Viewing collection"></select></label>
         <div class="filters" id="filters">
@@ -204,11 +206,11 @@
 <dialog id="userDialog">
     <form id="userForm">
         <strong>New collector</strong>
-        <label>Initials
-            <input name="initials" maxlength="5" required pattern="[A-Za-z]{1,5}" autocomplete="off">
-        </label>
         <label>Collector name (shown to other traders)
             <input name="collector_name" maxlength="50" minlength="2" required autocomplete="off">
+        </label>
+        <label>Initials (secret — you sign in with these)
+            <input name="initials" type="password" maxlength="5" required pattern="[A-Za-z]{1,5}" autocomplete="new-password">
         </label>
         <div class="error" id="userError"></div>
         <div class="actions">
@@ -218,10 +220,28 @@
     </form>
 </dialog>
 
+<dialog id="signInDialog">
+    <form id="signInForm">
+        <strong>Sign in</strong>
+        <label>Collector
+            <select name="user_id" id="signInUser" required></select>
+        </label>
+        <label>Initials
+            <input name="initials" type="password" maxlength="5" required autocomplete="current-password">
+        </label>
+        <div class="error" id="signInError"></div>
+        <div class="actions">
+            <button type="button" id="cancelSignIn">Cancel</button>
+            <button type="submit" class="primary">Sign in</button>
+        </div>
+    </form>
+</dialog>
+
 <script>
     const state = {
         users: [],
-        userId: null,   // the collector using the site (me)
+        userId: null,   // the signed-in collector (me)
+        initials: null, // my secret, sent with every change
         viewId: null,   // whose collection is shown
         cards: [],
         filter: 'all',
@@ -249,18 +269,33 @@
 
     async function loadUsers() {
         state.users = await api('get_users');
-        const saved = Number(recall('collectorId'));
-        state.userId = state.users.some(u => u.id === saved) ? saved : null;
-        state.viewId = state.userId;
+        const savedId = Number(recall('collectorId'));
+        const savedInitials = recall('collectorInitials');
+        if (savedId && savedInitials) {
+            try {
+                await api('login', {}, { user_id: savedId, initials: savedInitials });
+                setSignedIn(savedId, savedInitials);
+            } catch (e) {
+                setSignedIn(null, null);
+            }
+        }
+        state.viewId = state.viewId ?? state.userId ?? state.users[0]?.id ?? null;
         renderUserSelect();
     }
 
+    function setSignedIn(userId, initials) {
+        state.userId = userId;
+        state.initials = initials;
+        state.viewId = userId;
+        store('collectorId', userId);
+        store('collectorInitials', initials);
+    }
+
     function renderUserSelect() {
-        const select = document.getElementById('userSelect');
-        select.innerHTML = '<option value="">Viewing as guest</option>' + state.users
-            .map(u => `<option value="${u.id}">${esc(u.collector_name)} (${esc(u.initials)})</option>`)
-            .join('');
-        select.value = state.userId ?? '';
+        const me = state.users.find(u => u.id === state.userId);
+        document.getElementById('who').innerHTML = me ? `Signed in as <strong>${esc(me.collector_name)}</strong>` : '';
+        document.getElementById('signInBtn').hidden = !!me;
+        document.getElementById('signOutBtn').hidden = !me;
 
         const view = document.getElementById('viewSelect');
         view.innerHTML = state.users
@@ -311,7 +346,7 @@
 
         let html = '';
         if (!state.userId) {
-            html += '<div class="notice">Pick a collector or create one with <strong>+ Collector</strong> to start checking off cards.</div>';
+            html += '<div class="notice"><strong>Sign in</strong> or create a collector with <strong>+ Collector</strong> to start checking off cards.</div>';
         }
         if (state.viewId && !isOwn()) {
             html += `<div class="notice">Viewing <strong>${esc(viewedName())}</strong>'s collection (read-only).`
@@ -355,10 +390,10 @@
 
     async function toggleCard(cardId) {
         if (!isOwn()) {
-            if (!state.userId) document.getElementById('newUserBtn').focus();
+            if (!state.userId) document.getElementById('signInBtn').focus();
             return;
         }
-        const data = await api('toggle_card', {}, { user_id: state.userId, card_id: cardId });
+        const data = await api('toggle_card', {}, { user_id: state.userId, initials: state.initials, card_id: cardId });
         const card = state.cards.find(c => c.id === cardId);
         card.quantity = data.quantity;
         card.last_checked = data.last_checked;
@@ -383,13 +418,36 @@
         render();
     });
 
-    document.getElementById('userSelect').addEventListener('change', e => {
-        state.userId = e.target.value ? Number(e.target.value) : null;
-        state.viewId = state.userId;
-        store('collectorId', state.userId);
+    const signInDialog = document.getElementById('signInDialog');
+    const signInForm = document.getElementById('signInForm');
+    document.getElementById('signInBtn').onclick = () => {
+        signInForm.reset();
+        document.getElementById('signInUser').innerHTML = state.users
+            .map(u => `<option value="${u.id}">${esc(u.collector_name)}</option>`).join('');
+        document.getElementById('signInError').textContent = '';
+        signInDialog.showModal();
+    };
+    document.getElementById('cancelSignIn').onclick = () => signInDialog.close();
+    signInForm.addEventListener('submit', async e => {
+        e.preventDefault();
+        const userId = Number(signInForm.user_id.value);
+        const initials = signInForm.initials.value.trim().toUpperCase();
+        try {
+            await api('login', {}, { user_id: userId, initials });
+            setSignedIn(userId, initials);
+            renderUserSelect();
+            signInDialog.close();
+            loadCards();
+        } catch (err) {
+            document.getElementById('signInError').textContent = err.message;
+        }
+    });
+    document.getElementById('signOutBtn').onclick = () => {
+        setSignedIn(null, null);
+        state.viewId = state.users[0]?.id ?? null;
         renderUserSelect();
         loadCards();
-    });
+    };
 
     document.getElementById('viewSelect').addEventListener('change', e => {
         state.viewId = e.target.value ? Number(e.target.value) : null;
@@ -411,9 +469,7 @@
             const user = await api('create_user', {}, fields);
             state.users.push(user);
             state.users.sort((a, b) => a.collector_name.localeCompare(b.collector_name));
-            state.userId = user.id;
-            state.viewId = user.id;
-            store('collectorId', user.id);
+            setSignedIn(user.id, fields.initials.trim().toUpperCase());
             renderUserSelect();
             dialog.close();
             loadCards();

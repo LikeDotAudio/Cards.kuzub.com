@@ -77,15 +77,17 @@ function fail($message, $code = 400) {
     exit;
 }
 
-function userExists($pdo, $userId) {
-    $stmt = $pdo->prepare("SELECT 1 FROM users WHERE id = ?");
+// Initials are each collector's secret: they are only ever checked, never returned
+function checkInitials($pdo, $userId, $initials) {
+    $stmt = $pdo->prepare("SELECT initials FROM users WHERE id = ?");
     $stmt->execute([$userId]);
-    return (bool) $stmt->fetchColumn();
+    $stored = $stmt->fetchColumn();
+    return $stored !== false && hash_equals($stored, strtoupper(trim((string) $initials)));
 }
 
 // LIST COLLECTORS
 if ($action === 'get_users') {
-    $stmt = $pdo->query("SELECT id, initials, collector_name FROM users ORDER BY collector_name");
+    $stmt = $pdo->query("SELECT id, collector_name FROM users ORDER BY collector_name");
     echo json_encode($stmt->fetchAll());
     exit;
 }
@@ -122,7 +124,16 @@ if ($action === 'create_user' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$userId]);
     }
 
-    echo json_encode(['id' => $userId, 'initials' => $initials, 'collector_name' => $name]);
+    echo json_encode(['id' => $userId, 'collector_name' => $name]);
+    exit;
+}
+
+// SIGN IN: check a collector's initials
+if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!checkInitials($pdo, (int) ($input['user_id'] ?? 0), $input['initials'] ?? '')) {
+        fail('Wrong collector or initials', 403);
+    }
+    echo json_encode(['success' => true]);
     exit;
 }
 
@@ -173,8 +184,8 @@ if ($action === 'toggle_card' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$cardId) {
         fail('Invalid Card ID');
     }
-    if (!$userId || !userExists($pdo, $userId)) {
-        fail('Pick a collector first');
+    if (!checkInitials($pdo, $userId, $input['initials'] ?? '')) {
+        fail('Sign in first', 403);
     }
 
     $stmt = $pdo->prepare("SELECT quantity FROM collections WHERE user_id = ? AND card_id = ?");
