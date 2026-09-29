@@ -23,6 +23,24 @@ try {
     exit;
 }
 
+// Create tables on first run
+$pdo->exec("
+    CREATE TABLE IF NOT EXISTS cards (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        set_name VARCHAR(100) NOT NULL,
+        card_number VARCHAR(20) NOT NULL,
+        player_name VARCHAR(255) NOT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+");
+$pdo->exec("
+    CREATE TABLE IF NOT EXISTS user_collection (
+        card_id INT PRIMARY KEY,
+        quantity TINYINT NOT NULL DEFAULT 0,
+        last_checked DATETIME NULL,
+        FOREIGN KEY (card_id) REFERENCES cards(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+");
+
 $action = $_GET['action'] ?? '';
 
 // GET CARDS (Includes auto-seed if table is empty)
