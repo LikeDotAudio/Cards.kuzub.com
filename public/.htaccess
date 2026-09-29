@@ -1,0 +1,6 @@
+# Always fetch the latest page and API responses (phones otherwise cache stale copies)
+<IfModule mod_headers.c>
+    <FilesMatch "\.(html|php)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+    </FilesMatch>
+</IfModule>

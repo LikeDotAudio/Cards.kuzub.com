@@ -179,6 +179,25 @@
         dialog label { display: grid; gap: 3px; font-size: 0.8rem; color: var(--muted); }
         dialog .actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 4px; }
         .error { color: var(--primary); font-size: 0.8rem; min-height: 1em; }
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 16px;
+            transform: translateX(-50%);
+            background: var(--text-color);
+            color: #fff;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            z-index: 20;
+        }
+        /* Phones zoom into inputs smaller than 16px */
+        dialog input, dialog select { font-size: 16px; }
+        @media (max-width: 600px) {
+            header { padding: 6px 10px; }
+            h1 { font-size: 0.95rem; }
+            .card { padding: 6px; }
+        }
     </style>
 </head>
 <body>
@@ -202,6 +221,7 @@
 </header>
 
 <main id="main"></main>
+<div class="toast" id="toast" hidden></div>
 
 <dialog id="userDialog">
     <form id="userForm">
@@ -256,6 +276,15 @@
     }
     function esc(s) {
         return String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+    }
+
+    let toastTimer;
+    function toast(message) {
+        const el = document.getElementById('toast');
+        el.textContent = message;
+        el.hidden = false;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.hidden = true, 3000);
     }
 
     async function api(action, params = {}, body = null) {
@@ -389,11 +418,21 @@
     }
 
     async function toggleCard(cardId) {
-        if (!isOwn()) {
-            if (!state.userId) document.getElementById('signInBtn').focus();
+        if (!state.userId) {
+            openSignIn();
             return;
         }
-        const data = await api('toggle_card', {}, { user_id: state.userId, initials: state.initials, card_id: cardId });
+        if (!isOwn()) {
+            toast(`This is ${viewedName()}'s collection — switch Viewing to My collection to edit`);
+            return;
+        }
+        let data;
+        try {
+            data = await api('toggle_card', {}, { user_id: state.userId, initials: state.initials, card_id: cardId });
+        } catch (err) {
+            toast(err.message);
+            return;
+        }
         const card = state.cards.find(c => c.id === cardId);
         card.quantity = data.quantity;
         card.last_checked = data.last_checked;
@@ -420,13 +459,14 @@
 
     const signInDialog = document.getElementById('signInDialog');
     const signInForm = document.getElementById('signInForm');
-    document.getElementById('signInBtn').onclick = () => {
+    function openSignIn() {
         signInForm.reset();
         document.getElementById('signInUser').innerHTML = state.users
             .map(u => `<option value="${u.id}">${esc(u.collector_name)}</option>`).join('');
         document.getElementById('signInError').textContent = '';
         signInDialog.showModal();
-    };
+    }
+    document.getElementById('signInBtn').onclick = openSignIn;
     document.getElementById('cancelSignIn').onclick = () => signInDialog.close();
     signInForm.addEventListener('submit', async e => {
         e.preventDefault();
@@ -478,7 +518,7 @@
         }
     });
 
-    loadUsers().then(loadCards);
+    loadUsers().then(loadCards).catch(err => toast(`Couldn't load: ${err.message}`));
 </script>
 
 </body>
