@@ -55,9 +55,79 @@ if (!$hasSortOrder) {
     $pdo->exec("ALTER TABLE cards ADD COLUMN sort_order INT NOT NULL DEFAULT 0");
 }
 
-$action = $_GET['action'] ?? '';
+// Per-collector collection (replaces the single shared user_collection table)
+$pdo->exec("
+    CREATE TABLE IF NOT EXISTS collections (
+        user_id INT NOT NULL,
+        card_id INT NOT NULL,
+        quantity TINYINT NOT NULL DEFAULT 0,
+        last_checked DATETIME NULL,
+        PRIMARY KEY (user_id, card_id),
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (card_id) REFERENCES cards(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+");
 
-// GET CARDS (Includes auto-seed if table is empty)
+$action = $_GET['action'] ?? '';
+$input = json_decode(file_get_contents('php://input'), true) ?? [];
+
+function fail($message, $code = 400) {
+    http_response_code($code);
+    echo json_encode(['error' => $message]);
+    exit;
+}
+
+function userExists($pdo, $userId) {
+    $stmt = $pdo->prepare("SELECT 1 FROM users WHERE id = ?");
+    $stmt->execute([$userId]);
+    return (bool) $stmt->fetchColumn();
+}
+
+// LIST COLLECTORS
+if ($action === 'get_users') {
+    $stmt = $pdo->query("SELECT id, initials, collector_name FROM users ORDER BY collector_name");
+    echo json_encode($stmt->fetchAll());
+    exit;
+}
+
+// CREATE COLLECTOR
+if ($action === 'create_user' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $initials = strtoupper(trim($input['initials'] ?? ''));
+    $name = trim($input['collector_name'] ?? '');
+
+    if (!preg_match('/^[A-Z]{1,5}$/', $initials)) {
+        fail('Initials must be 1-5 letters');
+    }
+    if (mb_strlen($name) < 2 || mb_strlen($name) > 50) {
+        fail('Collector name must be 2-50 characters');
+    }
+
+    try {
+        $stmt = $pdo->prepare("INSERT INTO users (initials, collector_name) VALUES (?, ?)");
+        $stmt->execute([$initials, $name]);
+    } catch (\PDOException $e) {
+        if ($e->getCode() === '23000') {
+            fail('That collector name is taken');
+        }
+        throw $e;
+    }
+    $userId = (int) $pdo->lastInsertId();
+
+    // The first collector inherits anything marked before collectors existed
+    if ($pdo->query("SELECT COUNT(*) FROM users")->fetchColumn() == 1) {
+        $stmt = $pdo->prepare("
+            INSERT IGNORE INTO collections (user_id, card_id, quantity, last_checked)
+            SELECT ?, card_id, quantity, last_checked FROM user_collection WHERE quantity > 0
+        ");
+        $stmt->execute([$userId]);
+    }
+
+    echo json_encode(['id' => $userId, 'initials' => $initials, 'collector_name' => $name]);
+    exit;
+}
+
+// GET CARDS for a collector, with the other collectors holding doubles of each card.
+// Collections are public: any collector can view another's (read-only in the UI).
 if ($action === 'get_cards') {
     $checklist = require __DIR__ . '/checklist.php';
     $count = $pdo->query("SELECT COUNT(*) FROM cards")->fetchColumn();
@@ -66,58 +136,72 @@ if ($action === 'get_cards') {
         syncCards($pdo, $checklist);
     }
 
-    $stmt = $pdo->query("
-        SELECT 
+    // user_id: whose collection is shown; me: the collector doing the viewing
+    $userId = (int) ($_GET['user_id'] ?? 0);
+    $me = (int) ($_GET['me'] ?? $userId);
+    $stmt = $pdo->prepare("
+        SELECT
             c.id, c.set_name, c.card_number, c.player_name,
-            COALESCE(u.quantity, 0) AS quantity,
-            u.last_checked
+            COALESCE(mine.quantity, 0) AS quantity,
+            mine.last_checked,
+            COALESCE(viewer.quantity, 0) AS my_quantity,
+            (
+                SELECT GROUP_CONCAT(u.collector_name ORDER BY u.collector_name SEPARATOR '\n')
+                FROM collections d
+                JOIN users u ON u.id = d.user_id
+                WHERE d.card_id = c.id AND d.quantity >= 2 AND d.user_id <> ?
+            ) AS doubles_by
         FROM cards c
-        LEFT JOIN user_collection u ON c.id = u.card_id
+        LEFT JOIN collections mine ON mine.card_id = c.id AND mine.user_id = ?
+        LEFT JOIN collections viewer ON viewer.card_id = c.id AND viewer.user_id = ?
         ORDER BY c.sort_order, c.id ASC
     ");
-    echo json_encode($stmt->fetchAll());
+    $stmt->execute([$userId, $userId, $me]);
+    $cards = $stmt->fetchAll();
+    foreach ($cards as &$card) {
+        $card['doubles_by'] = $card['doubles_by'] === null ? [] : explode("\n", $card['doubles_by']);
+    }
+    echo json_encode($cards);
     exit;
 }
 
 // TOGGLE QUANTITY: 0 -> 1 -> 2 (Double) -> 0
 if ($action === 'toggle_card' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $input = json_decode(file_get_contents('php://input'), true);
-    $cardId = $input['card_id'] ?? null;
+    $userId = (int) ($input['user_id'] ?? 0);
+    $cardId = (int) ($input['card_id'] ?? 0);
 
     if (!$cardId) {
-        echo json_encode(['error' => 'Invalid Card ID']);
-        exit;
+        fail('Invalid Card ID');
+    }
+    if (!$userId || !userExists($pdo, $userId)) {
+        fail('Pick a collector first');
     }
 
-    // Get current quantity
-    $stmt = $pdo->prepare("SELECT quantity FROM user_collection WHERE card_id = ?");
-    $stmt->execute([$cardId]);
+    $stmt = $pdo->prepare("SELECT quantity FROM collections WHERE user_id = ? AND card_id = ?");
+    $stmt->execute([$userId, $cardId]);
     $current = $stmt->fetchColumn();
-
-    $newQty = 0;
-    $dateChecked = null;
 
     if ($current === false || $current == 0) {
         $newQty = 1;
-        $dateChecked = date('Y-m-d H:i:s');
     } elseif ($current == 1) {
         $newQty = 2; // Marked as duplicate/double
-        $dateChecked = date('Y-m-d H:i:s');
     } else {
         $newQty = 0; // Cleared / Removed
-        $dateChecked = null;
     }
+    $dateChecked = $newQty > 0 ? date('Y-m-d H:i:s') : null;
 
     $stmt = $pdo->prepare("
-        INSERT INTO user_collection (card_id, quantity, last_checked) 
-        VALUES (?, ?, ?)
+        INSERT INTO collections (user_id, card_id, quantity, last_checked)
+        VALUES (?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE quantity = VALUES(quantity), last_checked = VALUES(last_checked)
     ");
-    $stmt->execute([$cardId, $newQty, $dateChecked]);
+    $stmt->execute([$userId, $cardId, $newQty, $dateChecked]);
 
     echo json_encode(['success' => true, 'quantity' => $newQty, 'last_checked' => $dateChecked]);
     exit;
 }
+
+fail('Unknown action');
 
 // SYNC CHECKLIST: insert missing cards, fix names and ordering of existing ones.
 // Numbered cards match on set + number; unnumbered ones match on set + player.

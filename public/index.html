@@ -8,185 +8,421 @@
         :root {
             --bg-color: #f7f9fa;
             --text-color: #222;
+            --muted: #6b7280;
             --primary: #c8102e;
             --row-single: #e8f5e9;
+            --row-single-edge: #81c784;
             --row-double: #fff9c4;
+            --row-double-edge: #fbc02d;
+            --trade: #1565c0;
             --border-color: #e0e0e0;
         }
+        * { box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            padding: 24px;
+            font-size: 14px;
         }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
+
+        /* Sticky top bar */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
             background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-bottom: 1px solid var(--border-color);
+            padding: 8px 12px;
+        }
+        .bar {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px 12px;
         }
         h1 {
-            margin-top: 0;
+            margin: 0;
             color: var(--primary);
-            font-size: 1.5rem;
+            font-size: 1.05rem;
+            margin-right: auto;
         }
-        .legend {
+        select, button, input {
+            font: inherit;
+            font-size: 0.85rem;
+        }
+        select, input {
+            padding: 4px 6px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: #fff;
+        }
+        button {
+            padding: 4px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: #fff;
+            cursor: pointer;
+        }
+        button.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .filters { display: flex; gap: 4px; }
+        .filters button.active { background: var(--text-color); border-color: var(--text-color); color: #fff; }
+        .overall { font-size: 0.8rem; color: var(--muted); }
+
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 8px 12px 40px;
+        }
+        .notice {
+            background: #fff;
+            border: 1px dashed var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            margin: 8px 0;
+            color: var(--muted);
+        }
+
+        /* Set sections */
+        details.set {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-top: 8px;
+        }
+        details.set > summary {
             display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-weight: 600;
+            list-style: none;
         }
-        .legend-item {
+        details.set > summary::-webkit-details-marker { display: none; }
+        details.set > summary::before { content: "▸"; color: var(--muted); }
+        details.set[open] > summary::before { content: "▾"; }
+        .set-count { font-weight: normal; font-size: 0.8rem; color: var(--muted); }
+        .progress {
+            flex: 0 0 80px;
+            height: 5px;
+            background: #eee;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-left: auto;
+        }
+        .progress > span { display: block; height: 100%; background: var(--row-single-edge); }
+
+        /* Card tiles */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+            gap: 3px;
+            padding: 0 6px 6px;
+        }
+        .card {
             display: flex;
             align-items: center;
             gap: 6px;
-        }
-        .legend-color {
-            width: 16px;
-            height: 16px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 10px 14px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-        th {
-            background-color: #f1f3f5;
-        }
-        tr.card-row {
+            padding: 3px 6px;
+            border: 1px solid transparent;
+            border-left: 3px solid #ddd;
+            border-radius: 3px;
             cursor: pointer;
             user-select: none;
-            transition: background 0.15s ease-in-out;
+            min-width: 0;
         }
-        tr.card-row:hover {
-            opacity: 0.85;
+        .card:hover { border-color: var(--border-color); }
+        .readonly .card { cursor: default; }
+        .need {
+            flex: 0 0 auto;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 0 4px;
         }
-        tr.collected {
-            background-color: var(--row-single);
+        .card.collected { background: var(--row-single); border-left-color: var(--row-single-edge); }
+        .card.doubles { background: var(--row-double); border-left-color: var(--row-double-edge); }
+        .num { flex: 0 0 auto; min-width: 2.6em; font-weight: 700; font-size: 0.75rem; color: var(--muted); }
+        .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .qty { flex: 0 0 auto; font-size: 0.7rem; font-weight: 700; }
+        .collected .qty { color: #2e7d32; }
+        .doubles .qty { color: #f57f17; }
+        .trade {
+            flex: 0 0 auto;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #fff;
+            background: var(--trade);
+            border-radius: 8px;
+            padding: 0 5px;
         }
-        tr.doubles {
-            background-color: var(--row-double);
+        .trade-names {
+            grid-column: 1 / -1;
+            font-size: 0.75rem;
+            color: var(--trade);
+            padding: 0 6px 0 calc(2.6em + 15px);
+            margin-top: -2px;
         }
-        .status-badge {
-            display: inline-block;
-            font-size: 0.8rem;
-            font-weight: bold;
-            padding: 3px 8px;
-            border-radius: 12px;
+
+        dialog {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            width: min(320px, 90vw);
         }
-        .badge-none { background: #eee; color: #777; }
-        .badge-owned { background: #81c784; color: #1b5e20; }
-        .badge-double { background: #fff176; color: #f57f17; }
-        .date-text { font-size: 0.8rem; color: #666; }
+        dialog form { display: grid; gap: 8px; }
+        dialog label { display: grid; gap: 3px; font-size: 0.8rem; color: var(--muted); }
+        dialog .actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 4px; }
+        .error { color: var(--primary); font-size: 0.8rem; min-height: 1em; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>2026-27 Upper Deck Tim Hortons Checklist</h1>
-    
-    <div class="legend">
-        <div class="legend-item">
-            <span class="legend-color" style="background: #fff;"></span> 0x (Uncollected)
+<header>
+    <div class="bar">
+        <h1>2026-27 UD Tim Hortons Checklist</h1>
+        <select id="userSelect" aria-label="Collector"></select>
+        <button id="newUserBtn">+ Collector</button>
+        <label class="overall">Viewing <select id="viewSelect" aria-label="Viewing collection"></select></label>
+        <div class="filters" id="filters">
+            <button data-filter="all" class="active">All</button>
+            <button data-filter="missing">Missing</button>
+            <button data-filter="doubles">My Doubles</button>
+            <button data-filter="trade" title="Cards you're missing that other collectors have doubles of">For Trade</button>
         </div>
-        <div class="legend-item">
-            <span class="legend-color" style="background: var(--row-single);"></span> 1x (Collected)
-        </div>
-        <div class="legend-item">
-            <span class="legend-color" style="background: var(--row-double);"></span> 2x (Double)
-        </div>
-        <span style="color: #666; font-size: 0.85rem; margin-left: auto;">* Click any row to cycle count</span>
+        <span class="overall" id="overall"></span>
     </div>
+</header>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Set</th>
-                <th>#</th>
-                <th>Player</th>
-                <th>Status</th>
-                <th>Date Checked</th>
-            </tr>
-        </thead>
-        <tbody id="cardTableBody">
-            <!-- Cards will populate dynamically -->
-        </tbody>
-    </table>
-</div>
+<main id="main"></main>
+
+<dialog id="userDialog">
+    <form id="userForm">
+        <strong>New collector</strong>
+        <label>Initials
+            <input name="initials" maxlength="5" required pattern="[A-Za-z]{1,5}" autocomplete="off">
+        </label>
+        <label>Collector name (shown to other traders)
+            <input name="collector_name" maxlength="50" minlength="2" required autocomplete="off">
+        </label>
+        <div class="error" id="userError"></div>
+        <div class="actions">
+            <button type="button" id="cancelUser">Cancel</button>
+            <button type="submit" class="primary">Create</button>
+        </div>
+    </form>
+</dialog>
 
 <script>
-    async function loadCards() {
-        const response = await fetch('api.php?action=get_cards');
-        const cards = await response.json();
-        const tbody = document.getElementById('cardTableBody');
-        tbody.innerHTML = '';
+    const state = {
+        users: [],
+        userId: null,   // the collector using the site (me)
+        viewId: null,   // whose collection is shown
+        cards: [],
+        filter: 'all',
+        collapsed: new Set(),
+    };
 
-        cards.forEach(card => {
-            const tr = document.createElement('tr');
-            tr.className = `card-row ${getRowClass(card.quantity)}`;
-            tr.id = `card-row-${card.id}`;
-            tr.onclick = () => toggleCard(card.id);
-
-            tr.innerHTML = `
-                <td>${card.set_name}</td>
-                <td><strong>${card.card_number}</strong></td>
-                <td>${card.player_name}</td>
-                <td><span class="status-badge ${getBadgeClass(card.quantity)}">${getStatusText(card.quantity)}</span></td>
-                <td class="date-text">${card.last_checked || '-'}</td>
-            `;
-            tbody.appendChild(tr);
-        });
+    function store(key, value) {
+        try { value === null ? localStorage.removeItem(key) : localStorage.setItem(key, value); } catch (e) {}
+    }
+    function recall(key) {
+        try { return localStorage.getItem(key); } catch (e) { return null; }
+    }
+    function esc(s) {
+        return String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
     }
 
-    async function toggleCard(cardId) {
-        const response = await fetch('api.php?action=toggle_card', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ card_id: cardId })
-        });
+    async function api(action, params = {}, body = null) {
+        const query = new URLSearchParams({ action, ...params });
+        const opts = body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {};
+        const response = await fetch(`api.php?${query}`, opts);
         const data = await response.json();
+        if (data && data.error) throw new Error(data.error);
+        return data;
+    }
 
-        if (data.success) {
-            const tr = document.getElementById(`card-row-${cardId}`);
-            tr.className = `card-row ${getRowClass(data.quantity)}`;
-            
-            const badge = tr.querySelector('.status-badge');
-            badge.className = `status-badge ${getBadgeClass(data.quantity)}`;
-            badge.textContent = getStatusText(data.quantity);
+    async function loadUsers() {
+        state.users = await api('get_users');
+        const saved = Number(recall('collectorId'));
+        state.userId = state.users.some(u => u.id === saved) ? saved : null;
+        state.viewId = state.userId;
+        renderUserSelect();
+    }
 
-            const dateCell = tr.querySelector('.date-text');
-            dateCell.textContent = data.last_checked || '-';
+    function renderUserSelect() {
+        const select = document.getElementById('userSelect');
+        select.innerHTML = '<option value="">Viewing as guest</option>' + state.users
+            .map(u => `<option value="${u.id}">${esc(u.collector_name)} (${esc(u.initials)})</option>`)
+            .join('');
+        select.value = state.userId ?? '';
+
+        const view = document.getElementById('viewSelect');
+        view.innerHTML = state.users
+            .map(u => `<option value="${u.id}">${u.id === state.userId ? 'My collection' : esc(u.collector_name)}</option>`)
+            .join('');
+        if (!state.viewId) view.insertAdjacentHTML('afterbegin', '<option value="">—</option>');
+        view.value = state.viewId ?? '';
+    }
+
+    function isOwn() {
+        return state.userId !== null && state.viewId === state.userId;
+    }
+
+    function viewedName() {
+        return state.users.find(u => u.id === state.viewId)?.collector_name ?? '';
+    }
+
+    async function loadCards() {
+        const params = {};
+        if (state.viewId) params.user_id = state.viewId;
+        if (state.userId) params.me = state.userId;
+        state.cards = await api('get_cards', params);
+        render();
+    }
+
+    function matchesFilter(card) {
+        switch (state.filter) {
+            case 'missing': return card.quantity == 0;
+            case 'doubles': return card.quantity >= 2;
+            case 'trade': return isOwn()
+                ? card.quantity == 0 && card.doubles_by.length > 0
+                : card.quantity >= 2 && (!state.userId || card.my_quantity == 0);
+            default: return true;
         }
     }
 
-    function getRowClass(qty) {
-        if (qty == 1) return 'collected';
-        if (qty >= 2) return 'doubles';
-        return '';
+    function render() {
+        const main = document.getElementById('main');
+        const sets = new Map();
+        for (const card of state.cards) {
+            if (!sets.has(card.set_name)) sets.set(card.set_name, []);
+            sets.get(card.set_name).push(card);
+        }
+
+        const owned = state.cards.filter(c => c.quantity > 0).length;
+        document.getElementById('overall').textContent = state.viewId ? `${owned}/${state.cards.length} collected` : '';
+        main.classList.toggle('readonly', !isOwn());
+
+        let html = '';
+        if (!state.userId) {
+            html += '<div class="notice">Pick a collector or create one with <strong>+ Collector</strong> to start checking off cards.</div>';
+        }
+        if (state.viewId && !isOwn()) {
+            html += `<div class="notice">Viewing <strong>${esc(viewedName())}</strong>'s collection (read-only).`
+                + (state.userId ? ' Cards marked <span class="need">NEED</span> are their doubles you\'re missing.' : '')
+                + '</div>';
+        }
+        for (const [setName, cards] of sets) {
+            const visible = cards.filter(matchesFilter);
+            if (!visible.length && state.filter !== 'all') continue;
+            const have = cards.filter(c => c.quantity > 0).length;
+            const pct = Math.round(have / cards.length * 100);
+            const open = state.collapsed.has(setName) ? '' : ' open';
+            html += `<details class="set" data-set="${esc(setName)}"${open}>
+                <summary>${esc(setName)} <span class="set-count">${have}/${cards.length}</span>
+                    <span class="progress"><span style="width:${pct}%"></span></span></summary>
+                <div class="grid">${visible.map(renderCard).join('')}</div>
+            </details>`;
+        }
+        if (!html) html = '<div class="notice">Nothing here yet.</div>';
+        main.innerHTML = html;
     }
 
-    function getBadgeClass(qty) {
-        if (qty == 1) return 'badge-owned';
-        if (qty >= 2) return 'badge-double';
-        return 'badge-none';
+    function renderCard(card) {
+        const cls = card.quantity >= 2 ? 'doubles' : card.quantity == 1 ? 'collected' : '';
+        const qty = card.quantity >= 2 ? '2x' : card.quantity == 1 ? '✓' : '';
+        const traders = card.doubles_by;
+        const title = [card.player_name, card.last_checked ? `Checked ${card.last_checked}` : '',
+            traders.length ? `Doubles: ${traders.join(', ')}` : ''].filter(Boolean).join('\n');
+        let html = `<div class="card ${cls}" data-id="${card.id}" title="${esc(title)}">
+            <span class="num">${esc(card.card_number)}</span>
+            <span class="name">${esc(card.player_name)}</span>
+            ${isOwn() && traders.length ? `<span class="trade">⇄${traders.length}</span>` : ''}
+            ${!isOwn() && state.userId && card.quantity >= 2 && card.my_quantity == 0 ? '<span class="need">NEED</span>' : ''}
+            <span class="qty">${qty}</span>
+        </div>`;
+        if (state.filter === 'trade' && isOwn()) {
+            html += `<div class="trade-names">from ${traders.map(esc).join(', ')}</div>`;
+        }
+        return html;
     }
 
-    function getStatusText(qty) {
-        if (qty == 1) return 'Owned (1x)';
-        if (qty >= 2) return 'Double (2x)';
-        return 'Missing';
+    async function toggleCard(cardId) {
+        if (!isOwn()) {
+            if (!state.userId) document.getElementById('newUserBtn').focus();
+            return;
+        }
+        const data = await api('toggle_card', {}, { user_id: state.userId, card_id: cardId });
+        const card = state.cards.find(c => c.id === cardId);
+        card.quantity = data.quantity;
+        card.last_checked = data.last_checked;
+        render();
     }
 
-    window.onload = loadCards;
+    document.getElementById('main').addEventListener('click', e => {
+        const tile = e.target.closest('.card');
+        if (tile) toggleCard(Number(tile.dataset.id));
+    });
+    document.getElementById('main').addEventListener('toggle', e => {
+        const set = e.target.dataset.set;
+        if (!set) return;
+        e.target.open ? state.collapsed.delete(set) : state.collapsed.add(set);
+    }, true);
+
+    document.getElementById('filters').addEventListener('click', e => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        state.filter = btn.dataset.filter;
+        document.querySelectorAll('#filters button').forEach(b => b.classList.toggle('active', b === btn));
+        render();
+    });
+
+    document.getElementById('userSelect').addEventListener('change', e => {
+        state.userId = e.target.value ? Number(e.target.value) : null;
+        state.viewId = state.userId;
+        store('collectorId', state.userId);
+        renderUserSelect();
+        loadCards();
+    });
+
+    document.getElementById('viewSelect').addEventListener('change', e => {
+        state.viewId = e.target.value ? Number(e.target.value) : null;
+        loadCards();
+    });
+
+    const dialog = document.getElementById('userDialog');
+    const form = document.getElementById('userForm');
+    document.getElementById('newUserBtn').onclick = () => {
+        form.reset();
+        document.getElementById('userError').textContent = '';
+        dialog.showModal();
+    };
+    document.getElementById('cancelUser').onclick = () => dialog.close();
+    form.addEventListener('submit', async e => {
+        e.preventDefault();
+        const fields = Object.fromEntries(new FormData(form));
+        try {
+            const user = await api('create_user', {}, fields);
+            state.users.push(user);
+            state.users.sort((a, b) => a.collector_name.localeCompare(b.collector_name));
+            state.userId = user.id;
+            state.viewId = user.id;
+            store('collectorId', user.id);
+            renderUserSelect();
+            dialog.close();
+            loadCards();
+        } catch (err) {
+            document.getElementById('userError').textContent = err.message;
+        }
+    });
+
+    loadUsers().then(loadCards);
 </script>
 
 </body>
