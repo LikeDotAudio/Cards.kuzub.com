@@ -1,10 +1,12 @@
 <?php
 header('Content-Type: application/json');
 
-$host = '127.0.0.1';
-$db   = 'tims_hockey_cards';
-$user = 'root';
-$pass = '';
+// db_config.php is generated at deploy time from GitHub secrets (not in the repo)
+$config = require __DIR__ . '/db_config.php';
+$host = $config['host'];
+$db   = $config['name'];
+$user = $config['user'];
+$pass = $config['pass'];
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
