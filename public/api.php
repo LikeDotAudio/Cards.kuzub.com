@@ -40,6 +40,15 @@ $pdo->exec("
         FOREIGN KEY (card_id) REFERENCES cards(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
 ");
+// collector_name is the public name shown on the site for trading
+$pdo->exec("
+    CREATE TABLE IF NOT EXISTS users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        initials VARCHAR(5) NOT NULL,
+        collector_name VARCHAR(50) NOT NULL UNIQUE,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+");
 
 $hasSortOrder = $pdo->query("SHOW COLUMNS FROM cards LIKE 'sort_order'")->fetch();
 if (!$hasSortOrder) {
