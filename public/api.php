@@ -1,5 +1,6 @@
 <?php
 header('Content-Type: application/json');
+header_remove('X-Powered-By');
 
 // db_config.php is generated at deploy time from GitHub secrets (not in the repo)
 $config = require __DIR__ . '/db_config.php';
@@ -19,7 +20,9 @@ $options = [
 try {
     $pdo = new PDO($dsn, $user, $pass, $options);
 } catch (\PDOException $e) {
-    echo json_encode(['error' => 'Database connection failed: ' . $e->getMessage()]);
+    error_log('Database connection failed: ' . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(['error' => 'Database unavailable']);
     exit;
 }
 
@@ -68,7 +71,20 @@ $pdo->exec("
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
 ");
 
+// Failed sign-ins and collector sign-ups, for rate limiting
+$pdo->exec("
+    CREATE TABLE IF NOT EXISTS rate_events (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        kind VARCHAR(20) NOT NULL,
+        ip VARCHAR(45) NOT NULL,
+        user_id INT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX (kind, created_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+");
+
 $action = $_GET['action'] ?? '';
+$ip = $_SERVER['REMOTE_ADDR'] ?? '';
 $input = json_decode(file_get_contents('php://input'), true) ?? [];
 
 function fail($message, $code = 400) {
@@ -77,12 +93,34 @@ function fail($message, $code = 400) {
     exit;
 }
 
-// Initials are each collector's secret: they are only ever checked, never returned
-function checkInitials($pdo, $userId, $initials) {
+function countEvents($pdo, $kind, $column, $value, $minutes) {
+    $stmt = $pdo->prepare("
+        SELECT COUNT(*) FROM rate_events
+        WHERE kind = ? AND $column = ? AND created_at > NOW() - INTERVAL ? MINUTE
+    ");
+    $stmt->execute([$kind, $value, $minutes]);
+    return (int) $stmt->fetchColumn();
+}
+
+function recordEvent($pdo, $kind, $ip, $userId = null) {
+    $pdo->prepare("INSERT INTO rate_events (kind, ip, user_id) VALUES (?, ?, ?)")->execute([$kind, $ip, $userId]);
+    $pdo->exec("DELETE FROM rate_events WHERE created_at < NOW() - INTERVAL 1 DAY");
+}
+
+// Initials are each collector's secret: they are only ever checked, never returned.
+// Wrong guesses are limited per IP (10 / 15 min) and per collector (20 / hour).
+function requireInitials($pdo, $ip, $userId, $initials) {
+    if (countEvents($pdo, 'bad_initials', 'ip', $ip, 15) >= 10
+        || countEvents($pdo, 'bad_initials', 'user_id', $userId, 60) >= 20) {
+        fail('Too many wrong attempts. Try again later.', 429);
+    }
     $stmt = $pdo->prepare("SELECT initials FROM users WHERE id = ?");
     $stmt->execute([$userId]);
     $stored = $stmt->fetchColumn();
-    return $stored !== false && hash_equals($stored, strtoupper(trim((string) $initials)));
+    if ($stored === false || !hash_equals($stored, strtoupper(trim((string) $initials)))) {
+        recordEvent($pdo, 'bad_initials', $ip, $userId);
+        fail('Wrong collector or initials', 403);
+    }
 }
 
 // LIST COLLECTORS
@@ -103,6 +141,9 @@ if ($action === 'create_user' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if (mb_strlen($name) < 2 || mb_strlen($name) > 50) {
         fail('Collector name must be 2-50 characters');
     }
+    if (countEvents($pdo, 'create_user', 'ip', $ip, 60) >= 5) {
+        fail('Too many new collectors. Try again later.', 429);
+    }
 
     try {
         $stmt = $pdo->prepare("INSERT INTO users (initials, collector_name) VALUES (?, ?)");
@@ -114,15 +155,7 @@ if ($action === 'create_user' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         throw $e;
     }
     $userId = (int) $pdo->lastInsertId();
-
-    // The first collector inherits anything marked before collectors existed
-    if ($pdo->query("SELECT COUNT(*) FROM users")->fetchColumn() == 1) {
-        $stmt = $pdo->prepare("
-            INSERT IGNORE INTO collections (user_id, card_id, quantity, last_checked)
-            SELECT ?, card_id, quantity, last_checked FROM user_collection WHERE quantity > 0
-        ");
-        $stmt->execute([$userId]);
-    }
+    recordEvent($pdo, 'create_user', $ip, $userId);
 
     echo json_encode(['id' => $userId, 'collector_name' => $name]);
     exit;
@@ -130,9 +163,7 @@ if ($action === 'create_user' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // SIGN IN: check a collector's initials
 if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!checkInitials($pdo, (int) ($input['user_id'] ?? 0), $input['initials'] ?? '')) {
-        fail('Wrong collector or initials', 403);
-    }
+    requireInitials($pdo, $ip, (int) ($input['user_id'] ?? 0), $input['initials'] ?? '');
     echo json_encode(['success' => true]);
     exit;
 }
@@ -184,9 +215,7 @@ if ($action === 'toggle_card' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$cardId) {
         fail('Invalid Card ID');
     }
-    if (!checkInitials($pdo, $userId, $input['initials'] ?? '')) {
-        fail('Sign in first', 403);
-    }
+    requireInitials($pdo, $ip, $userId, $input['initials'] ?? '');
 
     $stmt = $pdo->prepare("SELECT quantity FROM collections WHERE user_id = ? AND card_id = ?");
     $stmt->execute([$userId, $cardId]);

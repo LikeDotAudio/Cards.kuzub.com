@@ -116,11 +116,17 @@
         .progress > span { display: block; height: 100%; background: var(--row-single-edge); }
 
         /* Card tiles */
+        /* Cards run top-to-bottom in groups of 9, with a gap between groups */
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+            gap: 12px;
+            padding: 0 6px 8px;
+        }
+        .group {
+            display: grid;
             gap: 3px;
-            padding: 0 6px 6px;
+            align-content: start;
         }
         .card {
             display: flex;
@@ -385,13 +391,19 @@
         for (const [setName, cards] of sets) {
             const visible = cards.filter(matchesFilter);
             if (!visible.length && state.filter !== 'all') continue;
+            // Groups of 9 follow each card's position in the set, so filtering keeps cards in their group
+            const groups = [];
+            cards.forEach((card, i) => {
+                if (!matchesFilter(card)) return;
+                (groups[Math.floor(i / 9)] ??= []).push(card);
+            });
             const have = cards.filter(c => c.quantity > 0).length;
             const pct = Math.round(have / cards.length * 100);
             const open = state.collapsed.has(setName) ? '' : ' open';
             html += `<details class="set" data-set="${esc(setName)}"${open}>
                 <summary>${esc(setName)} <span class="set-count">${have}/${cards.length}</span>
                     <span class="progress"><span style="width:${pct}%"></span></span></summary>
-                <div class="grid">${visible.map(renderCard).join('')}</div>
+                <div class="grid">${groups.filter(Boolean).map(g => `<div class="group">${g.map(renderCard).join('')}</div>`).join('')}</div>
             </details>`;
         }
         if (!html) html = '<div class="notice">Nothing here yet.</div>';
