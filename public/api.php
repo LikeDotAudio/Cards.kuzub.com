@@ -83,6 +83,20 @@ $pdo->exec("
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
 ");
 
+// Login sessions: the browser holds a random token in an HttpOnly cookie, the DB holds its hash
+$pdo->exec("
+    CREATE TABLE IF NOT EXISTS sessions (
+        token_hash CHAR(64) PRIMARY KEY,
+        user_id INT NOT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        expires_at DATETIME NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+");
+
+const SESSION_COOKIE = 'cards_session';
+const SESSION_DAYS = 365;
+
 $action = $_GET['action'] ?? '';
 $ip = $_SERVER['REMOTE_ADDR'] ?? '';
 $input = json_decode(file_get_contents('php://input'), true) ?? [];
@@ -107,7 +121,46 @@ function recordEvent($pdo, $kind, $ip, $userId = null) {
     $pdo->exec("DELETE FROM rate_events WHERE created_at < NOW() - INTERVAL 1 DAY");
 }
 
-// Initials are each collector's secret: they are only ever checked, never returned.
+function setSessionCookie($value, $expires) {
+    setcookie(SESSION_COOKIE, $value, [
+        'expires' => $expires,
+        'path' => '/',
+        'secure' => true,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+}
+
+function startSession($pdo, $userId) {
+    $token = bin2hex(random_bytes(32));
+    $pdo->prepare("INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, NOW() + INTERVAL ? DAY)")
+        ->execute([hash('sha256', $token), $userId, SESSION_DAYS]);
+    $pdo->exec("DELETE FROM sessions WHERE expires_at < NOW()");
+    setSessionCookie($token, time() + SESSION_DAYS * 86400);
+}
+
+// The signed-in collector (from the session cookie), or null
+function currentUser($pdo) {
+    $token = $_COOKIE[SESSION_COOKIE] ?? '';
+    if ($token === '') {
+        return null;
+    }
+    $stmt = $pdo->prepare("
+        SELECT u.id, u.collector_name FROM sessions s JOIN users u ON u.id = s.user_id
+        WHERE s.token_hash = ? AND s.expires_at > NOW()
+    ");
+    $stmt->execute([hash('sha256', $token)]);
+    return $stmt->fetch() ?: null;
+}
+
+// Cookie-authenticated writes must be JSON, which browsers won't send cross-site without CORS approval
+function requireJson() {
+    if (stripos($_SERVER['CONTENT_TYPE'] ?? '', 'application/json') !== 0) {
+        fail('Expected JSON', 415);
+    }
+}
+
+// The password is the collector's initials: case-insensitive, only ever checked, never returned.
 // Wrong guesses are limited per IP (10 / 15 min) and per collector (20 / hour).
 function requireInitials($pdo, $ip, $userId, $initials) {
     if (countEvents($pdo, 'bad_initials', 'ip', $ip, 15) >= 10
@@ -119,7 +172,7 @@ function requireInitials($pdo, $ip, $userId, $initials) {
     $stored = $stmt->fetchColumn();
     if ($stored === false || !hash_equals($stored, strtoupper(trim((string) $initials)))) {
         recordEvent($pdo, 'bad_initials', $ip, $userId);
-        fail('Wrong collector or initials', 403);
+        fail('Wrong collector or password', 403);
     }
 }
 
@@ -155,11 +208,12 @@ if ($action === 'get_users') {
 
 // CREATE COLLECTOR
 if ($action === 'create_user' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $initials = strtoupper(trim($input['initials'] ?? ''));
+    requireJson();
+    $initials = strtoupper(trim($input['password'] ?? ''));
     $name = trim($input['collector_name'] ?? '');
 
     if (!preg_match('/^[A-Z]{1,5}$/', $initials)) {
-        fail('Initials must be 1-5 letters');
+        fail('Password (your initials) must be 1-5 letters');
     }
     if (mb_strlen($name) < 2 || mb_strlen($name) > 50) {
         fail('Collector name must be 2-50 characters');
@@ -179,14 +233,36 @@ if ($action === 'create_user' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $userId = (int) $pdo->lastInsertId();
     recordEvent($pdo, 'create_user', $ip, $userId);
+    startSession($pdo, $userId);
 
     echo json_encode(['id' => $userId, 'collector_name' => $name]);
     exit;
 }
 
-// SIGN IN: check a collector's initials
+// SIGN IN: check the password (initials) and start a session cookie
 if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    requireInitials($pdo, $ip, (int) ($input['user_id'] ?? 0), $input['initials'] ?? '');
+    requireJson();
+    $userId = (int) ($input['user_id'] ?? 0);
+    requireInitials($pdo, $ip, $userId, $input['password'] ?? '');
+    startSession($pdo, $userId);
+    echo json_encode(['success' => true]);
+    exit;
+}
+
+// WHO AM I: the collector signed in by cookie, or null
+if ($action === 'me') {
+    echo json_encode(currentUser($pdo));
+    exit;
+}
+
+// SIGN OUT
+if ($action === 'logout' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    requireJson();
+    $token = $_COOKIE[SESSION_COOKIE] ?? '';
+    if ($token !== '') {
+        $pdo->prepare("DELETE FROM sessions WHERE token_hash = ?")->execute([hash('sha256', $token)]);
+    }
+    setSessionCookie('', time() - 3600);
     echo json_encode(['success' => true]);
     exit;
 }
@@ -201,9 +277,9 @@ if ($action === 'get_cards') {
         syncCards($pdo, $checklist);
     }
 
-    // user_id: whose collection is shown; me: the collector doing the viewing
+    // user_id: whose collection is shown; me: the signed-in collector doing the viewing
     $userId = (int) ($_GET['user_id'] ?? 0);
-    $me = (int) ($_GET['me'] ?? $userId);
+    $me = (int) (currentUser($pdo)['id'] ?? 0);
     $stmt = $pdo->prepare("
         SELECT
             c.id, c.set_name, c.card_number, c.player_name,
@@ -232,13 +308,17 @@ if ($action === 'get_cards') {
 
 // TOGGLE QUANTITY: 0 -> 1 -> 2 (Double) -> 0
 if ($action === 'toggle_card' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $userId = (int) ($input['user_id'] ?? 0);
+    requireJson();
+    $user = currentUser($pdo);
+    if (!$user) {
+        fail('Sign in first', 401);
+    }
+    $userId = (int) $user['id'];
     $cardId = (int) ($input['card_id'] ?? 0);
 
     if (!$cardId) {
         fail('Invalid Card ID');
     }
-    requireInitials($pdo, $ip, $userId, $input['initials'] ?? '');
 
     $stmt = $pdo->prepare("SELECT quantity FROM collections WHERE user_id = ? AND card_id = ?");
     $stmt->execute([$userId, $cardId]);
