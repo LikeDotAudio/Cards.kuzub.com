@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026-27 UD Tim Hortons Hockey Checklist</title>
+    <style>
+        :root {
+            --bg-color: #f7f9fa;
+            --text-color: #222;
+            --primary: #c8102e;
+            --row-single: #e8f5e9;
+            --row-double: #fff9c4;
+            --border-color: #e0e0e0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 24px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        h1 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+        .legend {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        th {
+            background-color: #f1f3f5;
+        }
+        tr.card-row {
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.15s ease-in-out;
+        }
+        tr.card-row:hover {
+            opacity: 0.85;
+        }
+        tr.collected {
+            background-color: var(--row-single);
+        }
+        tr.doubles {
+            background-color: var(--row-double);
+        }
+        .status-badge {
+            display: inline-block;
+            font-size: 0.8rem;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+        }
+        .badge-none { background: #eee; color: #777; }
+        .badge-owned { background: #81c784; color: #1b5e20; }
+        .badge-double { background: #fff176; color: #f57f17; }
+        .date-text { font-size: 0.8rem; color: #666; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>2026-27 Upper Deck Tim Hortons Checklist</h1>
+    
+    <div class="legend">
+        <div class="legend-item">
+            <span class="legend-color" style="background: #fff;"></span> 0x (Uncollected)
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background: var(--row-single);"></span> 1x (Collected)
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background: var(--row-double);"></span> 2x (Double)
+        </div>
+        <span style="color: #666; font-size: 0.85rem; margin-left: auto;">* Click any row to cycle count</span>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Set</th>
+                <th>#</th>
+                <th>Player</th>
+                <th>Status</th>
+                <th>Date Checked</th>
+            </tr>
+        </thead>
+        <tbody id="cardTableBody">
+            <!-- Cards will populate dynamically -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    async function loadCards() {
+        const response = await fetch('api.php?action=get_cards');
+        const cards = await response.json();
+        const tbody = document.getElementById('cardTableBody');
+        tbody.innerHTML = '';
+
+        cards.forEach(card => {
+            const tr = document.createElement('tr');
+            tr.className = `card-row ${getRowClass(card.quantity)}`;
+            tr.id = `card-row-${card.id}`;
+            tr.onclick = () => toggleCard(card.id);
+
+            tr.innerHTML = `
+                <td>${card.set_name}</td>
+                <td><strong>${card.card_number}</strong></td>
+                <td>${card.player_name}</td>
+                <td><span class="status-badge ${getBadgeClass(card.quantity)}">${getStatusText(card.quantity)}</span></td>
+                <td class="date-text">${card.last_checked || '-'}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function toggleCard(cardId) {
+        const response = await fetch('api.php?action=toggle_card', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ card_id: cardId })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            const tr = document.getElementById(`card-row-${cardId}`);
+            tr.className = `card-row ${getRowClass(data.quantity)}`;
+            
+            const badge = tr.querySelector('.status-badge');
+            badge.className = `status-badge ${getBadgeClass(data.quantity)}`;
+            badge.textContent = getStatusText(data.quantity);
+
+            const dateCell = tr.querySelector('.date-text');
+            dateCell.textContent = data.last_checked || '-';
+        }
+    }
+
+    function getRowClass(qty) {
+        if (qty == 1) return 'collected';
+        if (qty >= 2) return 'doubles';
+        return '';
+    }
+
+    function getBadgeClass(qty) {
+        if (qty == 1) return 'badge-owned';
+        if (qty >= 2) return 'badge-double';
+        return 'badge-none';
+    }
+
+    function getStatusText(qty) {
+        if (qty == 1) return 'Owned (1x)';
+        if (qty >= 2) return 'Double (2x)';
+        return 'Missing';
+    }
+
+    window.onload = loadCards;
+</script>
+
+</body>
+</html>
