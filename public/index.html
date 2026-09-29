@@ -116,17 +116,17 @@
         .progress > span { display: block; height: 100%; background: var(--row-single-edge); }
 
         /* Card tiles */
-        /* Cards run top-to-bottom in groups of 9, with a gap between groups */
+        /* Cards read top-to-bottom, column by column, in groups of 9 with a gap between groups */
         .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-            gap: 12px;
+            column-width: 190px;
+            column-gap: 12px;
             padding: 0 6px 8px;
         }
         .group {
             display: grid;
             gap: 3px;
-            align-content: start;
+            break-inside: avoid;
+            margin-bottom: 12px;
         }
         .card {
             display: flex;
