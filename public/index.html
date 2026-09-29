@@ -161,6 +161,16 @@
         .qty { flex: 0 0 auto; font-size: 0.7rem; font-weight: 700; }
         .collected .qty { color: #2e7d32; }
         .doubles .qty { color: #f57f17; }
+        .minus {
+            flex: 0 0 auto;
+            width: 22px;
+            height: 22px;
+            padding: 0;
+            line-height: 1;
+            font-size: 0.9rem;
+            border-radius: 50%;
+            color: var(--muted);
+        }
         .trade {
             flex: 0 0 auto;
             font-size: 0.7rem;
@@ -223,7 +233,7 @@
             <button data-filter="all" class="active">All</button>
             <button data-filter="missing">Missing</button>
             <button data-filter="doubles">My Doubles</button>
-            <button data-filter="trade" title="Cards you're missing that other collectors have doubles of">For Trade</button>
+            <button data-filter="trade" title="Your doubles, plus cards you're missing that other collectors have doubles of">For Trade</button>
         </div>
         <span class="overall" id="overall"></span>
     </div>
@@ -354,7 +364,7 @@
             case 'missing': return card.quantity == 0;
             case 'doubles': return card.quantity >= 2;
             case 'trade': return isOwn()
-                ? card.quantity == 0 && card.doubles_by.length > 0
+                ? card.quantity >= 2 || (card.quantity == 0 && card.doubles_by.length > 0)
                 : card.quantity >= 2 && (!state.userId || card.my_quantity == 0);
             default: return true;
         }
@@ -405,7 +415,7 @@
 
     function renderCard(card) {
         const cls = card.quantity >= 2 ? 'doubles' : card.quantity == 1 ? 'collected' : '';
-        const qty = card.quantity >= 2 ? '2x' : card.quantity == 1 ? '✓' : '';
+        const qty = card.quantity >= 2 ? `${card.quantity}x` : card.quantity == 1 ? '✓' : '';
         const traders = card.doubles_by;
         const title = [card.player_name, card.last_checked ? `Checked ${card.last_checked}` : '',
             traders.length ? `Doubles: ${traders.join(', ')}` : ''].filter(Boolean).join('\n');
@@ -415,14 +425,16 @@
             ${isOwn() && traders.length ? `<span class="trade">⇄${traders.length}</span>` : ''}
             ${!isOwn() && state.userId && card.quantity >= 2 && card.my_quantity == 0 ? '<span class="need">NEED</span>' : ''}
             <span class="qty">${qty}</span>
+            ${isOwn() && card.quantity > 0 ? '<button class="minus" aria-label="Remove one">−</button>' : ''}
         </div>`;
-        if (state.filter === 'trade' && isOwn()) {
+        if (state.filter === 'trade' && isOwn() && card.quantity == 0) {
             html += `<div class="trade-names">from ${traders.map(esc).join(', ')}</div>`;
         }
         return html;
     }
 
-    async function toggleCard(cardId) {
+    // Tapping a card adds a copy; the − button removes one
+    async function adjustCard(cardId, delta) {
         if (!state.userId) {
             openSignIn();
             return;
@@ -433,7 +445,7 @@
         }
         let data;
         try {
-            data = await api('toggle_card', {}, { card_id: cardId });
+            data = await api('adjust_card', {}, { card_id: cardId, delta });
         } catch (err) {
             toast(err.message);
             return;
@@ -446,7 +458,7 @@
 
     document.getElementById('main').addEventListener('click', e => {
         const tile = e.target.closest('.card');
-        if (tile) toggleCard(Number(tile.dataset.id));
+        if (tile) adjustCard(Number(tile.dataset.id), e.target.closest('.minus') ? -1 : 1);
     });
     document.getElementById('main').addEventListener('toggle', e => {
         const set = e.target.dataset.set;

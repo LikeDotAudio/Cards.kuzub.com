@@ -287,7 +287,7 @@ if ($action === 'get_cards') {
             mine.last_checked,
             COALESCE(viewer.quantity, 0) AS my_quantity,
             (
-                SELECT GROUP_CONCAT(u.collector_name ORDER BY u.collector_name SEPARATOR '\n')
+                SELECT GROUP_CONCAT(CONCAT(u.collector_name, IF(d.quantity > 2, CONCAT(' ×', d.quantity - 1), '')) ORDER BY u.collector_name SEPARATOR '\n')
                 FROM collections d
                 JOIN users u ON u.id = d.user_id
                 WHERE d.card_id = c.id AND d.quantity >= 2 AND d.user_id <> ?
@@ -306,8 +306,8 @@ if ($action === 'get_cards') {
     exit;
 }
 
-// TOGGLE QUANTITY: 0 -> 1 -> 2 (Double) -> 0
-if ($action === 'toggle_card' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+// ADJUST QUANTITY by +1 / -1 (0-99); every copy past the first is up for trade
+if ($action === 'adjust_card' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     requireJson();
     $user = currentUser($pdo);
     if (!$user) {
@@ -315,22 +315,20 @@ if ($action === 'toggle_card' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $userId = (int) $user['id'];
     $cardId = (int) ($input['card_id'] ?? 0);
+    $delta = (int) ($input['delta'] ?? 0);
 
     if (!$cardId) {
         fail('Invalid Card ID');
     }
+    if ($delta !== 1 && $delta !== -1) {
+        fail('Invalid change');
+    }
 
     $stmt = $pdo->prepare("SELECT quantity FROM collections WHERE user_id = ? AND card_id = ?");
     $stmt->execute([$userId, $cardId]);
-    $current = $stmt->fetchColumn();
+    $current = (int) $stmt->fetchColumn();
 
-    if ($current === false || $current == 0) {
-        $newQty = 1;
-    } elseif ($current == 1) {
-        $newQty = 2; // Marked as duplicate/double
-    } else {
-        $newQty = 0; // Cleared / Removed
-    }
+    $newQty = max(0, min(99, $current + $delta));
     $dateChecked = $newQty > 0 ? date('Y-m-d H:i:s') : null;
 
     $stmt = $pdo->prepare("
