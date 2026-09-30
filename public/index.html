@@ -1080,76 +1080,36 @@
             </div>
         </div>
 
-        <div class="cheat-callout">
-            🔥 <strong>Team Discount Code:</strong> Registration is $1.00/account, <em>unless</em> you have a team discount code! Enter code <span class="cheat-badge">HAWK</span> for your team to unlock 100% free entry. Teammates see each other's cards and group progress!
-        </div>
-
-        <div class="gate-tabs">
-            <button type="button" class="gate-tab active" id="tabSignIn">Sign In</button>
-            <button type="button" class="gate-tab" id="tabRegister">Register New Account</button>
-        </div>
-
-        <!-- TAB 1: SIGN IN (Existing Collectors) -->
-        <form class="gate-form" id="gateSignInForm">
+        <form class="gate-form" id="gateForm">
+            <!-- Selector to pick an existing collector (e.g. Bronzo) or create a new one -->
             <label>Select Collector
                 <select id="gateCollectorSelect">
                     <option value="">— Select an existing collector —</option>
+                    <option value="new">+ Create New Collector</option>
                 </select>
             </label>
 
-            <label>Password (your initials or cheat code HAWK)
-                <input name="password" id="gatePassword" type="password" maxlength="5" required placeholder="Enter initials or HAWK" autocomplete="current-password">
-            </label>
-
-            <div class="error" id="gateSignInError"></div>
-
-            <button type="submit" class="cta" id="gateSignInBtn">Enter Checklist →</button>
-            <div class="gate-toggle-link">
-                New collector? <a id="linkToRegister">Register with team discount or $1 fee →</a>
-            </div>
-        </form>
-
-        <!-- TAB 2: REGISTER NEW COLLECTOR -->
-        <form class="gate-form" id="gateRegisterForm" hidden>
-            <label>Collector Name (shown to other traders)
-                <input name="collector_name" id="gateRegCollectorName" maxlength="50" minlength="2" required placeholder="e.g. Anthony" autocomplete="username">
-            </label>
-
-            <label>Ask to Join a Team (Optional)
-                <select id="gateRegTeamSelect">
-                    <option value="">— No Team (Individual Collector) —</option>
-                </select>
-            </label>
-
-            <div id="gateRegNewTeamRow" hidden>
-                <label>New Team Name
-                    <input id="gateRegNewTeamName" maxlength="50" placeholder="e.g. Blackhawks">
+            <!-- New Collector Name input (visible when + Create New Collector is chosen) -->
+            <div id="gateNewCollectorRow" hidden>
+                <label>New Collector Name
+                    <input name="collector_name" id="gateCollectorName" maxlength="50" minlength="2" placeholder="e.g. Anthony" autocomplete="username">
                 </label>
             </div>
 
-            <label>Password / Initials (1-5 letters)
-                <input name="password" id="gateRegPassword" type="password" maxlength="5" required placeholder="e.g. your initials" autocomplete="new-password">
+            <label>Team Name (e.g. Hawks, Flames — optional)
+                <input name="team_name" id="gateTeamName" maxlength="50" placeholder="e.g. Hawks" autocomplete="organization">
             </label>
 
-            <!-- Pricing & Cheat Code Box -->
-            <div class="pricing-box">
-                <div class="pricing-header">
-                    <span>Account Access Fee</span>
-                    <span class="pricing-amount is-free" id="gateRegPricingAmount">FREE ($0.00)</span>
-                </div>
-                <label style="margin: 0; font-size: 0.78rem;">Discount / Cheat Code (Enter HAWK for Free)
-                    <input id="gateRegDiscountCode" value="HAWK" placeholder="Enter HAWK" style="text-transform: uppercase;">
-                </label>
-                <div class="discount-status-pill free" id="gateRegDiscountPill">
-                    <span>🎉</span> <span id="gateRegDiscountText">Cheat code HAWK applied — 100% Free Team Access!</span>
-                </div>
-            </div>
+            <label>Password (your initials or team code)
+                <input name="password" id="gatePassword" type="password" maxlength="5" required placeholder="••••" autocomplete="current-password">
+            </label>
 
-            <div class="error" id="gateRegError"></div>
+            <div class="error" id="gateError"></div>
 
-            <button type="submit" class="cta" id="gateRegSubmitBtn">Register Account (FREE with HAWK) →</button>
-            <div class="gate-toggle-link">
-                Already registered? <a id="linkToSignIn">Sign in to existing account →</a>
+            <button type="submit" class="cta" id="gateSubmitBtn">Enter Checklist →</button>
+            <div class="gate-footer-hint">
+                Have an existing account? Select your name and enter your password or initials.<br>
+                New here? Select <strong>+ Create New Collector</strong> to register!
             </div>
         </form>
     </div>
@@ -1171,18 +1131,19 @@
             <div>
                 <div class="menu-section-title">Hockey</div>
                 <nav class="menu-nav">
-                    <div class="menu-item active">
+                    <div class="menu-item active" id="menuSeries2026" data-series="2026-27">
                         <div class="menu-item-row">
                             <span class="menu-series-name">2026-27 UD Tim Hortons</span>
                             <span class="menu-badge" id="menuSeriesBadge">$1 / acct</span>
                         </div>
-                        <div class="menu-subtext">Cheat Code: HAWK (Free)</div>
+                        <div class="menu-subtext">Current Season Checklist</div>
                     </div>
-                    <div class="menu-item disabled" title="Past series archives coming soon">
+                    <div class="menu-item" id="menuSeries2025" data-series="2025-26">
                         <div class="menu-item-row">
                             <span class="menu-series-name">2025-26 Tim Hortons</span>
-                            <span class="menu-badge muted">Archive</span>
+                            <span class="menu-badge">Archive</span>
                         </div>
+                        <div class="menu-subtext">Bronzo's Collection (234 cards)</div>
                     </div>
                 </nav>
             </div>
@@ -1224,8 +1185,8 @@
             <div class="bar">
                 <button class="mobile-menu-btn" id="openSidebarBtn" aria-label="Open menu">☰</button>
                 <h1>
-                    <span>2026-27 UD Tim Hortons</span>
-                    <span class="series-tag">$1 / account</span>
+                    <span id="topbarSeriesTitle">2026-27 UD Tim Hortons</span>
+                    <span class="series-tag" id="topbarSeriesTag">$1 / account</span>
                 </h1>
 
                 <button type="button" id="newCollectorTopbarBtn" class="primary">+ Collector</button>
@@ -1413,6 +1374,7 @@
 
 <script>
     const state = {
+        series: '2026-27',  // active series: '2026-27' or '2025-26'
         users: [],          // all available collectors (or teammates if user is on team)
         teams: [],          // all teams from teams table
         currentUser: null,  // { id, collector_name, team_name, team_id }
@@ -1490,6 +1452,7 @@
 
     function populateGateCollectorSelect() {
         const select = document.getElementById('gateCollectorSelect');
+        if (!select) return;
         let html = '<option value="">— Select an existing collector —</option>';
 
         if (state.users && state.users.length > 0) {
@@ -1498,11 +1461,18 @@
                 html += `<option value="${u.id}">${esc(u.collector_name)}${teamLabel}</option>`;
             }
         }
+        html += '<option value="new">+ Create New Collector</option>';
         select.innerHTML = html;
 
-        // Default to selecting the first collector if available
+        // Default to selecting Bronzo if present, or first collector
         if (state.users && state.users.length > 0) {
-            select.value = String(state.users[0].id);
+            const bronzo = state.users.find(u => u.collector_name.toLowerCase() === 'bronzo');
+            const targetUser = bronzo || state.users[0];
+            select.value = String(targetUser.id);
+            const teamInput = document.getElementById('gateTeamName');
+            if (teamInput && targetUser.team_name) {
+                teamInput.value = targetUser.team_name;
+            }
         }
     }
 
@@ -1522,7 +1492,6 @@
     }
 
     function populateTeamDropdowns() {
-        populateTeamDropdown(document.getElementById('gateRegTeamSelect'));
         populateTeamDropdown(document.getElementById('newCollectorTeamSelect'));
         populateTeamDropdown(document.getElementById('teamDialogSelect'), state.currentUser?.team_name || '');
     }
@@ -1544,11 +1513,6 @@
         });
     }
 
-    setupTeamSelectToggle(
-        document.getElementById('gateRegTeamSelect'),
-        document.getElementById('gateRegNewTeamRow'),
-        document.getElementById('gateRegNewTeamName')
-    );
     setupTeamSelectToggle(
         document.getElementById('newCollectorTeamSelect'),
         document.getElementById('newCollectorNewTeamRow'),
@@ -1599,14 +1563,6 @@
     }
 
     setupDiscountWatcher(
-        document.getElementById('gateRegDiscountCode'),
-        document.getElementById('gateRegPricingAmount'),
-        document.getElementById('gateRegDiscountPill'),
-        document.getElementById('gateRegDiscountText'),
-        document.getElementById('gateRegSubmitBtn'),
-        'Register Account'
-    );
-    setupDiscountWatcher(
         document.getElementById('newCollectorDiscountCode'),
         document.getElementById('newCollectorPricingAmount'),
         document.getElementById('newCollectorDiscountPill'),
@@ -1615,32 +1571,36 @@
         'Register'
     );
 
-    // Gate tab switching (Sign In vs Register New Account)
-    const tabSignIn = document.getElementById('tabSignIn');
-    const tabRegister = document.getElementById('tabRegister');
-    const formSignIn = document.getElementById('gateSignInForm');
-    const formRegister = document.getElementById('gateRegisterForm');
+    // Gate Collector dropdown change handler (toggles "+ Create New Collector" input)
+    const gateCollectorEl = document.getElementById('gateCollectorSelect');
+    if (gateCollectorEl) {
+        gateCollectorEl.addEventListener('change', () => {
+            const val = gateCollectorEl.value;
+            const newRow = document.getElementById('gateNewCollectorRow');
+            const nameInput = document.getElementById('gateCollectorName');
+            const teamInput = document.getElementById('gateTeamName');
+            const submitBtn = document.getElementById('gateSubmitBtn');
 
-    function switchGateTab(tab) {
-        if (tab === 'register') {
-            tabSignIn.classList.remove('active');
-            tabRegister.classList.add('active');
-            formSignIn.hidden = true;
-            formRegister.hidden = false;
-            document.getElementById('gateRegCollectorName').focus();
-        } else {
-            tabSignIn.classList.add('active');
-            tabRegister.classList.remove('active');
-            formSignIn.hidden = false;
-            formRegister.hidden = true;
-            document.getElementById('gatePassword').focus();
-        }
+            if (val === 'new') {
+                newRow.hidden = false;
+                nameInput.required = true;
+                nameInput.value = '';
+                teamInput.value = '';
+                nameInput.focus();
+                submitBtn.textContent = 'Register & Enter Checklist →';
+            } else {
+                newRow.hidden = true;
+                nameInput.required = false;
+                submitBtn.textContent = 'Enter Checklist →';
+                if (val) {
+                    const selUser = state.users.find(u => u.id === Number(val));
+                    teamInput.value = selUser?.team_name || '';
+                } else {
+                    teamInput.value = '';
+                }
+            }
+        });
     }
-
-    tabSignIn.addEventListener('click', () => switchGateTab('signin'));
-    tabRegister.addEventListener('click', () => switchGateTab('register'));
-    document.getElementById('linkToRegister').addEventListener('click', () => switchGateTab('register'));
-    document.getElementById('linkToSignIn').addEventListener('click', () => switchGateTab('signin'));
 
     function showLoginGate() {
         document.getElementById('loginGate').hidden = false;
@@ -1696,6 +1656,16 @@
             pill.hidden = true;
             signInBtn.hidden = false;
         }
+
+        const titleEl = document.getElementById('topbarSeriesTitle');
+        const tagEl = document.getElementById('topbarSeriesTag');
+        if (state.series === '2025-26') {
+            if (titleEl) titleEl.textContent = '2025-26 Tim Hortons';
+            if (tagEl) tagEl.textContent = 'Archive • Bronzo Collection';
+        } else {
+            if (titleEl) titleEl.textContent = '2026-27 UD Tim Hortons';
+            if (tagEl) tagEl.textContent = me?.team_name ? 'HAWK Free' : '$1 / account';
+        }
     }
 
     function renderSidebarUser() {
@@ -1712,7 +1682,7 @@
         }
 
         try {
-            const data = await api('get_team_summary', { team_name: me.team_name });
+            const data = await api('get_team_summary', { team_name: me.team_name, series: state.series || '2026-27' });
             state.teamSummary = data;
             if (!data) {
                 teamHub.hidden = true;
@@ -1793,7 +1763,7 @@
     }
 
     async function loadCards() {
-        const params = {};
+        const params = { series: state.series || '2026-27' };
         if (state.viewId === 'team') {
             params.user_id = 'team';
         } else if (state.viewId) {
@@ -1978,75 +1948,62 @@
         loadTeamSummary();
     }
 
-    // SIGN IN FORM SUBMISSION (Existing collectors)
-    document.getElementById('gateSignInForm').addEventListener('submit', async e => {
+    // GATE FORM SUBMISSION (Unified Sign In & Registration)
+    document.getElementById('gateForm').addEventListener('submit', async e => {
         e.preventDefault();
         const select = document.getElementById('gateCollectorSelect');
-        const userId = Number(select.value);
+        const isNew = select.value === 'new';
         const password = document.getElementById('gatePassword').value.trim();
-        const errorEl = document.getElementById('gateSignInError');
+        const teamName = document.getElementById('gateTeamName').value.trim();
+        const errorEl = document.getElementById('gateError');
         errorEl.textContent = '';
 
-        if (!userId) {
-            errorEl.textContent = 'Please select your collector name';
+        if (!select.value) {
+            errorEl.textContent = 'Please select a collector or choose + Create New Collector';
             return;
         }
 
         try {
-            const res = await api('login', {}, { user_id: userId, password });
-            state.currentUser = res.user;
-            state.userId = res.user.id;
-            state.viewId = res.user.id;
+            if (isNew) {
+                const name = document.getElementById('gateCollectorName').value.trim();
+                if (!name) {
+                    errorEl.textContent = 'Please enter your collector name';
+                    return;
+                }
+                const isFreeCheat = password.toUpperCase() === 'HAWK';
+                const res = await api('create_user', {}, {
+                    collector_name: name,
+                    team_name: teamName,
+                    password: password,
+                    discount_code: password,
+                    paid: !isFreeCheat
+                });
+                state.currentUser = res.user || res;
+                state.userId = state.currentUser.id;
+                state.viewId = state.currentUser.id;
+            } else {
+                const userId = Number(select.value);
+                const res = await api('login', {}, {
+                    user_id: userId,
+                    password: password,
+                    team_name: teamName
+                });
+                state.currentUser = res.user;
+                state.userId = res.user.id;
+                state.viewId = res.user.id;
+            }
+
             const [usersData, teamsData] = await Promise.all([
                 api('get_users').catch(() => []),
                 api('get_teams').catch(() => [])
             ]);
             state.users = usersData;
             state.teams = teamsData;
+            populateGateCollectorSelect();
             populateTeamDropdowns();
             showAppUI();
             await Promise.all([loadTeamSummary(), loadCards()]);
-            toast(password.toUpperCase() === 'HAWK' ? 'Welcome! Team cheat code activated.' : `Signed in as ${res.user.collector_name}.`);
-        } catch (err) {
-            errorEl.textContent = err.message;
-        }
-    });
-
-    // REGISTER FORM SUBMISSION (New account registration)
-    document.getElementById('gateRegisterForm').addEventListener('submit', async e => {
-        e.preventDefault();
-        const name = document.getElementById('gateRegCollectorName').value.trim();
-        const teamSelect = document.getElementById('gateRegTeamSelect').value;
-        const newTeamName = document.getElementById('gateRegNewTeamName').value.trim();
-        const password = document.getElementById('gateRegPassword').value.trim();
-        const discountCode = document.getElementById('gateRegDiscountCode').value.trim();
-        const errorEl = document.getElementById('gateRegError');
-        errorEl.textContent = '';
-
-        const finalTeam = teamSelect === '__new__' ? newTeamName : teamSelect;
-        const isFreeCheat = discountCode.toUpperCase() === 'HAWK' || password.toUpperCase() === 'HAWK';
-
-        try {
-            const res = await api('create_user', {}, {
-                collector_name: name,
-                team_name: finalTeam,
-                password,
-                discount_code: discountCode,
-                paid: !isFreeCheat // $1 simulated checkout
-            });
-            state.currentUser = res.user || res;
-            state.userId = state.currentUser.id;
-            state.viewId = state.currentUser.id;
-            const [usersData, teamsData] = await Promise.all([
-                api('get_users').catch(() => []),
-                api('get_teams').catch(() => [])
-            ]);
-            state.users = usersData;
-            state.teams = teamsData;
-            populateTeamDropdowns();
-            showAppUI();
-            await Promise.all([loadTeamSummary(), loadCards()]);
-            toast(isFreeCheat ? `Welcome ${name}! Team cheat code HAWK applied (Free entry).` : `Account registered for ${name}! ($1.00 fee processed)`);
+            toast(password.toUpperCase() === 'HAWK' ? 'Welcome! Team cheat code activated.' : `Signed in as ${state.currentUser.collector_name}.`);
         } catch (err) {
             errorEl.textContent = err.message;
         }
@@ -2194,14 +2151,33 @@
         state.userId = null;
         state.viewId = null;
         state.teamSummary = null;
-        document.getElementById('gateSignInForm').reset();
-        document.getElementById('gateRegisterForm').reset();
-        document.getElementById('gateSignInError').textContent = '';
-        document.getElementById('gateRegError').textContent = '';
-        switchGateTab('signin');
+        const gateForm = document.getElementById('gateForm');
+        if (gateForm) gateForm.reset();
+        const newRow = document.getElementById('gateNewCollectorRow');
+        if (newRow) newRow.hidden = true;
+        const gateError = document.getElementById('gateError');
+        if (gateError) gateError.textContent = '';
         checkAuthAndInit();
         closeSidebar();
     }
+
+    // Series navigation switcher (2026-27 vs 2025-26 Archive)
+    function switchSeries(newSeries) {
+        if (state.series === newSeries) return;
+        state.series = newSeries;
+        document.querySelectorAll('.menu-nav .menu-item[data-series]').forEach(el => {
+            el.classList.toggle('active', el.dataset.series === newSeries);
+        });
+        renderAccountInfo();
+        loadCards();
+        closeSidebar();
+    }
+
+    document.querySelectorAll('.menu-nav .menu-item[data-series]').forEach(item => {
+        item.addEventListener('click', () => {
+            switchSeries(item.dataset.series);
+        });
+    });
 
     document.getElementById('signOutBtn').addEventListener('click', handleSignOut);
     document.getElementById('topbarSignOutBtn').addEventListener('click', handleSignOut);

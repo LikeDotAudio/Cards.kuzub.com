@@ -59,6 +59,12 @@ if (!$hasSortOrder) {
     $pdo->exec("ALTER TABLE cards ADD COLUMN sort_order INT NOT NULL DEFAULT 0");
 }
 
+$hasSeries = $pdo->query("SHOW COLUMNS FROM cards LIKE 'series'")->fetch();
+if (!$hasSeries) {
+    $pdo->exec("ALTER TABLE cards ADD COLUMN series VARCHAR(20) NOT NULL DEFAULT '2026-27'");
+    $pdo->exec("UPDATE cards SET series = '2026-27' WHERE series = ''");
+}
+
 $hasTeamName = $pdo->query("SHOW COLUMNS FROM users LIKE 'team_name'")->fetch();
 if (!$hasTeamName) {
     $pdo->exec("ALTER TABLE users ADD COLUMN team_name VARCHAR(50) NOT NULL DEFAULT ''");
@@ -226,7 +232,7 @@ function requireInitials($pdo, $ip, $userId, $password) {
     $stored = $stmt->fetchColumn();
     if ($stored === false || !hash_equals($stored, $cleanPass)) {
         recordEvent($pdo, 'bad_initials', $ip, $userId);
-        fail('Wrong collector or password. (Hint: password is your initials, or cheat code HAWK)', 403);
+        fail('Wrong collector or password. Access denied.', 403);
     }
     return true;
 }
@@ -337,7 +343,7 @@ if ($action === 'create_user' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     // Pricing / Discount: $1 fee OR cheat code HAWK (free team entry)
     $isFreeCheatCode = ($discountCode === 'HAWK' || $initials === 'HAWK' || (!empty($teamInfo['cheat_code']) && $discountCode === strtoupper($teamInfo['cheat_code'])));
     if (!$isFreeCheatCode && !$paid) {
-        fail('Sign-up requires $1.00 fee or cheat code HAWK for free team entry.');
+        fail('Sign-up requires $1.00 fee or valid team cheat code.');
     }
 
     try {
@@ -394,7 +400,7 @@ if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             // New collector auto-registration through login gate
             $isFreeCheatCode = ($discountCode === 'HAWK' || $cleanPass === 'HAWK' || (!empty($teamInfo['cheat_code']) && $discountCode === strtoupper($teamInfo['cheat_code'])));
             if (!$isFreeCheatCode && !$paid) {
-                fail('Registration requires $1.00 fee or cheat code HAWK for free team access.');
+                fail('Registration requires $1.00 fee or valid team cheat code.');
             }
 
             if ($isFreeCheatCode || preg_match('/^[A-Z]{1,5}$/', $cleanPass)) {
@@ -415,7 +421,7 @@ if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
                     throw $e;
                 }
             } else {
-                fail('Account not found. Select an existing collector or enter initials/HAWK to create a free account.');
+                fail('Account not found. Select an existing collector or create an account.');
             }
         }
     }
@@ -463,6 +469,9 @@ if ($action === 'set_team' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 if ($action === 'get_team_summary') {
     $me = currentUser($pdo);
     $teamName = trim($_GET['team_name'] ?? ($me['team_name'] ?? ''));
+    $series = trim($_GET['series'] ?? '2026-27');
+    if ($series !== '2025-26' && $series !== '2026-27') $series = '2026-27';
+
     if ($teamName === '') {
         echo json_encode(null);
         exit;
@@ -471,16 +480,30 @@ if ($action === 'get_team_summary') {
     $stmt->execute([$teamName]);
     $members = $stmt->fetchAll();
 
-    $totalCards = (int) $pdo->query("SELECT COUNT(*) FROM cards")->fetchColumn();
+    $stmtTotal = $pdo->prepare("SELECT COUNT(*) FROM cards WHERE series = ?");
+    $stmtTotal->execute([$series]);
+    $totalCards = (int) $stmtTotal->fetchColumn();
     $collected = 0;
 
     if (!empty($members)) {
         $memberIds = array_column($members, 'id');
         $inList = implode(',', array_map('intval', $memberIds));
-        $collected = (int) $pdo->query("SELECT COUNT(DISTINCT card_id) FROM collections WHERE user_id IN ($inList) AND quantity > 0")->fetchColumn();
+        $stmtColl = $pdo->prepare("
+            SELECT COUNT(DISTINCT c.card_id) FROM collections c
+            JOIN cards cd ON cd.id = c.card_id
+            WHERE c.user_id IN ($inList) AND c.quantity > 0 AND cd.series = ?
+        ");
+        $stmtColl->execute([$series]);
+        $collected = (int) $stmtColl->fetchColumn();
 
-        $countsStmt = $pdo->query("SELECT user_id, COUNT(*) as cnt FROM collections WHERE user_id IN ($inList) AND quantity > 0 GROUP BY user_id");
-        $counts = $countsStmt->fetchAll(PDO::FETCH_KEY_PAIR);
+        $stmtCounts = $pdo->prepare("
+            SELECT c.user_id, COUNT(*) as cnt FROM collections c
+            JOIN cards cd ON cd.id = c.card_id
+            WHERE c.user_id IN ($inList) AND c.quantity > 0 AND cd.series = ?
+            GROUP BY c.user_id
+        ");
+        $stmtCounts->execute([$series]);
+        $counts = $stmtCounts->fetchAll(PDO::FETCH_KEY_PAIR);
         foreach ($members as &$m) {
             $m['collected_count'] = (int) ($counts[$m['id']] ?? 0);
         }
@@ -488,6 +511,7 @@ if ($action === 'get_team_summary') {
 
     echo json_encode([
         'team_name' => $teamName,
+        'series' => $series,
         'members' => $members,
         'collected' => $collected,
         'total' => $totalCards,
@@ -517,11 +541,31 @@ if ($action === 'logout' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 // GET CARDS for a collector, or for an entire team (combined).
 // A team can ONLY see their teammates.
 if ($action === 'get_cards') {
-    $checklist = require __DIR__ . '/checklist.php';
-    $count = $pdo->query("SELECT COUNT(*) FROM cards")->fetchColumn();
-    $unsorted = $pdo->query("SELECT COUNT(*) FROM cards WHERE sort_order = 0")->fetchColumn();
-    if ($count != count($checklist) || $unsorted > 0) {
-        syncCards($pdo, $checklist);
+    $series = trim($_GET['series'] ?? '2026-27');
+    if ($series !== '2025-26' && $series !== '2026-27') {
+        $series = '2026-27';
+    }
+
+    if ($series === '2025-26') {
+        $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM cards WHERE series = ?");
+        $stmtCount->execute(['2025-26']);
+        $count2025 = (int) $stmtCount->fetchColumn();
+        if ($count2025 < 234) {
+            $file2025 = __DIR__ . '/checklist_2025_26.php';
+            if (file_exists($file2025)) {
+                $cl2025 = require $file2025;
+                syncSeriesCards($pdo, $cl2025, '2025-26');
+            }
+        }
+        seedBronzo2025Collection($pdo);
+    } else {
+        $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM cards WHERE series = ?");
+        $stmtCount->execute(['2026-27']);
+        $count2026 = (int) $stmtCount->fetchColumn();
+        $cl2026 = require __DIR__ . '/checklist.php';
+        if ($count2026 != count($cl2026)) {
+            syncSeriesCards($pdo, $cl2026, '2026-27');
+        }
     }
 
     $meUser = currentUser($pdo);
@@ -541,7 +585,9 @@ if ($action === 'get_cards') {
         $memberIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
         if (empty($memberIds)) {
-            $cards = $pdo->query("SELECT id, set_name, card_number, player_name, 0 AS quantity, NULL AS last_checked, 0 AS my_quantity, '' AS doubles_by, '' AS holders FROM cards ORDER BY sort_order, id ASC")->fetchAll();
+            $stmtCards = $pdo->prepare("SELECT id, set_name, card_number, player_name, 0 AS quantity, NULL AS last_checked, 0 AS my_quantity, '' AS doubles_by, '' AS holders FROM cards WHERE series = ? ORDER BY sort_order, id ASC");
+            $stmtCards->execute([$series]);
+            $cards = $stmtCards->fetchAll();
             foreach ($cards as &$card) {
                 $card['doubles_by'] = [];
                 $card['holders'] = [];
@@ -574,10 +620,11 @@ if ($action === 'get_cards') {
             FROM cards c
             LEFT JOIN collections col ON col.card_id = c.id AND col.user_id IN ($inList)
             LEFT JOIN collections viewer ON viewer.card_id = c.id AND viewer.user_id = ?
+            WHERE c.series = ?
             GROUP BY c.id, c.set_name, c.card_number, c.player_name, c.sort_order
             ORDER BY c.sort_order, c.id ASC
         ");
-        $stmt->execute([$teamName, $teamName, $me]);
+        $stmt->execute([$teamName, $teamName, $me, $series]);
         $cards = $stmt->fetchAll();
         foreach ($cards as &$card) {
             $card['doubles_by'] = empty($card['doubles_by']) ? [] : explode("\n", $card['doubles_by']);
@@ -632,9 +679,10 @@ if ($action === 'get_cards') {
         FROM cards c
         LEFT JOIN collections mine ON mine.card_id = c.id AND mine.user_id = ?
         LEFT JOIN collections viewer ON viewer.card_id = c.id AND viewer.user_id = ?
+        WHERE c.series = ?
         ORDER BY c.sort_order, c.id ASC
     ");
-    $stmt->execute([$userId, $myTeam, $myTeam, $userId, $myTeam, $myTeam, $userId, $me]);
+    $stmt->execute([$userId, $myTeam, $myTeam, $userId, $myTeam, $myTeam, $userId, $me, $series]);
     $cards = $stmt->fetchAll();
     foreach ($cards as &$card) {
         $card['doubles_by'] = empty($card['doubles_by']) ? [] : explode("\n", $card['doubles_by']);
@@ -644,9 +692,6 @@ if ($action === 'get_cards') {
     echo json_encode($cards);
     exit;
 }
-
-
-
 
 // ADJUST QUANTITY by +1 / -1 (0-99); every copy past the first is up for trade
 if ($action === 'adjust_card' && $_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -686,30 +731,69 @@ if ($action === 'adjust_card' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
 fail('Unknown action');
 
-// SYNC CHECKLIST: insert missing cards, fix names and ordering of existing ones.
-// Numbered cards match on set + number; unnumbered ones match on set + player.
-// Existing rows keep their ids, so collection status is preserved.
-function syncCards($pdo, $checklist) {
-    $findNumbered = $pdo->prepare("SELECT id FROM cards WHERE set_name = ? AND card_number = ?");
-    $findUnnumbered = $pdo->prepare("SELECT id FROM cards WHERE set_name = ? AND card_number = '' AND player_name = ?");
+// SYNC CHECKLIST for specific series
+function syncSeriesCards($pdo, $checklist, $series = '2026-27') {
+    $findNumbered = $pdo->prepare("SELECT id FROM cards WHERE series = ? AND set_name = ? AND card_number = ?");
+    $findUnnumbered = $pdo->prepare("SELECT id FROM cards WHERE series = ? AND set_name = ? AND card_number = '' AND player_name = ?");
     $update = $pdo->prepare("UPDATE cards SET player_name = ?, sort_order = ? WHERE id = ?");
-    $insert = $pdo->prepare("INSERT INTO cards (set_name, card_number, player_name, sort_order) VALUES (?, ?, ?, ?)");
+    $insert = $pdo->prepare("INSERT INTO cards (series, set_name, card_number, player_name, sort_order) VALUES (?, ?, ?, ?, ?)");
 
     $pdo->beginTransaction();
-    foreach ($checklist as $i => [$set, $number, $player]) {
+    foreach ($checklist as $i => $row) {
+        $set = $row[0];
+        $number = (string) $row[1];
+        $player = $row[2];
         $order = $i + 1;
         if ($number !== '') {
-            $findNumbered->execute([$set, $number]);
+            $findNumbered->execute([$series, $set, $number]);
             $id = $findNumbered->fetchColumn();
         } else {
-            $findUnnumbered->execute([$set, $player]);
+            $findUnnumbered->execute([$series, $set, $player]);
             $id = $findUnnumbered->fetchColumn();
         }
         if ($id) {
             $update->execute([$player, $order, $id]);
         } else {
-            $insert->execute([$set, $number, $player, $order]);
+            $insert->execute([$series, $set, $number, $player, $order]);
         }
     }
     $pdo->commit();
+}
+
+// Seed Bronzo's collection for 2025-26 from spreadsheet
+function seedBronzo2025Collection($pdo) {
+    $stmtBronzo = $pdo->query("SELECT id FROM users WHERE collector_name = 'Bronzo' LIMIT 1");
+    $bronzoId = $stmtBronzo ? $stmtBronzo->fetchColumn() : null;
+    if (!$bronzoId) {
+        try {
+            $pdo->prepare("INSERT INTO users (initials, collector_name, team_name) VALUES ('EDJK', 'Bronzo', 'Hawks')")->execute();
+            $bronzoId = (int) $pdo->lastInsertId();
+        } catch (\Exception $e) {
+            return;
+        }
+    }
+
+    $has2025 = (int) $pdo->query("
+        SELECT COUNT(*) FROM collections col
+        JOIN cards cd ON cd.id = col.card_id
+        WHERE col.user_id = $bronzoId AND cd.series = '2025-26'
+    ")->fetchColumn();
+
+    if ($has2025 === 0) {
+        $file2025 = __DIR__ . '/checklist_2025_26.php';
+        if (file_exists($file2025)) {
+            $list2025 = require $file2025;
+            $findCard = $pdo->prepare("SELECT id FROM cards WHERE series = '2025-26' AND set_name = ? AND card_number = ?");
+            $insCol = $pdo->prepare("INSERT INTO collections (user_id, card_id, quantity, last_checked) VALUES (?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE quantity = VALUES(quantity)");
+            foreach ($list2025 as [$set, $num, $player, $qty]) {
+                if ($qty > 0) {
+                    $findCard->execute([$set, (string)$num]);
+                    $cid = $findCard->fetchColumn();
+                    if ($cid) {
+                        $insCol->execute([$bronzoId, $cid, $qty]);
+                    }
+                }
+            }
+        }
+    }
 }
