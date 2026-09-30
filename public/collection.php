@@ -1,6 +1,6 @@
 <?php
 if (empty($_COOKIE['cards_session'])) {
-    header('Location: login.php');
+    header('Location: ./');
     exit;
 }
 ?>
@@ -1411,7 +1411,7 @@ if (empty($_COOKIE['cards_session'])) {
         try {
             const me = await api('me').catch(() => null);
             if (!me) {
-                window.location.replace('login.php');
+                window.location.replace('./');
                 return;
             }
             state.currentUser = me;
@@ -1431,7 +1431,7 @@ if (empty($_COOKIE['cards_session'])) {
             await Promise.all([loadTeamSummary(), loadCards()]);
         } catch (err) {
             console.error('Initialization error:', err);
-            window.location.replace('login.php');
+            window.location.replace('./');
         }
     }
 
@@ -1533,7 +1533,7 @@ if (empty($_COOKIE['cards_session'])) {
     );
 
     function showLoginGate() {
-        window.location.href = 'login.php';
+        window.location.href = './';
     }
 
     // Render both top-right header account widget and sidebar info
@@ -2019,7 +2019,8 @@ if (empty($_COOKIE['cards_session'])) {
     async function handleSignOut() {
         await api('logout', {}, {}).catch(() => {});
         localStorage.removeItem('cards_session_token');
-        window.location.href = 'login.php';
+        document.cookie = 'cards_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        window.location.href = './';
     }
 
     // Series navigation switcher (2026-27 vs 2025-26 Archive)
@@ -2042,7 +2043,7 @@ if (empty($_COOKIE['cards_session'])) {
 
     document.getElementById('signOutBtn').addEventListener('click', handleSignOut);
     const topbarSignIn = document.getElementById('topbarSignInBtn');
-    if (topbarSignIn) topbarSignIn.addEventListener('click', () => window.location.href = 'login.php');
+    if (topbarSignIn) topbarSignIn.addEventListener('click', () => window.location.href = './');
 
     // Edit Team modal
     const teamDialog = document.getElementById('teamDialog');
