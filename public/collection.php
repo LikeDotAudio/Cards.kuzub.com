@@ -1161,7 +1161,7 @@ if (empty($_COOKIE['cards_session'])) {
             </div>
             <div class="sidebar-actions">
                 <button type="button" id="editTeamBtn">Edit Team</button>
-                <button type="button" id="signOutBtn" class="primary">Sign out</button>
+                <button type="button" id="signOutBtn" onclick="handleSignOut(event)" class="primary">Sign out</button>
             </div>
         </div>
     </aside>
@@ -1199,7 +1199,7 @@ if (empty($_COOKIE['cards_session'])) {
                             <span class="account-team" id="topbarUserTeam" title="Click to view or edit team">No team</span>
                         </div>
                         <button type="button" class="btn-topbar-edit-team" id="topbarEditTeamBtn" title="Change Team">Team ⚙️</button>
-                        <button type="button" class="btn-topbar-signout" id="topbarSignOutBtn" title="Sign out of this collector account">Sign Out</button>
+                        <button type="button" class="btn-topbar-signout" id="topbarSignOutBtn" onclick="handleSignOut(event)" title="Sign out of this collector account">Sign Out</button>
                     </div>
                     <button type="button" class="btn-topbar-signin" id="topbarSignInBtn" hidden>Sign In / Register</button>
                 </div>
@@ -2016,11 +2016,19 @@ if (empty($_COOKIE['cards_session'])) {
     });
 
     // Sign out handler (used by both top right button and sidebar button)
-    async function handleSignOut() {
-        await api('logout', {}, {}).catch(() => {});
+    async function handleSignOut(e) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        try {
+            await api('logout', {}, {});
+        } catch (err) {
+            console.error('Logout error:', err);
+        }
         localStorage.removeItem('cards_session_token');
         document.cookie = 'cards_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-        window.location.href = './';
+        window.location.replace('./');
     }
 
     // Series navigation switcher (2026-27 vs 2025-26 Archive)
@@ -2041,7 +2049,12 @@ if (empty($_COOKIE['cards_session'])) {
         });
     });
 
-    document.getElementById('signOutBtn').addEventListener('click', handleSignOut);
+    const signOutBtn = document.getElementById('signOutBtn');
+    if (signOutBtn) signOutBtn.addEventListener('click', handleSignOut);
+
+    const topbarSignOutBtn = document.getElementById('topbarSignOutBtn');
+    if (topbarSignOutBtn) topbarSignOutBtn.addEventListener('click', handleSignOut);
+
     const topbarSignIn = document.getElementById('topbarSignInBtn');
     if (topbarSignIn) topbarSignIn.addEventListener('click', () => window.location.href = './');
 
