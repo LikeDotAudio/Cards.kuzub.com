@@ -64,6 +64,42 @@ if (!$hasTeamName) {
     $pdo->exec("ALTER TABLE users ADD COLUMN team_name VARCHAR(50) NOT NULL DEFAULT ''");
 }
 
+// Teams of collectors in its own table
+$pdo->exec("
+    CREATE TABLE IF NOT EXISTS teams (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(100) NOT NULL UNIQUE,
+        cheat_code VARCHAR(50) NOT NULL DEFAULT 'HAWK',
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+");
+
+$hasTeamId = $pdo->query("SHOW COLUMNS FROM users LIKE 'team_id'")->fetch();
+if (!$hasTeamId) {
+    $pdo->exec("ALTER TABLE users ADD COLUMN team_id INT NULL DEFAULT NULL");
+}
+
+// Ensure default team and sync any existing team names into teams table
+$teamCount = (int) $pdo->query("SELECT COUNT(*) FROM teams")->fetchColumn();
+if ($teamCount === 0) {
+    $existingTeams = $pdo->query("SELECT DISTINCT team_name FROM users WHERE team_name != ''")->fetchAll(PDO::FETCH_COLUMN);
+    $ins = $pdo->prepare("INSERT IGNORE INTO teams (name, cheat_code) VALUES (?, 'HAWK')");
+    if (!empty($existingTeams)) {
+        foreach ($existingTeams as $t) {
+            $t = trim($t);
+            if ($t !== '') $ins->execute([$t]);
+        }
+    }
+    $ins->execute(['Hawks']);
+}
+
+$pdo->exec("
+    UPDATE users u
+    JOIN teams t ON t.name = u.team_name
+    SET u.team_id = t.id
+    WHERE u.team_id IS NULL AND u.team_name != ''
+");
+
 // Per-collector collection (replaces the single shared user_collection table)
 $pdo->exec("
     CREATE TABLE IF NOT EXISTS collections (
@@ -159,7 +195,7 @@ function currentUser($pdo) {
         return null;
     }
     $stmt = $pdo->prepare("
-        SELECT u.id, u.collector_name, u.team_name FROM sessions s JOIN users u ON u.id = s.user_id
+        SELECT u.id, u.collector_name, u.team_name, u.team_id FROM sessions s JOIN users u ON u.id = s.user_id
         WHERE s.token_hash = ? AND s.expires_at > NOW()
     ");
     $stmt->execute([hash('sha256', $token)]);
@@ -209,7 +245,7 @@ if ($action === 'backup') {
         fail('Forbidden', 403);
     }
     $tables = [];
-    foreach (['cards', 'users', 'collections', 'user_collection'] as $table) {
+    foreach (['cards', 'users', 'collections', 'user_collection', 'teams'] as $table) {
         $create = $pdo->query("SHOW CREATE TABLE `$table`")->fetch(PDO::FETCH_NUM)[1];
         $rows = $pdo->query("SELECT * FROM `$table`")->fetchAll();
         $tables[$table] = ['create' => $create, 'rows' => $rows];
@@ -223,14 +259,52 @@ if ($action === 'get_users') {
     $me = currentUser($pdo);
     // If signed in AND has a team, scope list to teammates
     if ($me && !empty($me['team_name'])) {
-        $stmt = $pdo->prepare("SELECT id, collector_name, team_name FROM users WHERE team_name = ? ORDER BY collector_name");
+        $stmt = $pdo->prepare("SELECT id, collector_name, team_name, team_id FROM users WHERE team_name = ? ORDER BY collector_name");
         $stmt->execute([$me['team_name']]);
     } else {
         // Not signed in or no team: list all collectors so users can select their account
-        $stmt = $pdo->query("SELECT id, collector_name, team_name FROM users ORDER BY collector_name");
+        $stmt = $pdo->query("SELECT id, collector_name, team_name, team_id FROM users ORDER BY collector_name");
     }
     echo json_encode($stmt->fetchAll());
     exit;
+}
+
+// LIST TEAMS (teams of collectors from its own table)
+if ($action === 'get_teams') {
+    $stmt = $pdo->query("
+        SELECT t.id, t.name, t.cheat_code, COUNT(u.id) AS member_count
+        FROM teams t
+        LEFT JOIN users u ON (u.team_id = t.id OR (u.team_name != '' AND u.team_name = t.name))
+        GROUP BY t.id, t.name, t.cheat_code
+        ORDER BY t.name ASC
+    ");
+    echo json_encode($stmt->fetchAll());
+    exit;
+}
+
+// Helper to resolve or insert team into teams table
+function resolveTeam($pdo, $teamId, $teamName) {
+    $teamName = trim((string) $teamName);
+    $teamId = !empty($teamId) ? (int)$teamId : null;
+
+    if ($teamId) {
+        $stmt = $pdo->prepare("SELECT id, name, cheat_code FROM teams WHERE id = ?");
+        $stmt->execute([$teamId]);
+        $row = $stmt->fetch();
+        if ($row) {
+            return ['id' => (int)$row['id'], 'name' => $row['name'], 'cheat_code' => $row['cheat_code']];
+        }
+    }
+    if ($teamName !== '') {
+        $pdo->prepare("INSERT IGNORE INTO teams (name, cheat_code) VALUES (?, 'HAWK')")->execute([$teamName]);
+        $stmt = $pdo->prepare("SELECT id, name, cheat_code FROM teams WHERE name = ?");
+        $stmt->execute([$teamName]);
+        $row = $stmt->fetch();
+        if ($row) {
+            return ['id' => (int)$row['id'], 'name' => $row['name'], 'cheat_code' => $row['cheat_code']];
+        }
+    }
+    return ['id' => null, 'name' => '', 'cheat_code' => 'HAWK'];
 }
 
 // CREATE COLLECTOR
@@ -239,7 +313,8 @@ if ($action === 'create_user' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $rawPassword = trim($input['password'] ?? '');
     $initials = strtoupper($rawPassword);
     $name = trim($input['collector_name'] ?? '');
-    $team = trim($input['team_name'] ?? '');
+    $discountCode = strtoupper(trim($input['discount_code'] ?? $input['cheat_code'] ?? ''));
+    $paid = !empty($input['paid']) || ($input['payment_mode'] ?? '') === 'paid_dollar';
 
     if (!preg_match('/^[A-Z]{1,5}$/', $initials)) {
         fail('Password must be 1-5 letters (e.g. your initials or cheat code HAWK)');
@@ -247,16 +322,27 @@ if ($action === 'create_user' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if (mb_strlen($name) < 2 || mb_strlen($name) > 50) {
         fail('Collector name must be 2-50 characters');
     }
-    if (mb_strlen($team) > 50) {
-        fail('Team name must be 50 characters or less');
-    }
     if (countEvents($pdo, 'create_user', 'ip', $ip, 60) >= 15) {
         fail('Too many new collectors. Try again later.', 429);
     }
 
+    $teamInfo = resolveTeam($pdo, $input['team_id'] ?? null, $input['team_name'] ?? '');
+    $teamName = $teamInfo['name'];
+    $teamId = $teamInfo['id'];
+
+    if (mb_strlen($teamName) > 50) {
+        fail('Team name must be 50 characters or less');
+    }
+
+    // Pricing / Discount: $1 fee OR cheat code HAWK (free team entry)
+    $isFreeCheatCode = ($discountCode === 'HAWK' || $initials === 'HAWK' || (!empty($teamInfo['cheat_code']) && $discountCode === strtoupper($teamInfo['cheat_code'])));
+    if (!$isFreeCheatCode && !$paid) {
+        fail('Sign-up requires $1.00 fee or cheat code HAWK for free team entry.');
+    }
+
     try {
-        $stmt = $pdo->prepare("INSERT INTO users (initials, collector_name, team_name) VALUES (?, ?, ?)");
-        $stmt->execute([$initials, $name, $team]);
+        $stmt = $pdo->prepare("INSERT INTO users (initials, collector_name, team_name, team_id) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$initials, $name, $teamName, $teamId]);
     } catch (\PDOException $e) {
         if ($e->getCode() === '23000') {
             fail('That collector name is taken');
@@ -274,10 +360,12 @@ if ($action === 'create_user' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         'user' => [
             'id' => $userId,
             'collector_name' => $name,
-            'team_name' => $team,
+            'team_name' => $teamName,
+            'team_id' => $teamId,
         ],
         'collector_name' => $name,
-        'team_name' => $team
+        'team_name' => $teamName,
+        'team_id' => $teamId
     ]);
     exit;
 }
@@ -287,19 +375,29 @@ if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     requireJson();
     $userId = (int) ($input['user_id'] ?? 0);
     $collectorName = trim($input['collector_name'] ?? '');
-    $teamName = trim($input['team_name'] ?? '');
     $password = trim($input['password'] ?? '');
+    $discountCode = strtoupper(trim($input['discount_code'] ?? $input['cheat_code'] ?? ''));
+    $paid = !empty($input['paid']) || ($input['payment_mode'] ?? '') === 'paid_dollar';
     $cleanPass = strtoupper($password);
 
+    $teamInfo = resolveTeam($pdo, $input['team_id'] ?? null, $input['team_name'] ?? '');
+    $teamName = $teamInfo['name'];
+    $teamId = $teamInfo['id'];
+
     if (!$userId && $collectorName !== '') {
-        $stmt = $pdo->prepare("SELECT id, initials, team_name FROM users WHERE collector_name = ?");
+        $stmt = $pdo->prepare("SELECT id, initials, team_name, team_id FROM users WHERE collector_name = ?");
         $stmt->execute([$collectorName]);
         $row = $stmt->fetch();
         if ($row) {
             $userId = (int) $row['id'];
         } else {
-            // Auto-register if password is HAWK (free entry cheat code) or valid initials
-            if ($cleanPass === 'HAWK' || preg_match('/^[A-Z]{1,5}$/', $cleanPass)) {
+            // New collector auto-registration through login gate
+            $isFreeCheatCode = ($discountCode === 'HAWK' || $cleanPass === 'HAWK' || (!empty($teamInfo['cheat_code']) && $discountCode === strtoupper($teamInfo['cheat_code'])));
+            if (!$isFreeCheatCode && !$paid) {
+                fail('Registration requires $1.00 fee or cheat code HAWK for free team access.');
+            }
+
+            if ($isFreeCheatCode || preg_match('/^[A-Z]{1,5}$/', $cleanPass)) {
                 if (mb_strlen($collectorName) < 2 || mb_strlen($collectorName) > 50) {
                     fail('Collector name must be 2-50 characters');
                 }
@@ -307,8 +405,8 @@ if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
                     fail('Team name must be 50 characters or less');
                 }
                 try {
-                    $stmt = $pdo->prepare("INSERT INTO users (initials, collector_name, team_name) VALUES (?, ?, ?)");
-                    $stmt->execute([$cleanPass, $collectorName, $teamName]);
+                    $stmt = $pdo->prepare("INSERT INTO users (initials, collector_name, team_name, team_id) VALUES (?, ?, ?, ?)");
+                    $stmt->execute([$cleanPass, $collectorName, $teamName, $teamId]);
                     $userId = (int) $pdo->lastInsertId();
                 } catch (\PDOException $e) {
                     if ($e->getCode() === '23000') {
@@ -328,13 +426,13 @@ if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     requireInitials($pdo, $ip, $userId, $password);
 
-    if ($teamName !== '') {
-        $pdo->prepare("UPDATE users SET team_name = ? WHERE id = ?")->execute([$teamName, $userId]);
+    if ($teamName !== '' || $teamId) {
+        $pdo->prepare("UPDATE users SET team_name = ?, team_id = ? WHERE id = ?")->execute([$teamName, $teamId, $userId]);
     }
 
     $token = startSession($pdo, $userId);
 
-    $stmt = $pdo->prepare("SELECT id, collector_name, team_name FROM users WHERE id = ?");
+    $stmt = $pdo->prepare("SELECT id, collector_name, team_name, team_id FROM users WHERE id = ?");
     $stmt->execute([$userId]);
     $user = $stmt->fetch();
 
@@ -349,12 +447,15 @@ if ($action === 'set_team' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$user) {
         fail('Sign in first', 401);
     }
-    $teamName = trim($input['team_name'] ?? '');
+    $teamInfo = resolveTeam($pdo, $input['team_id'] ?? null, $input['team_name'] ?? '');
+    $teamName = $teamInfo['name'];
+    $teamId = $teamInfo['id'];
+
     if (mb_strlen($teamName) > 50) {
         fail('Team name must be 50 characters or less');
     }
-    $pdo->prepare("UPDATE users SET team_name = ? WHERE id = ?")->execute([$teamName, $user['id']]);
-    echo json_encode(['success' => true, 'team_name' => $teamName]);
+    $pdo->prepare("UPDATE users SET team_name = ?, team_id = ? WHERE id = ?")->execute([$teamName, $teamId, $user['id']]);
+    echo json_encode(['success' => true, 'team_name' => $teamName, 'team_id' => $teamId]);
     exit;
 }
 
