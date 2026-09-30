@@ -1,4 +1,5 @@
 Options -Indexes
+DirectoryIndex index.php login.php index.html
 
 # Force HTTPS (except certificate renewal challenges)
 <IfModule mod_rewrite.c>
@@ -12,7 +13,7 @@ Options -Indexes
 <FilesMatch "^\.">
     Require all denied
 </FilesMatch>
-<FilesMatch "^(db_config|checklist)\.php$">
+<FilesMatch "^(db_config|checklist.*)\.php$">
     Require all denied
 </FilesMatch>
 
