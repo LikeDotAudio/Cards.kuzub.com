@@ -964,38 +964,66 @@ if (empty($_COOKIE['cards_session'])) {
         }
         .vu-meter-track {
             height: 18px;
-            background: #111827;
-            border: 1px solid #1f2937;
+            background: #090d16;
+            border: 1px solid #1e293b;
             border-radius: 4px;
             overflow: hidden;
             position: relative;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.7);
         }
+        /* Faint unlit LEDs across the entire fixed track */
+        .vu-meter-track::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to right,
+                rgba(16, 185, 129, 0.08) 0%,
+                rgba(34, 197, 94, 0.08) 65%,
+                rgba(234, 179, 8, 0.08) 75%,
+                rgba(249, 115, 22, 0.08) 90%,
+                rgba(239, 68, 68, 0.12) 96%,
+                rgba(239, 68, 68, 0.12) 100%
+            );
+            z-index: 1;
+        }
+        /* The lit meter gradient: fixed 100% across the track, revealed via clip-path */
         .vu-meter-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100% !important;
             height: 100%;
             background: linear-gradient(
                 to right,
                 #10b981 0%,
+                #10b981 50%,
                 #22c55e 65%,
                 #eab308 75%,
-                #f97316 88%,
-                #ef4444 100%
+                #f59e0b 85%,
+                #f97316 90%,
+                #ef4444 96%,
+                #dc2626 100%
             );
-            transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            box-shadow: 0 0 12px rgba(34, 197, 94, 0.5);
+            clip-path: inset(0 100% 0 0);
+            -webkit-clip-path: inset(0 100% 0 0);
+            transition: clip-path 0.35s cubic-bezier(0.4, 0, 0.2, 1), -webkit-clip-path 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2;
         }
-        .vu-meter-fill::after {
+        /* Discrete LED bar segments dividing the track */
+        .vu-meter-track::after {
             content: "";
             position: absolute;
             inset: 0;
             background: repeating-linear-gradient(
                 90deg,
-                rgba(0, 0, 0, 0.35) 0px,
-                rgba(0, 0, 0, 0.35) 2px,
+                rgba(9, 13, 22, 0.75) 0px,
+                rgba(9, 13, 22, 0.75) 2px,
                 transparent 2px,
                 transparent 8px
             );
+            z-index: 3;
+            pointer-events: none;
         }
         .vu-channel-label {
             font-size: 0.58rem;
@@ -1712,7 +1740,17 @@ if (empty($_COOKIE['cards_session'])) {
         document.getElementById('vuStatDoublesNum').textContent = doublesCards;
 
         const vuBar = document.getElementById('vuMeterFill');
-        vuBar.style.width = `${Math.min(100, pct)}%`;
+        const clampedPct = Math.min(100, Math.max(0, pct));
+        vuBar.style.setProperty('--vu-pct', `${clampedPct}%`);
+        vuBar.style.clipPath = `inset(0 ${100 - clampedPct}% 0 0)`;
+        vuBar.style.webkitClipPath = `inset(0 ${100 - clampedPct}% 0 0)`;
+        if (clampedPct >= 90) {
+            vuBar.style.boxShadow = '0 0 16px rgba(239, 68, 68, 0.85)';
+        } else if (clampedPct >= 75) {
+            vuBar.style.boxShadow = '0 0 14px rgba(234, 179, 8, 0.7)';
+        } else {
+            vuBar.style.boxShadow = '0 0 12px rgba(34, 197, 94, 0.5)';
+        }
 
         let channelLabel = 'VU LEVEL • MY COLLECTION';
         if (isTeamView()) channelLabel = `VU LEVEL • TEAM ${state.currentUser?.team_name ?? ''} COMBINED`;
