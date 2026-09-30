@@ -52,7 +52,7 @@
             border-radius: 12px;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
             width: 100%;
-            max-width: 440px;
+            max-width: 460px;
             overflow: hidden;
         }
         .gate-header {
@@ -131,7 +131,7 @@
             font-weight: 600;
             color: #475569;
         }
-        .gate-form input {
+        .gate-form input, .gate-form select {
             padding: 9px 12px;
             border: 1px solid #cbd5e1;
             border-radius: 6px;
@@ -139,7 +139,7 @@
             background: #fff;
             color: var(--text-color);
         }
-        .gate-form input:focus {
+        .gate-form input:focus, .gate-form select:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.15);
@@ -485,7 +485,7 @@
             max-width: 1200px;
             width: 100%;
             margin: 0 auto;
-            padding: 14px 16px 130px; /* Extra bottom padding so VU meter never covers cards */
+            padding: 14px 16px 140px; /* Extra bottom padding for VU meter */
         }
 
         /* Top Highlights Deck (Big numbers highlighting collection) */
@@ -680,7 +680,6 @@
 
         /* ==========================================================
            FOOTER VU METER
-           Always locked to the footer with pro-audio VU style
            ========================================================== */
         .vu-footer {
             position: fixed;
@@ -703,7 +702,6 @@
             gap: 16px;
         }
 
-        /* Readout boxes */
         .vu-stats-group {
             display: flex;
             align-items: center;
@@ -759,7 +757,6 @@
             color: #64748b;
         }
 
-        /* Meter Bezel & Ladder */
         .vu-meter-housing {
             flex: 1;
             min-width: 140px;
@@ -788,7 +785,6 @@
             position: relative;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
         }
-        /* Segmented LED fill */
         .vu-meter-fill {
             height: 100%;
             background: linear-gradient(
@@ -803,7 +799,6 @@
             position: relative;
             box-shadow: 0 0 12px rgba(34, 197, 94, 0.5);
         }
-        /* LED grilles overlay to simulate physical LED segments */
         .vu-meter-fill::after {
             content: "";
             position: absolute;
@@ -836,13 +831,13 @@
         dialog::backdrop { background: rgba(0, 0, 0, 0.4); }
         dialog form { display: grid; gap: 10px; }
         dialog label { display: grid; gap: 4px; font-size: 0.82rem; color: var(--muted); }
-        dialog input { font-size: 16px; padding: 6px 8px; }
+        dialog input, dialog select { font-size: 16px; padding: 6px 8px; }
         dialog .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
         .error { color: var(--primary); font-size: 0.82rem; min-height: 1em; }
         .toast {
             position: fixed;
             left: 50%;
-            bottom: 75px; /* Above the VU footer */
+            bottom: 75px;
             transform: translateX(-50%);
             background: #0f172a;
             color: #fff;
@@ -882,16 +877,12 @@
                 left: 0;
                 padding: 6px 10px;
             }
-            .vu-container {
-                gap: 8px;
-            }
+            .vu-container { gap: 8px; }
             .vu-stat-box {
                 padding: 3px 6px;
                 min-width: 52px;
             }
-            .vu-stat-num {
-                font-size: 1.05rem;
-            }
+            .vu-stat-num { font-size: 1.05rem; }
         }
     </style>
 </head>
@@ -914,23 +905,35 @@
         </div>
 
         <form class="gate-form" id="gateForm">
-            <label>Collector Name
-                <input name="collector_name" id="gateCollectorName" maxlength="50" minlength="2" required placeholder="e.g. Anthony" autocomplete="username">
+            <!-- Selector to pick an existing collector (e.g. Bronzo) or create a new one -->
+            <label>Select Collector
+                <select id="gateCollectorSelect">
+                    <option value="">— Select an existing collector —</option>
+                    <option value="new">+ Create New Collector</option>
+                </select>
             </label>
 
-            <label>Team Name (e.g. Hawks, Flames)
+            <!-- New Collector Name input (visible when + Create New Collector is chosen or if no users) -->
+            <div id="gateNewCollectorRow" hidden>
+                <label>New Collector Name
+                    <input name="collector_name" id="gateCollectorName" maxlength="50" minlength="2" placeholder="e.g. Anthony" autocomplete="username">
+                </label>
+            </div>
+
+            <label>Team Name (e.g. Hawks, Flames — optional)
                 <input name="team_name" id="gateTeamName" maxlength="50" placeholder="e.g. Hawks" autocomplete="organization">
             </label>
 
-            <label>Password / Cheat Code
-                <input name="password" id="gatePassword" type="password" maxlength="5" required placeholder="Enter HAWK or initials" autocomplete="current-password">
+            <label>Password (your initials or cheat code HAWK)
+                <input name="password" id="gatePassword" type="password" maxlength="5" required placeholder="Enter initials or HAWK" autocomplete="current-password">
             </label>
 
             <div class="error" id="gateError"></div>
 
-            <button type="submit" class="cta">Enter Checklist →</button>
+            <button type="submit" class="cta" id="gateSubmitBtn">Enter Checklist →</button>
             <div class="gate-footer-hint">
-                New collector? Type your name, team name, and password <strong>HAWK</strong> to create a free team account immediately.
+                Have an existing account? Select your name and enter your initials (or HAWK).<br>
+                New here? Select <strong>+ Create New Collector</strong> to register!
             </div>
         </form>
     </div>
@@ -1009,6 +1012,8 @@
                     <span class="series-tag">$1 / account</span>
                 </h1>
 
+                <button type="button" id="newCollectorTopbarBtn" class="primary">+ Collector</button>
+
                 <label class="overall">Viewing
                     <select id="viewSelect" aria-label="Viewing collection"></select>
                 </label>
@@ -1047,7 +1052,7 @@
                     <div class="deck-val-row">
                         <span class="deck-val" id="deckDoublesVal">0</span>
                     </div>
-                    <div class="deck-sub" id="deckDoublesSub">0 tradeable extra cards</div>
+                    <div class="deck-sub" id="deckDoublesSub">0 extra cards</div>
                 </div>
 
                 <div class="deck-card team" id="deckTeamCard" hidden data-filter="team_needs" title="Click to view cards needed by the team">
@@ -1112,6 +1117,27 @@
 
 <div class="toast" id="toast" hidden></div>
 
+<!-- NEW COLLECTOR DIALOG (+ Collector button) -->
+<dialog id="newCollectorDialog">
+    <form id="newCollectorForm">
+        <strong>New Collector</strong>
+        <label>Collector Name (shown to other traders)
+            <input name="collector_name" id="newCollectorName" maxlength="50" minlength="2" required placeholder="e.g. Anthony" autocomplete="off">
+        </label>
+        <label>Team Name (e.g. Hawks, Flames — optional)
+            <input name="team_name" id="newCollectorTeam" maxlength="50" placeholder="e.g. Hawks" autocomplete="off">
+        </label>
+        <label>Password (your initials or cheat code HAWK)
+            <input name="password" id="newCollectorPass" type="password" maxlength="5" required placeholder="1-5 letters or HAWK" autocomplete="new-password">
+        </label>
+        <div class="error" id="newCollectorError"></div>
+        <div class="actions">
+            <button type="button" id="cancelNewCollector">Cancel</button>
+            <button type="submit" class="primary">Create</button>
+        </div>
+    </form>
+</dialog>
+
 <!-- EDIT TEAM DIALOG -->
 <dialog id="teamDialog">
     <form id="teamForm">
@@ -1128,7 +1154,7 @@
 
 <script>
     const state = {
-        users: [],          // only teammates
+        users: [],          // all available collectors (or teammates if user is on team)
         currentUser: null,  // { id, collector_name, team_name }
         userId: null,
         viewId: null,       // number (user_id) or 'team'
@@ -1153,31 +1179,99 @@
 
     async function api(action, params = {}, body = null) {
         const query = new URLSearchParams({ action, ...params });
-        const opts = body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {};
+        const headers = {};
+        if (body) headers['Content-Type'] = 'application/json';
+
+        // Token fallback support
+        const token = localStorage.getItem('cards_session_token');
+        if (token) headers['X-Session-Token'] = token;
+
+        const opts = { method: body ? 'POST' : 'GET', headers };
+        if (body) opts.body = JSON.stringify(body);
+
         const response = await fetch(`api.php?${query}`, opts);
         const data = await response.json();
         if (data && data.error) throw new Error(data.error);
+        if (data && data.token) {
+            localStorage.setItem('cards_session_token', data.token);
+        }
         return data;
     }
 
     async function checkAuthAndInit() {
         try {
+            state.users = await api('get_users');
+            populateGateCollectorSelect();
+
             const me = await api('me');
             if (me) {
                 state.currentUser = me;
                 state.userId = me.id;
                 state.viewId = me.id;
-                state.users = await api('get_users');
                 showAppUI();
                 await Promise.all([loadTeamSummary(), loadCards()]);
             } else {
                 showLoginGate();
             }
         } catch (err) {
-            toast(`Connection error: ${err.message}`);
+            console.error('Initialization error:', err);
+            populateGateCollectorSelect();
             showLoginGate();
         }
     }
+
+    function populateGateCollectorSelect() {
+        const select = document.getElementById('gateCollectorSelect');
+        const newRow = document.getElementById('gateNewCollectorRow');
+        let html = '<option value="">— Select an existing collector —</option>';
+
+        if (state.users && state.users.length > 0) {
+            for (const u of state.users) {
+                const teamLabel = u.team_name ? ` (Team ${esc(u.team_name)})` : '';
+                html += `<option value="${u.id}">${esc(u.collector_name)}${teamLabel}</option>`;
+            }
+        }
+        html += '<option value="new">+ Create New Collector</option>';
+        select.innerHTML = html;
+
+        // If there are existing users, default to selecting the first one
+        if (state.users && state.users.length > 0) {
+            select.value = String(state.users[0].id);
+            newRow.hidden = true;
+            document.getElementById('gateCollectorName').required = false;
+            document.getElementById('gateTeamName').value = state.users[0].team_name || '';
+        } else {
+            select.value = 'new';
+            newRow.hidden = false;
+            document.getElementById('gateCollectorName').required = true;
+        }
+    }
+
+    document.getElementById('gateCollectorSelect').addEventListener('change', e => {
+        const val = e.target.value;
+        const newRow = document.getElementById('gateNewCollectorRow');
+        const nameInput = document.getElementById('gateCollectorName');
+        const teamInput = document.getElementById('gateTeamName');
+
+        if (val === 'new') {
+            newRow.hidden = false;
+            nameInput.required = true;
+            nameInput.value = '';
+            nameInput.focus();
+        } else if (val) {
+            newRow.hidden = true;
+            nameInput.required = false;
+            const user = state.users.find(u => String(u.id) === String(val));
+            if (user) {
+                nameInput.value = user.collector_name;
+                teamInput.value = user.team_name || '';
+            }
+            document.getElementById('gatePassword').focus();
+        } else {
+            newRow.hidden = true;
+            nameInput.required = false;
+        }
+    });
 
     function showLoginGate() {
         document.getElementById('loginGate').hidden = false;
@@ -1209,7 +1303,7 @@
             document.getElementById('menuSeriesBadge').className = 'menu-badge badge-free';
             document.getElementById('menuSeriesBadge').textContent = 'HAWK Free';
         } else {
-            teamBadge.textContent = 'No team set';
+            teamBadge.textContent = 'No team set (Click Edit Team to join)';
             teamNeedsBtn.hidden = true;
             vuStatTeam.hidden = true;
             deckTeam.hidden = true;
@@ -1241,7 +1335,6 @@
             document.getElementById('sideTeamCollectedText').textContent = `${data.collected}/${data.total} cards`;
             document.getElementById('sideTeamPctText').textContent = `${data.percentage}%`;
 
-            // Teammates list: ONLY teammates on the same team
             const membersList = document.getElementById('sideTeamMembers');
             membersList.innerHTML = data.members.map(m => {
                 const isCurrentViewing = state.viewId === m.id;
@@ -1251,7 +1344,6 @@
                 </div>`;
             }).join('');
 
-            // Update team stat boxes
             document.getElementById('vuStatTeamNum').textContent = data.collected;
             document.getElementById('vuStatTeamPct').textContent = `${data.percentage}%`;
             document.getElementById('deckTeamVal').textContent = `${data.collected}/${data.total}`;
@@ -1261,7 +1353,6 @@
         }
     }
 
-    // Render Viewing Select: ONLY allows Viewing 'My collection', 'Team', or Teammates
     function renderViewSelect() {
         const view = document.getElementById('viewSelect');
         const me = state.currentUser;
@@ -1273,12 +1364,22 @@
         if (me.team_name) {
             html += `<option value="team">${state.viewId === 'team' ? '✓ ' : ''}👥 Team ${esc(me.team_name)} (Combined Progress)</option>`;
 
-            // STRICT: Only teammates from the same team are included!
+            // Teammates on the same team
             const teammates = state.users.filter(u => u.team_name === me.team_name && u.id !== me.id);
             if (teammates.length > 0) {
                 html += `<optgroup label="Teammates (${esc(me.team_name)})">`;
                 for (const t of teammates) {
                     html += `<option value="${t.id}">${esc(t.collector_name)}</option>`;
+                }
+                html += `</optgroup>`;
+            }
+        } else {
+            // No team set: allow viewing other collectors
+            const others = state.users.filter(u => u.id !== me.id);
+            if (others.length > 0) {
+                html += `<optgroup label="Other Collectors">`;
+                for (const o of others) {
+                    html += `<option value="${o.id}">${esc(o.collector_name)}</option>`;
                 }
                 html += `</optgroup>`;
             }
@@ -1329,7 +1430,6 @@
                     return card.quantity >= 2 && (!state.userId || card.my_quantity == 0);
                 }
             case 'team_needs':
-                // Cards that NO ONE on the team has collected yet
                 return (card.team_has === 0 || (isTeamView() && card.quantity == 0));
             default:
                 return true;
@@ -1340,11 +1440,9 @@
         const total = state.cards.length;
         const have = state.cards.filter(c => c.quantity > 0).length;
         const need = Math.max(0, total - have);
-        // Doubles: count cards where quantity >= 2, and extra copies
         const doublesCards = state.cards.filter(c => c.quantity >= 2).length;
         const pct = total > 0 ? Math.round((have / total) * 100) : 0;
 
-        // Update Top Highlights Deck
         document.getElementById('deckHaveVal').textContent = have;
         document.getElementById('deckHaveSub').textContent = `${have} of ${total} cards (${pct}%)`;
 
@@ -1354,14 +1452,12 @@
         document.getElementById('deckDoublesVal').textContent = doublesCards;
         document.getElementById('deckDoublesSub').textContent = `${doublesCards} extra cards for trade`;
 
-        // Update Footer VU Meter Readouts
         document.getElementById('vuStatHaveNum').textContent = have;
         document.getElementById('vuStatHavePct').textContent = `${pct}%`;
 
         document.getElementById('vuStatNeedNum').textContent = need;
         document.getElementById('vuStatDoublesNum').textContent = doublesCards;
 
-        // Update VU Meter Bar Fill
         const vuBar = document.getElementById('vuMeterFill');
         vuBar.style.width = `${Math.min(100, pct)}%`;
 
@@ -1390,7 +1486,7 @@
             </div>`;
         } else if (!isOwn()) {
             html += `<div class="notice">
-                Viewing teammate <strong>${esc(viewedName())}</strong>'s collection (read-only).
+                Viewing <strong>${esc(viewedName())}</strong>'s collection (read-only).
                 ${state.userId ? 'Cards marked <span class="need">NEED</span> are their doubles you\'re missing.' : ''}
             </div>`;
         }
@@ -1422,14 +1518,16 @@
         const cls = card.quantity >= 2 ? 'doubles' : card.quantity >= 1 ? 'collected' : '';
         const qty = card.quantity >= 2 ? `${card.quantity}x` : card.quantity == 1 ? '✓' : '';
 
-        // Only teammates' doubles are present
-        const teamTraders = card.team_doubles_by ?? card.doubles_by ?? [];
+        const teamTraders = card.team_doubles_by ?? [];
+        const otherTraders = card.doubles_by ?? [];
+        const traders = teamTraders.length > 0 ? teamTraders : otherTraders;
         const holders = card.holders ?? [];
 
         let tooltipParts = [card.player_name];
         if (card.last_checked) tooltipParts.push(`Checked: ${card.last_checked}`);
         if (holders.length > 0) tooltipParts.push(`Teammates with copies: ${holders.join(', ')}`);
         if (teamTraders.length > 0) tooltipParts.push(`Teammate doubles: ${teamTraders.join(', ')}`);
+        else if (otherTraders.length > 0) tooltipParts.push(`Doubles: ${otherTraders.join(', ')}`);
 
         let html = `<div class="card ${cls}" data-id="${card.id}" title="${esc(tooltipParts.join('\n'))}">
             <span class="num">${esc(card.card_number)}</span>
@@ -1438,6 +1536,8 @@
         if (isOwn()) {
             if (teamTraders.length > 0) {
                 html += `<span class="trade team-trade" title="Teammates with doubles: ${esc(teamTraders.join(', '))}">⇄ ${teamTraders.length}</span>`;
+            } else if (otherTraders.length > 0) {
+                html += `<span class="trade" title="Doubles: ${esc(otherTraders.join(', '))}">⇄ ${otherTraders.length}</span>`;
             }
         } else if (!isTeam && state.userId && card.quantity >= 2 && card.my_quantity == 0) {
             html += `<span class="need">NEED</span>`;
@@ -1452,8 +1552,8 @@
         if (isTeam && holders.length > 0) {
             html += `<div class="holders-info">${esc(holders.join(', '))}</div>`;
         }
-        if (state.filter === 'trade' && isOwn() && card.quantity == 0 && teamTraders.length > 0) {
-            html += `<div class="trade-names">from ${teamTraders.map(esc).join(', ')}</div>`;
+        if (state.filter === 'trade' && isOwn() && card.quantity == 0 && traders.length > 0) {
+            html += `<div class="trade-names">from ${traders.map(esc).join(', ')}</div>`;
         }
 
         return html;
@@ -1488,18 +1588,35 @@
         loadTeamSummary();
     }
 
-    // Gate Form submit (Sign In / Register / Team Join)
+    // Gate Form submit (Login or Register)
     document.getElementById('gateForm').addEventListener('submit', async e => {
         e.preventDefault();
-        const form = e.target;
-        const collectorName = form.collector_name.value.trim();
-        const teamName = form.team_name.value.trim();
-        const password = form.password.value.trim();
+        const select = document.getElementById('gateCollectorSelect');
+        const selectedVal = select.value;
+        const teamName = document.getElementById('gateTeamName').value.trim();
+        const password = document.getElementById('gatePassword').value.trim();
         const errorEl = document.getElementById('gateError');
         errorEl.textContent = '';
 
+        let payload = { team_name: teamName, password };
+
+        if (selectedVal === 'new') {
+            const nameInput = document.getElementById('gateCollectorName');
+            const name = nameInput.value.trim();
+            if (!name) {
+                errorEl.textContent = 'Please enter a collector name';
+                return;
+            }
+            payload.collector_name = name;
+        } else if (selectedVal) {
+            payload.user_id = Number(selectedVal);
+        } else {
+            errorEl.textContent = 'Please select a collector or choose + Create New Collector';
+            return;
+        }
+
         try {
-            const res = await api('login', {}, { collector_name: collectorName, team_name: teamName, password });
+            const res = await api('login', {}, payload);
             state.currentUser = res.user;
             state.userId = res.user.id;
             state.viewId = res.user.id;
@@ -1507,6 +1624,40 @@
             showAppUI();
             await Promise.all([loadTeamSummary(), loadCards()]);
             toast(password.toUpperCase() === 'HAWK' ? 'Welcome! Team cheat code activated.' : 'Signed in successfully.');
+        } catch (err) {
+            errorEl.textContent = err.message;
+        }
+    });
+
+    // Topbar + Collector button opens creation dialog
+    const newCollectorDialog = document.getElementById('newCollectorDialog');
+    const newCollectorForm = document.getElementById('newCollectorForm');
+    document.getElementById('newCollectorTopbarBtn').addEventListener('click', () => {
+        newCollectorForm.reset();
+        document.getElementById('newCollectorTeam').value = state.currentUser?.team_name || '';
+        document.getElementById('newCollectorError').textContent = '';
+        newCollectorDialog.showModal();
+    });
+    document.getElementById('cancelNewCollector').addEventListener('click', () => newCollectorDialog.close());
+    newCollectorForm.addEventListener('submit', async e => {
+        e.preventDefault();
+        const name = document.getElementById('newCollectorName').value.trim();
+        const team = document.getElementById('newCollectorTeam').value.trim();
+        const pass = document.getElementById('newCollectorPass').value.trim();
+        const errorEl = document.getElementById('newCollectorError');
+        errorEl.textContent = '';
+
+        try {
+            const res = await api('create_user', {}, { collector_name: name, team_name: team, password: pass });
+            state.currentUser = res.user || res;
+            state.userId = state.currentUser.id;
+            state.viewId = state.currentUser.id;
+            state.users = await api('get_users');
+            newCollectorDialog.close();
+            renderSidebarUser();
+            renderViewSelect();
+            await Promise.all([loadTeamSummary(), loadCards()]);
+            toast(`Created collector ${name}!`);
         } catch (err) {
             errorEl.textContent = err.message;
         }
@@ -1595,13 +1746,14 @@
     // Sign out button
     document.getElementById('signOutBtn').addEventListener('click', async () => {
         await api('logout', {}, {}).catch(() => {});
+        localStorage.removeItem('cards_session_token');
         state.currentUser = null;
         state.userId = null;
         state.viewId = null;
         state.teamSummary = null;
         document.getElementById('gateForm').reset();
         document.getElementById('gateError').textContent = '';
-        showLoginGate();
+        checkAuthAndInit();
         closeSidebar();
     });
 
