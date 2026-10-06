@@ -3955,8 +3955,76 @@
 
         // Render the Sports Highlights Deck in the bottom right corner
         renderSportsHighlights();
+        // Render Set Spectrum footer dock below Selection Desk
+        renderFooterSpectrum();
         // Render the Rotating Stats corner widget in the bottom left footer
         renderRotatingStats();
+    }
+
+    function renderFooterSpectrum() {
+        const total = state.cards?.length || 0;
+        if (total === 0) return;
+
+        const canvas = document.getElementById('footerSpectrumCanvas');
+        const countsEl = document.getElementById('footerSpectrumCounts');
+        const have = state.cards.filter(c => c.quantity > 0).length;
+        const doublesCount = state.cards.filter(c => c.quantity >= 2).length;
+        const need = Math.max(0, total - have);
+
+        if (countsEl) {
+            countsEl.textContent = `${have} Owned · ${need} Needed · ${doublesCount} Trade`;
+        }
+
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        const w = rect.width || canvas.offsetWidth || 600;
+        const h = 32;
+
+        if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
+            canvas.width = Math.round(w * dpr);
+            canvas.height = Math.round(h * dpr);
+        }
+        ctx.resetTransform?.();
+        ctx.scale(dpr, dpr);
+
+        // Dark sports broadcast background
+        ctx.fillStyle = '#030712';
+        ctx.fillRect(0, 0, w, h);
+
+        // Baseline tick bar
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(0, h - 3, w, 3);
+
+        const slotW = Math.max(1.2, w / total);
+        for (let i = 0; i < total; i++) {
+            const card = state.cards[i];
+            const x = (i / total) * w;
+            const qty = card.quantity || 0;
+
+            if (qty === 0) {
+                // Needed card: green tick on baseline
+                ctx.fillStyle = 'rgba(16, 185, 129, 0.45)';
+                ctx.fillRect(x, h - 4, Math.max(1, slotW - 0.5), 3);
+            } else if (qty === 1) {
+                // Single owned: vibrant emerald green bar
+                const barH = Math.round(h * 0.55);
+                const grad = ctx.createLinearGradient(0, h - barH, 0, h);
+                grad.addColorStop(0, '#34d399');
+                grad.addColorStop(1, '#059669');
+                ctx.fillStyle = grad;
+                ctx.fillRect(x, h - barH, Math.max(1.2, slotW), barH);
+            } else {
+                // Doubles (2x+): taller red trade surplus bar
+                const barH = Math.round(h * 0.88);
+                const grad = ctx.createLinearGradient(0, h - barH, 0, h);
+                grad.addColorStop(0, '#f87171');
+                grad.addColorStop(1, '#dc2626');
+                ctx.fillStyle = grad;
+                ctx.fillRect(x, h - barH, Math.max(1.5, slotW), barH);
+            }
+        }
     }
 
     function renderSportsHighlights() {
@@ -5234,6 +5302,41 @@
             }
         });
     }
+
+    // Set Spectrum Footer interactive hover & click
+    const fsdCanvas = document.getElementById('footerSpectrumCanvas');
+    const fsdHint = document.getElementById('footerSpectrumHint');
+    if (fsdCanvas) {
+        fsdCanvas.addEventListener('mousemove', e => {
+            if (!state.cards || state.cards.length === 0) return;
+            const rect = fsdCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const idx = Math.min(state.cards.length - 1, Math.max(0, Math.floor((x / rect.width) * state.cards.length)));
+            const card = state.cards[idx];
+            if (card && fsdHint) {
+                const status = card.quantity >= 2 ? `${card.quantity}x Trade` : card.quantity === 1 ? 'Owned' : 'Needed';
+                fsdHint.innerHTML = `<span style="color:#38bdf8; font-weight:800;">#${esc(card.card_number)} ${esc(card.player_name)} (${status.toUpperCase()})</span>`;
+            }
+        });
+        fsdCanvas.addEventListener('mouseleave', () => {
+            if (fsdHint) fsdHint.textContent = 'Interactive Map (Hover or Click to Jump)';
+        });
+        fsdCanvas.addEventListener('click', e => {
+            if (!state.cards || state.cards.length === 0) return;
+            const rect = fsdCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const idx = Math.min(state.cards.length - 1, Math.max(0, Math.floor((x / rect.width) * state.cards.length)));
+            const card = state.cards[idx];
+            if (card) {
+                jumpToCard(card.id);
+            }
+        });
+    }
+
+    window.addEventListener('resize', () => {
+        renderSportsHighlights();
+        renderFooterSpectrum();
+    });
 
     function jumpToCard(cardId) {
         const card = state.cards.find(c => c.id === cardId);
