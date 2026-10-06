@@ -707,67 +707,225 @@
         }
 
         /* Top Highlights Deck (Big numbers highlighting collection) */
-        .collection-highlight-deck {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
-            margin-bottom: 14px;
-        }
-        .deck-card {
+        /* Collector Stats Sentence Bar ("smaller = better more, fit in person's name as a sentence") */
+        .collector-sentence-bar {
             background: #ffffff;
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 12px 14px;
+            padding: 8px 14px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+        .sentence-inner {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px 12px;
+        }
+        .sentence-user-lead {
+            font-size: 0.88rem;
+            color: #334155;
+        }
+        .sentence-user-lead strong {
+            color: #0f172a;
+        }
+        .sentence-stats-group {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+        }
+        .stat-sentence-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 9px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: #f8fafc;
+            font-size: 0.84rem;
+            font-weight: 600;
             cursor: pointer;
-            transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
-            position: relative;
-            overflow: hidden;
+            transition: all 0.15s ease;
+            color: #334155;
         }
-        .deck-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-            border-color: #cbd5e1;
+        .stat-sentence-pill:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+            transform: translateY(-1px);
         }
-        .deck-card::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            width: 4px;
+        .stat-sentence-pill.active {
+            background: #0f172a;
+            color: #ffffff;
+            border-color: #0f172a;
+            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.2);
         }
-        .deck-card.have::before { background: var(--vu-green); }
-        .deck-card.need::before { background: var(--vu-red); }
-        .deck-card.doubles::before { background: var(--vu-yellow); }
-        .deck-card.team::before { background: var(--team-accent); }
+        .stat-sentence-pill.active .stat-num,
+        .stat-sentence-pill.active .stat-word {
+            color: #ffffff !important;
+        }
+        .stat-sentence-pill.have .stat-num { color: #15803d; font-weight: 800; }
+        .stat-sentence-pill.need .stat-num { color: #dc2626; font-weight: 800; }
+        .stat-sentence-pill.doubles .stat-num { color: #d97706; font-weight: 800; }
+        .stat-sentence-pill.team .stat-num { color: #0284c7; font-weight: 800; }
+        .stat-emoji {
+            font-size: 0.95rem;
+            line-height: 1;
+        }
+        .stat-word {
+            font-size: 0.78rem;
+            color: var(--muted);
+        }
+        .stat-sep {
+            color: #cbd5e1;
+            font-weight: 700;
+        }
 
-        .deck-title {
-            font-size: 0.72rem;
+        /* Series Quick Links Navigation Panel ("use all this real estate to be serias quick links, menu quick jump to those pages and those numbers") */
+        .series-nav-panel {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px 14px 12px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        }
+        .series-nav-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        .series-nav-title {
+            font-size: 0.8rem;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.06em;
-            color: var(--muted);
-            margin-bottom: 4px;
+            color: #475569;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
-        .deck-val-row {
+        .series-nav-hint {
+            font-size: 0.72rem;
+            color: var(--muted);
+        }
+        .series-chips-row {
             display: flex;
-            align-items: baseline;
+            flex-wrap: wrap;
             gap: 6px;
+            margin-bottom: 8px;
         }
-        .deck-val {
-            font-size: 1.8rem;
+        .series-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 9px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: #f8fafc;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #334155;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .series-chip:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+            transform: translateY(-1px);
+        }
+        .series-chip.active {
+            background: #0284c7;
+            color: #ffffff;
+            border-color: #0284c7;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+        }
+        .series-chip .chip-count {
+            font-size: 0.7rem;
+            opacity: 0.9;
+            background: rgba(0,0,0,0.07);
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .series-chip.active .chip-count {
+            background: rgba(255,255,255,0.25);
+            color: #fff;
+        }
+
+        /* Sub-list row for Sheet/Number quick jumps */
+        .series-sublist-row {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 7px 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .sublist-lead {
+            font-size: 0.74rem;
             font-weight: 800;
-            line-height: 1;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #1e293b;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
-        .deck-card.have .deck-val { color: #15803d; }
-        .deck-card.need .deck-val { color: #b91c1c; }
-        .deck-card.doubles .deck-val { color: #b45309; }
-        .deck-card.team .deck-val { color: #0369a1; }
-        .deck-sub {
-            font-size: 0.75rem;
+        .sublist-pills-wrap {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            overflow-x: auto;
+            padding: 2px 0;
+        }
+        .sublist-jump-btn {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3px 8px;
+            border-radius: 5px;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s ease;
+            flex-shrink: 0;
+            line-height: 1.15;
+        }
+        .sublist-jump-btn:hover {
+            background: #0284c7;
+            color: #fff;
+            border-color: #0284c7;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+        }
+        .sublist-jump-btn:hover .jump-card-range {
+            color: rgba(255,255,255,0.9);
+        }
+        .jump-sheet-num {
+            font-size: 0.72rem;
+            font-weight: 800;
+        }
+        .jump-card-range {
+            font-size: 0.64rem;
+            font-weight: 700;
             color: var(--muted);
-            margin-top: 4px;
+        }
+
+        /* Glow animation on jumped sheet */
+        @keyframes sheetGlow {
+            0% { box-shadow: 0 0 0 4px #0284c7, 0 8px 24px rgba(2, 132, 199, 0.45); transform: scale(1.02); }
+            100% { box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05); transform: scale(1); }
+        }
+        .binder-page.jump-highlight,
+        .group.list-group.jump-highlight {
+            animation: sheetGlow 1.5s ease-out;
+            border-color: #0284c7 !important;
         }
 
         .notice {
@@ -990,9 +1148,21 @@
             letter-spacing: 0.2px;
         }
         .card-num-tag {
-            font-size: 0.68rem;
+            font-size: 0.75rem;
             font-weight: 800;
             color: #475569;
+        }
+        /* Prominent card series number on missing cards */
+        .card.page-card.missing .card-head {
+            align-items: flex-start;
+        }
+        .card.page-card.missing .card-num-tag {
+            font-size: 1.35rem;
+            font-weight: 900;
+            color: #0f172a;
+            line-height: 1;
+            letter-spacing: -0.5px;
+            margin-top: -1px;
         }
         .card-body {
             flex: 1;
@@ -1085,6 +1255,7 @@
         .card.collected { background: var(--row-single); border-left-color: var(--row-single-edge); }
         .card.doubles { background: var(--row-double); border-left-color: var(--row-double-edge); }
         .num { flex: 0 0 auto; min-width: 2.6em; font-weight: 700; font-size: 0.75rem; color: var(--muted); }
+        .card.missing .num { font-size: 0.95rem; font-weight: 900; color: #0f172a; }
         .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .qty { flex: 0 0 auto; font-size: 0.7rem; font-weight: 700; }
         .collected .qty { color: #2e7d32; }
@@ -1691,74 +1862,45 @@
         </header>
 
         <main id="main">
-            <!-- TOP COLLECTION HIGHLIGHTS DECK -->
-            <div class="collection-highlight-deck" id="collectionHighlightDeck">
-                <div class="deck-card have" data-filter="all" title="Click to view all collected cards">
-                    <div class="deck-title">HAVE IN COLLECTION</div>
-                    <div class="deck-val-row">
-                        <span class="deck-val" id="deckHaveVal">0</span>
+            <!-- COLLECTOR DASHBOARD UNIT: Sentence Stats + Pro Audio VU Meter ("right with the thing it's about, no visual void") -->
+            <div class="collector-dashboard-unit" id="collectorDashboardUnit">
+                <div class="collector-sentence-wrap">
+                    <span class="sentence-user-lead" id="sentenceUserText">Viewing <strong>Bronzo</strong>'s collection:</span>
+                    <div class="sentence-stats-group" id="collectionHighlightDeck">
+                        <button type="button" class="stat-sentence-pill deck-card have active" id="statHaveBtn" data-filter="all" title="Click to view all collected cards">
+                            <span class="stat-num" id="deckHaveVal">0</span>
+                            <span class="stat-emoji">✅</span>
+                            <span class="stat-word">have</span>
+                        </button>
+                        <span class="stat-sep">·</span>
+                        <button type="button" class="stat-sentence-pill deck-card need" id="statNeedBtn" data-filter="missing" title="Click to view missing cards needed">
+                            <span class="stat-num" id="deckNeedVal">0</span>
+                            <span class="stat-emoji">❓</span>
+                            <span class="stat-word">needed</span>
+                        </button>
+                        <span class="stat-sep">·</span>
+                        <button type="button" class="stat-sentence-pill deck-card doubles" id="statTradeBtn" data-filter="doubles" title="Click to view doubles for trade">
+                            <span class="stat-num" id="deckDoublesVal">0</span>
+                            <span class="stat-emoji">🔁</span>
+                            <span class="stat-word">trade</span>
+                        </button>
+                        <span class="stat-sep" id="statTeamSep" hidden>·</span>
+                        <button type="button" class="stat-sentence-pill deck-card team" id="deckTeamCard" hidden data-filter="team_needs" title="Click to view team cards / coverage">
+                            <span class="stat-emoji">👥</span>
+                            <span class="stat-word">Team:</span>
+                            <span class="stat-num" id="deckTeamVal">0</span>
+                        </button>
                     </div>
-                    <div class="deck-sub" id="deckHaveSub">0 of 0 cards (0%)</div>
-                </div>
-
-                <div class="deck-card need" data-filter="missing" title="Click to view missing cards">
-                    <div class="deck-title">CARDS NEEDED</div>
-                    <div class="deck-val-row">
-                        <span class="deck-val" id="deckNeedVal">0</span>
-                    </div>
-                    <div class="deck-sub" id="deckNeedSub">0 missing to complete set</div>
-                </div>
-
-                <div class="deck-card doubles" data-filter="doubles" title="Click to view your doubles for trade">
-                    <div class="deck-title">DOUBLES FOR TRADE</div>
-                    <div class="deck-val-row">
-                        <span class="deck-val" id="deckDoublesVal">0</span>
-                    </div>
-                    <div class="deck-sub" id="deckDoublesSub">0 extra cards</div>
-                </div>
-
-                <div class="deck-card team" id="deckTeamCard" hidden data-filter="team_needs" title="Click to view cards needed by the team">
-                    <div class="deck-title">TEAM PROGRESS</div>
-                    <div class="deck-val-row">
-                        <span class="deck-val" id="deckTeamVal">0</span>
-                    </div>
-                    <div class="deck-sub" id="deckTeamSub">0% collective coverage</div>
-                </div>
-            </div>
-
-            <!-- DYNAMIC CARDS CONTAINER -->
-            <div id="cardsContainer"></div>
-        </main>
-
-        <!-- FOOTER VU METER (Always pinned to bottom) -->
-        <footer class="vu-footer" id="vuFooter">
-            <div class="vu-container">
-                <!-- Large Digital Stat Readouts -->
-                <div class="vu-stats-group">
-                    <div class="vu-stat-box have" id="vuStatHave" title="Unique cards collected">
-                        <span class="vu-stat-label">HAVE</span>
-                        <span class="vu-stat-num" id="vuStatHaveNum">0</span>
-                        <span class="vu-stat-sub" id="vuStatHavePct">0%</span>
-                    </div>
-                    <div class="vu-stat-box need" id="vuStatNeed" title="Cards still needed to finish set">
-                        <span class="vu-stat-label">NEED</span>
-                        <span class="vu-stat-num" id="vuStatNeedNum">0</span>
-                        <span class="vu-stat-sub">missing</span>
-                    </div>
-                    <div class="vu-stat-box doubles" id="vuStatDoubles" title="Extra doubles ready to trade">
-                        <span class="vu-stat-label">DOUBLES</span>
-                        <span class="vu-stat-num" id="vuStatDoublesNum">0</span>
-                        <span class="vu-stat-sub">trade</span>
-                    </div>
-                    <div class="vu-stat-box team" id="vuStatTeam" hidden title="Team's unique cards collected">
-                        <span class="vu-stat-label">TEAM</span>
-                        <span class="vu-stat-num" id="vuStatTeamNum">0</span>
-                        <span class="vu-stat-sub" id="vuStatTeamPct">0%</span>
+                    <div id="deckSubsWrap" hidden>
+                        <span id="deckHaveSub"></span>
+                        <span id="deckNeedSub"></span>
+                        <span id="deckDoublesSub"></span>
+                        <span id="deckTeamSub"></span>
                     </div>
                 </div>
 
-                <!-- Pro Audio Styled VU Meter Level Bar -->
-                <div class="vu-meter-housing">
+                <!-- Pro Audio VU Meter Bar (Directly adjacent to the collection stats) -->
+                <div class="vu-meter-housing" id="vuMeterHousing" title="Live collection meter">
                     <div class="vu-scale-ticks">
                         <span>0%</span>
                         <span>25%</span>
@@ -1772,8 +1914,29 @@
                     </div>
                     <div class="vu-channel-label" id="vuChannelLabel">VU LEVEL • COLLECTION METER</div>
                 </div>
+
+                <!-- Hidden holders for legacy VU readouts so all JS bindings remain valid -->
+                <div id="vuLegacyStats" hidden>
+                    <div id="vuStatHave"><span id="vuStatHaveNum">0</span><span id="vuStatHavePct">0%</span></div>
+                    <div id="vuStatNeed"><span id="vuStatNeedNum">0</span></div>
+                    <div id="vuStatDoubles"><span id="vuStatDoublesNum">0</span></div>
+                    <div id="vuStatTeam"><span id="vuStatTeamNum">0</span><span id="vuStatTeamPct">0%</span></div>
+                </div>
             </div>
-        </footer>
+
+            <!-- SERIES QUICK LINKS & SUB-LIST JUMP MENU ("use all this real estate to be serias quick links, menu quick jump to those pages and those numbers") -->
+            <nav class="series-nav-panel" id="seriesNavPanel" aria-label="Series quick links and sheet jump menu">
+                <div class="series-nav-header">
+                    <span class="series-nav-title">⚡ Series Quick Links</span>
+                    <span class="series-nav-hint">Click a series to jump, or select a sheet and numbers below:</span>
+                </div>
+                <div class="series-chips-row" id="seriesChipsRow"></div>
+                <div class="series-sublist-row" id="seriesSublistRow"></div>
+            </nav>
+
+            <!-- DYNAMIC CARDS CONTAINER -->
+            <div id="cardsContainer"></div>
+        </main>
     </div>
 </div>
 
@@ -1917,6 +2080,7 @@
         layout: localStorage.getItem('cards_layout') || 'page', // 'page' (3x3 binder sheet) or 'list'
         collapsed: new Set(),
         teamSummary: null,
+        activeNavSet: null,
     };
 
     function esc(s) {
@@ -2290,6 +2454,10 @@
         }
     }
 
+    function cleanSetId(s) {
+        return String(s || '').replace(/[^a-zA-Z0-9_-]/g, '_');
+    }
+
     function updateVUMeterAndHighlights() {
         const total = state.cards.length;
         const have = state.cards.filter(c => c.quantity > 0).length;
@@ -2297,14 +2465,39 @@
         const doublesCards = state.cards.filter(c => c.quantity >= 2).length;
         const pct = total > 0 ? Math.round((have / total) * 100) : 0;
 
-        document.getElementById('deckHaveVal').textContent = have;
-        document.getElementById('deckHaveSub').textContent = `${have} of ${total} cards (${pct}%)`;
+        const haveVal = document.getElementById('deckHaveVal');
+        if (haveVal) haveVal.textContent = have;
+        const haveSub = document.getElementById('deckHaveSub');
+        if (haveSub) haveSub.textContent = `${have} of ${total} cards (${pct}%)`;
 
-        document.getElementById('deckNeedVal').textContent = need;
-        document.getElementById('deckNeedSub').textContent = need === 0 ? '🎉 Complete set collected!' : `${need} cards left to complete`;
+        const needVal = document.getElementById('deckNeedVal');
+        if (needVal) needVal.textContent = need;
+        const needSub = document.getElementById('deckNeedSub');
+        if (needSub) needSub.textContent = need === 0 ? '🎉 Complete set collected!' : `${need} cards left to complete`;
 
-        document.getElementById('deckDoublesVal').textContent = doublesCards;
-        document.getElementById('deckDoublesSub').textContent = `${doublesCards} extra cards for trade`;
+        const doublesVal = document.getElementById('deckDoublesVal');
+        if (doublesVal) doublesVal.textContent = doublesCards;
+        const doublesSub = document.getElementById('deckDoublesSub');
+        if (doublesSub) doublesSub.textContent = `${doublesCards} extra cards for trade`;
+
+        const userLeadEl = document.getElementById('sentenceUserText');
+        if (userLeadEl) {
+            if (isTeamView()) {
+                userLeadEl.innerHTML = `👥 <strong>Team ${esc(state.currentUser?.team_name ?? '')}</strong> combined:`;
+            } else if (isOwn()) {
+                userLeadEl.innerHTML = `👤 <strong>My collection</strong>:`;
+            } else {
+                userLeadEl.innerHTML = `👤 Viewing <strong>${esc(viewedName())}</strong>'s collection:`;
+            }
+        }
+
+        const teamBtn = document.getElementById('deckTeamCard');
+        const teamSep = document.getElementById('statTeamSep');
+        if (teamBtn) {
+            const hasTeam = Boolean(state.currentUser?.team_name);
+            teamBtn.hidden = !hasTeam;
+            if (teamSep) teamSep.hidden = !hasTeam;
+        }
 
         document.getElementById('vuStatHaveNum').textContent = have;
         document.getElementById('vuStatHavePct').textContent = `${pct}%`;
@@ -2331,6 +2524,57 @@
         document.getElementById('vuChannelLabel').textContent = channelLabel;
     }
 
+    function renderSeriesNav(sets) {
+        const chipsRow = document.getElementById('seriesChipsRow');
+        const sublistRow = document.getElementById('seriesSublistRow');
+        if (!chipsRow || !sublistRow) return;
+
+        if (!sets || sets.size === 0) {
+            chipsRow.innerHTML = '';
+            sublistRow.innerHTML = '';
+            return;
+        }
+
+        if (!state.activeNavSet || !sets.has(state.activeNavSet)) {
+            state.activeNavSet = sets.keys().next().value;
+        }
+
+        let chipsHtml = '';
+        for (const [setName, cards] of sets) {
+            const have = cards.filter(c => c.quantity > 0).length;
+            const isActive = (state.activeNavSet === setName);
+            chipsHtml += `<button type="button" class="series-chip ${isActive ? 'active' : ''}" data-set="${esc(setName)}">
+                <span class="chip-name">${esc(setName)}</span>
+                <span class="chip-count">${have}/${cards.length}</span>
+            </button>`;
+        }
+        chipsRow.innerHTML = chipsHtml;
+
+        const activeCards = sets.get(state.activeNavSet) || [];
+        const totalPages = Math.ceil(activeCards.length / 9) || 1;
+        const isPage = state.layout === 'page';
+
+        let sublistHtml = `<div class="sublist-lead"><strong>${esc(state.activeNavSet)}</strong> Quick Jump:</div>`;
+        sublistHtml += `<div class="sublist-pills-wrap">`;
+
+        for (let p = 1; p <= totalPages; p++) {
+            const slice = activeCards.slice((p - 1) * 9, p * 9);
+            const firstNum = slice[0]?.card_number ?? ((p - 1) * 9 + 1);
+            const lastNum = slice[slice.length - 1]?.card_number ?? (p * 9);
+            const rangeStr = `#${firstNum}–#${lastNum}`;
+            const sheetHave = slice.filter(c => c.quantity > 0).length;
+            const label = isPage ? `Sheet ${p}` : `Group ${p}`;
+
+            sublistHtml += `<button type="button" class="sublist-jump-btn" data-set="${esc(state.activeNavSet)}" data-sheet="${p}" title="Jump to ${label} (${rangeStr})">
+                <span class="jump-sheet-num">${label}</span>
+                <span class="jump-card-range">${rangeStr} · ${sheetHave}/${slice.length}</span>
+            </button>`;
+        }
+
+        sublistHtml += `</div>`;
+        sublistRow.innerHTML = sublistHtml;
+    }
+
     function render() {
         const container = document.getElementById('cardsContainer');
         const sets = new Map();
@@ -2340,6 +2584,7 @@
         }
 
         updateVUMeterAndHighlights();
+        renderSeriesNav(sets);
         container.classList.toggle('readonly', !isOwn());
 
         let html = '';
@@ -2365,6 +2610,7 @@
             const have = cards.filter(c => c.quantity > 0).length;
             const setPct = Math.round(have / cards.length * 100);
             const open = state.collapsed.has(setName) ? '' : ' open';
+            const cleanId = cleanSetId(setName);
 
             let gridContent = '';
             if (isPageLayout) {
@@ -2399,12 +2645,12 @@
                     if (!matchesFilter(card)) return;
                     (groups[Math.floor(i / 9)] ??= []).push(card);
                 });
-                gridContent = groups.filter(Boolean).map(g => `<div class="group list-group">${g.map(renderCard).join('')}</div>`).join('');
+                gridContent = groups.filter(Boolean).map((g, idx) => `<div class="group list-group" id="group-${cleanId}-${idx}">${g.map(renderCard).join('')}</div>`).join('');
             }
 
             const gridClass = isPageLayout ? 'grid layout-page' : 'grid layout-list';
 
-            html += `<details class="set" data-set="${esc(setName)}"${open}>
+            html += `<details class="set" id="set-${cleanId}" data-set="${esc(setName)}"${open}>
                 <summary>${esc(setName)} <span class="set-count">${have}/${cards.length}</span>
                     <span class="progress"><span style="width:${setPct}%"></span></span></summary>
                 <div class="${gridClass}">${gridContent}</div>
@@ -2417,8 +2663,9 @@
     function renderBinderPage(pockets, pageNum, totalPages, setName) {
         const pageCollected = pockets.filter(p => p.card && p.card.quantity > 0).length;
         const pageTotal = pockets.filter(p => p.card).length;
+        const cleanId = cleanSetId(setName);
 
-        let html = `<div class="binder-page">
+        let html = `<div class="binder-page" id="sheet-${cleanId}-${pageNum}">
             <div class="binder-page-header">
                 <div class="binder-rings-punch" title="3-ring binder punch holes">
                     <span class="ring-hole"></span>
@@ -2453,7 +2700,7 @@
         const isTeam = isTeamView();
         const isCollected = card.quantity >= 1;
         const isDoubles = card.quantity >= 2;
-        const cls = isDoubles ? 'doubles' : isCollected ? 'collected' : '';
+        const cls = isDoubles ? 'doubles' : isCollected ? 'collected' : 'missing';
 
         const teamTraders = card.team_doubles_by ?? [];
         const otherTraders = card.doubles_by ?? [];
@@ -2508,7 +2755,7 @@
 
     function renderCard(card) {
         const isTeam = isTeamView();
-        const cls = card.quantity >= 2 ? 'doubles' : card.quantity >= 1 ? 'collected' : '';
+        const cls = card.quantity >= 2 ? 'doubles' : card.quantity >= 1 ? 'collected' : 'missing';
         const qty = card.quantity >= 2 ? `${card.quantity}x` : card.quantity == 1 ? '✓' : '';
 
         const teamTraders = card.team_doubles_by ?? [];
@@ -2896,6 +3143,9 @@
                 b.classList.add(newFilter === 'team_needs' ? 'team-active' : 'active');
             }
         });
+        document.querySelectorAll('.stat-sentence-pill, .deck-card').forEach(b => {
+            b.classList.toggle('active', b.dataset.filter === newFilter);
+        });
         render();
     }
 
@@ -2906,9 +3156,9 @@
         setFilter(btn.dataset.filter);
     });
 
-    // Top Highlights Deck click
-    document.getElementById('collectionHighlightDeck').addEventListener('click', e => {
-        const card = e.target.closest('.deck-card');
+    // Top Collector Sentence Stats Bar click
+    document.getElementById('collectionHighlightDeck')?.addEventListener('click', e => {
+        const card = e.target.closest('.deck-card, .stat-sentence-pill');
         if (!card) return;
         if (card.id === 'deckTeamCard') {
             state.viewId = 'team';
@@ -2918,6 +3168,52 @@
             setFilter(card.dataset.filter);
         }
     });
+
+    // Series Quick Links & Sub-List Quick Jump click handler
+    const seriesNavPanel = document.getElementById('seriesNavPanel');
+    if (seriesNavPanel) {
+        seriesNavPanel.addEventListener('click', e => {
+            const chip = e.target.closest('.series-chip');
+            if (chip) {
+                const setName = chip.dataset.set;
+                state.activeNavSet = setName;
+                const cleanId = cleanSetId(setName);
+                const setDetails = document.getElementById('set-' + cleanId);
+                if (setDetails) {
+                    setDetails.open = true;
+                    state.collapsed.delete(setName);
+                    setDetails.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+                const sets = new Map();
+                for (const card of state.cards) {
+                    if (!sets.has(card.set_name)) sets.set(card.set_name, []);
+                    sets.get(card.set_name).push(card);
+                }
+                renderSeriesNav(sets);
+                return;
+            }
+
+            const jumpBtn = e.target.closest('.sublist-jump-btn');
+            if (jumpBtn) {
+                const setName = jumpBtn.dataset.set;
+                const sheetNum = Number(jumpBtn.dataset.sheet);
+                const cleanId = cleanSetId(setName);
+                const setDetails = document.getElementById('set-' + cleanId);
+                if (setDetails) {
+                    setDetails.open = true;
+                    state.collapsed.delete(setName);
+                }
+                const targetEl = document.getElementById('sheet-' + cleanId + '-' + sheetNum)
+                    || document.getElementById('group-' + cleanId + '-' + (sheetNum - 1))
+                    || setDetails;
+                if (targetEl) {
+                    targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    targetEl.classList.add('jump-highlight');
+                    setTimeout(() => targetEl.classList.remove('jump-highlight'), 1600);
+                }
+            }
+        });
+    }
 
     // VU Meter Readout Boxes click
     document.getElementById('vuStatHave').addEventListener('click', () => setFilter('all'));
