@@ -626,8 +626,10 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 6px;
             padding-bottom: 6px;
             border-bottom: 1px solid #1e293b;
+            min-height: 24px;
         }
         .hl-live-badge {
             display: inline-flex;
@@ -641,6 +643,7 @@
             padding: 2px 6px;
             border-radius: 3px;
             text-transform: uppercase;
+            flex-shrink: 0;
         }
         .hl-live-dot {
             width: 6px;
@@ -654,11 +657,16 @@
             50% { opacity: 0.3; transform: scale(0.7); }
         }
         .hl-series-label {
-            font-size: 0.64rem;
+            font-size: 0.6rem;
             font-weight: 800;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.05em;
             color: #94a3b8;
             text-transform: uppercase;
+            text-align: right;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 140px;
         }
         /* Completeness Box ("not in percentage... but in completeness") */
         .hl-completeness-box {
@@ -790,54 +798,209 @@
             border-radius: 2px;
             transition: width 0.3s ease;
         }
-        /* Sports Channel News Ticker ("like a news feed, like a sports channel") */
-        .hl-news-ticker {
+        /* ==========================================================
+           ELECTION DESK & SPORTS BROADCAST FOOTER TICKER
+           ("this ticker should be a footer. when the user seese these or hovers they should cycle... walk though the collection like a live animated news cast thingking like an election")
+           ========================================================== */
+        .election-footer-ticker {
+            position: fixed;
+            bottom: 0;
+            left: var(--left-bar-width);
+            right: var(--right-bar-width);
+            height: 38px;
+            background: linear-gradient(90deg, #070b14 0%, #0d1527 50%, #070b14 100%);
+            border-top: 2px solid #1e3a8a;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.45);
             display: flex;
             align-items: center;
-            background: #050811;
-            border: 1px solid #1e293b;
-            border-radius: 6px;
+            z-index: 35;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             overflow: hidden;
-            height: 24px;
+            user-select: none;
         }
-        .ticker-badge {
-            background: #1e3a8a;
-            color: #93c5fd;
-            font-size: 0.58rem;
-            font-weight: 900;
-            letter-spacing: 0.08em;
-            padding: 0 6px;
-            height: 100%;
-            display: flex;
+        @media (max-width: 1080px) {
+            .election-footer-ticker {
+                left: 0;
+                right: 0;
+            }
+        }
+        .eft-desk-badge {
+            display: inline-flex;
             align-items: center;
+            gap: 6px;
+            background: #dc2626;
+            color: #ffffff;
+            font-size: 0.62rem;
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            padding: 0 10px;
+            height: 100%;
             flex-shrink: 0;
             text-transform: uppercase;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+            border-right: 1px solid rgba(255, 255, 255, 0.15);
         }
-        .ticker-track-wrap {
+        .eft-live-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #ffffff;
+            animation: hlPulse 1.2s infinite ease-in-out;
+        }
+        .eft-call-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #111827;
+            color: #f1f5f9;
+            height: 100%;
+            padding: 0 10px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            border-right: 1px solid #1e293b;
+            flex-shrink: 0;
+        }
+        .eft-call-lbl {
+            color: #38bdf8;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .eft-call-val {
+            color: #10b981;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-weight: 900;
+        }
+        .eft-viewport {
             flex: 1;
+            height: 100%;
             overflow: hidden;
-            white-space: nowrap;
             position: relative;
+            display: flex;
+            align-items: center;
+            background: rgba(3, 7, 18, 0.6);
         }
-        .ticker-track {
-            display: inline-block;
+        .eft-stream {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             white-space: nowrap;
-            padding-left: 100%;
-            animation: tickerScroll 24s linear infinite;
+            will-change: transform;
+            animation: eftWalkThrough 60s linear infinite;
         }
-        .ticker-track:hover {
+        .eft-stream:hover,
+        .eft-stream.is-paused {
             animation-play-state: paused;
         }
-        @keyframes tickerScroll {
+        @keyframes eftWalkThrough {
             0% { transform: translateX(0); }
-            100% { transform: translateX(-100%); }
+            100% { transform: translateX(-50%); }
         }
-        .ticker-item {
-            font-size: 0.65rem;
+        .eft-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid #1e293b;
+            font-size: 0.68rem;
+            color: #cbd5e1;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .eft-item:hover {
+            background: #1e293b;
+            border-color: #38bdf8;
+            transform: translateY(-1px);
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        .eft-item-num {
+            font-weight: 900;
+            color: #f8fafc;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 0.72rem;
+        }
+        .eft-item-name {
             font-weight: 700;
             color: #e2e8f0;
-            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-            margin-right: 28px;
+        }
+        .eft-item-set {
+            font-size: 0.6rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+        }
+        .eft-pill {
+            display: inline-block;
+            font-size: 0.58rem;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+            padding: 1px 5px;
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+        .eft-pill-owned {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid #10b981;
+            color: #34d399;
+        }
+        .eft-pill-trade {
+            background: rgba(245, 158, 11, 0.25);
+            border: 1px solid #f59e0b;
+            color: #fbbf24;
+        }
+        .eft-pill-needed {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.7);
+            color: #f87171;
+        }
+        .eft-callout {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 10px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, rgba(30, 58, 138, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+            border: 1px solid #2563eb;
+            color: #93c5fd;
+            font-size: 0.65rem;
+            font-weight: 800;
+            flex-shrink: 0;
+            letter-spacing: 0.04em;
+        }
+        .eft-callout-badge {
+            background: #2563eb;
+            color: #ffffff;
+            font-size: 0.56rem;
+            font-weight: 900;
+            padding: 1px 4px;
+            border-radius: 2px;
+            text-transform: uppercase;
+        }
+        .eft-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            padding: 0 6px;
+            height: 100%;
+            background: #0b1120;
+            border-left: 1px solid #1e293b;
+            flex-shrink: 0;
+        }
+        .eft-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 0.75rem;
+            cursor: pointer;
+            padding: 3px 6px;
+            border-radius: 3px;
+            line-height: 1;
+        }
+        .eft-btn:hover {
+            color: #ffffff;
+            background: #1e293b;
         }
 
         /* Sticky top bar */
@@ -1042,7 +1205,7 @@
             max-width: 1600px;
             width: 100%;
             margin: 0 auto;
-            padding: 14px 16px 36px;
+            padding: 14px 16px 58px;
         }
 
         /* Collector Dashboard Unit: Sentence Stats + Pro Audio VU Meter (no visual void) */
@@ -2082,7 +2245,7 @@
             .mobile-menu-btn { display: inline-flex; align-items: center; justify-content: center; }
             .mobile-right-btn { display: inline-flex; margin-left: auto; }
             header.topbar { padding: 6px 10px; }
-            main { padding: 8px 10px 24px; }
+            main { padding: 8px 10px 58px; }
             .collector-dashboard-unit {
                 padding: 8px 10px;
                 gap: 10px;
@@ -2248,6 +2411,29 @@
             <!-- DYNAMIC CARDS CONTAINER -->
             <div id="cardsContainer"></div>
         </main>
+
+        <!-- ELECTION DESK / SPORTS CHANNEL FOOTER TICKER -->
+        <!-- ("this ticker should be a footer. when the user seese these or hovers they should cycle... maybe a walk though the collection like a live animated news cast thingking like an election") -->
+        <footer class="election-footer-ticker" id="electionFooterTicker" aria-label="Collection Desk Election Ticker">
+            <div class="eft-desk-badge">
+                <span class="eft-live-dot"></span>
+                <span class="eft-badge-title">ELECTION DESK</span>
+            </div>
+            <div class="eft-call-chip" id="eftCallChip" title="Set projection tally">
+                <span class="eft-call-lbl">CALL:</span>
+                <span class="eft-call-val" id="eftCallVal">0/0 SECURED</span>
+            </div>
+            <div class="eft-viewport" id="eftViewport">
+                <div class="eft-stream" id="eftStream">
+                    <!-- Populated dynamically: walk through collection cards + breaking set calls -->
+                </div>
+            </div>
+            <div class="eft-actions">
+                <button type="button" class="eft-btn" id="eftPrevBtn" title="Scroll Previous" aria-label="Previous">‹</button>
+                <button type="button" class="eft-btn eft-pause-btn" id="eftPauseBtn" title="Pause / Resume Ticker" aria-label="Pause/Resume">⏸</button>
+                <button type="button" class="eft-btn" id="eftNextBtn" title="Scroll Next" aria-label="Next">›</button>
+            </div>
+        </footer>
     </div>
 
     <!-- RIGHT BAR ("the right side bar... we call it the right bare - remain fixed all the time") -->
@@ -2325,16 +2511,6 @@
                     <span class="hl-interaction-tag" id="hlInteractionTag">This Season</span>
                 </div>
                 <div class="hl-subset-bars" id="hlSubsetBars"></div>
-            </div>
-
-            <!-- Sports Channel News Feed Ticker -->
-            <div class="hl-news-ticker">
-                <div class="ticker-badge">TICKER</div>
-                <div class="ticker-track-wrap">
-                    <div class="ticker-track" id="tickerTrack">
-                        <span class="ticker-item">🏒 2026-27 UD Tim Hortons live highlights feed</span>
-                    </div>
-                </div>
             </div>
         </div>
     </aside>
@@ -3030,22 +3206,87 @@
             subsetBarsEl.innerHTML = sHtml;
         }
 
-        // Sports Channel News Feed Ticker
-        const tickerTrack = document.getElementById('tickerTrack');
-        if (tickerTrack) {
+        // Election Desk / Sports Broadcast Footer Ticker
+        // ("walk though the collection like a live animated news cast thingking like an election")
+        const eftCallVal = document.getElementById('eftCallVal');
+        if (eftCallVal) {
+            eftCallVal.textContent = `${have}/${total} SECURED`;
+        }
+
+        const eftStream = document.getElementById('eftStream');
+        if (eftStream && total > 0) {
             const seriesName = state.series === '2025-26' ? '2025-26 Tim Hortons' : '2026-27 UD Tim Hortons';
             const userTitle = isOwn() ? (state.currentUser?.collector_name || 'My Collection') : viewedName();
             const teamName = state.currentUser?.team_name || 'Hawks';
 
-            const headlines = [
-                `🏒 [SET HIGHLIGHT] ${userTitle}: ${have} of ${total} cards secured in ${seriesName}`,
-                `🔁 [TRADE DESK] ${doublesCount} active doubles ready for trading`,
-                `👥 [TEAM ${teamName.toUpperCase()}] Team tracking active across the roster`,
-                `⚡ [CHECKLIST WATCH] ${need > 0 ? need + ' cards needed to complete full set' : 'FULL SET COLLECTED!'}`,
-                `💡 [PRO TIP] Push & hold any card for Wikipedia bio · Click twice for double/triple`
-            ];
+            const items = [];
 
-            tickerTrack.innerHTML = headlines.map(h => `<span class="ticker-item">${esc(h)}</span>`).join('');
+            // Leading broadcast call
+            const pct = Math.round((have / total) * 100);
+            items.push(`
+                <div class="eft-callout">
+                    <span class="eft-callout-badge">LIVE CALL</span>
+                    <span>${esc(userTitle)}: ${have}/${total} (${pct}%) SECURED IN ${esc(seriesName.toUpperCase())}</span>
+                </div>
+            `);
+
+            // Walk through collection cards like an election race results desk
+            for (let i = 0; i < total; i++) {
+                const card = state.cards[i];
+                const qty = card.quantity || 0;
+                let pillClass = 'eft-pill-needed';
+                let pillText = '❓ NEEDED';
+                if (qty >= 2) {
+                    pillClass = 'eft-pill-trade';
+                    pillText = `⭐️ ${qty}x TRADE`;
+                } else if (qty === 1) {
+                    pillClass = 'eft-pill-owned';
+                    pillText = '✓ SECURED';
+                }
+
+                items.push(`
+                    <div class="eft-item" data-id="${card.id}" title="Click to jump to #${esc(card.card_number)} ${esc(card.player_name)}">
+                        <span class="eft-item-num">#${esc(card.card_number)}</span>
+                        <span class="eft-item-name">${esc(card.player_name)}</span>
+                        <span class="eft-item-set">${esc(card.set_name)}</span>
+                        <span class="eft-pill ${pillClass}">${pillText}</span>
+                    </div>
+                `);
+
+                // Interspersed breaking calls every 16 cards
+                if (i > 0 && i % 16 === 0) {
+                    const subsetInfo = setsMap.get(card.set_name);
+                    const sHave = subsetInfo ? subsetInfo.filter(c => c.quantity > 0).length : 0;
+                    const sTot = subsetInfo ? subsetInfo.length : 0;
+                    items.push(`
+                        <div class="eft-callout">
+                            <span class="eft-callout-badge">SUBSET CALL</span>
+                            <span>${esc(card.set_name)}: ${sHave}/${sTot} SECURED</span>
+                        </div>
+                    `);
+                }
+            }
+
+            // Summary desk calls
+            items.push(`
+                <div class="eft-callout">
+                    <span class="eft-callout-badge">TRADE DESK</span>
+                    <span>${doublesCount} ACTIVE TRADE DOUBLES AVAILABLE</span>
+                </div>
+            `);
+            items.push(`
+                <div class="eft-callout">
+                    <span class="eft-callout-badge">TEAM DESK</span>
+                    <span>TEAM ${esc(teamName.toUpperCase())} TRACKING LIVE</span>
+                </div>
+            `);
+
+            // Duplicate array for seamless infinite ticker loop
+            eftStream.innerHTML = items.join('') + items.join('');
+
+            // Pace the walk-through smoothly (approx 1.4s per item)
+            const durationSec = Math.max(40, Math.min(220, items.length * 1.4));
+            eftStream.style.animationDuration = `${durationSec}s`;
         }
     }
 
@@ -3542,10 +3783,11 @@
             const cardId = Number(cardEl.dataset.id);
             const card = state.cards.find(c => c.id === cardId);
             clearCardHold();
-            if (card) {
-                openWikipediaModal(card);
+            if (card && card.player_name) {
+                const wikiUrl = `https://en.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(card.player_name)}`;
+                window.open(wikiUrl, '_blank', 'noopener,noreferrer');
             }
-        }, 460);
+        }, 450);
     }
 
     const cardsContainerEl = document.getElementById('cardsContainer');
@@ -3917,6 +4159,56 @@
                     setTimeout(() => cardEl.classList.remove('jump-highlight'), 1600);
                 }
             }
+        });
+    }
+
+    function jumpToCard(cardId) {
+        const card = state.cards.find(c => c.id === cardId);
+        if (!card) return;
+        const cleanId = cleanSetId(card.set_name);
+        const setDetails = document.getElementById('set-' + cleanId);
+        if (setDetails && !setDetails.open) {
+            setDetails.open = true;
+            state.collapsed.delete(card.set_name);
+        }
+        const cardEl = document.querySelector(`.card[data-id="${cardId}"]`);
+        if (cardEl) {
+            cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            cardEl.classList.add('jump-highlight');
+            setTimeout(() => cardEl.classList.remove('jump-highlight'), 1800);
+        }
+    }
+
+    const eftStreamEl = document.getElementById('eftStream');
+    if (eftStreamEl) {
+        eftStreamEl.addEventListener('click', e => {
+            const item = e.target.closest('.eft-item[data-id]');
+            if (item) {
+                const cardId = Number(item.dataset.id);
+                jumpToCard(cardId);
+            }
+        });
+    }
+
+    const eftPauseBtn = document.getElementById('eftPauseBtn');
+    if (eftPauseBtn && eftStreamEl) {
+        eftPauseBtn.addEventListener('click', () => {
+            eftStreamEl.classList.toggle('is-paused');
+            eftPauseBtn.textContent = eftStreamEl.classList.contains('is-paused') ? '▶' : '⏸';
+        });
+    }
+
+    const eftPrevBtn = document.getElementById('eftPrevBtn');
+    const eftNextBtn = document.getElementById('eftNextBtn');
+    const eftViewport = document.getElementById('eftViewport');
+    if (eftPrevBtn && eftViewport) {
+        eftPrevBtn.addEventListener('click', () => {
+            eftViewport.scrollBy({ left: -260, behavior: 'smooth' });
+        });
+    }
+    if (eftNextBtn && eftViewport) {
+        eftNextBtn.addEventListener('click', () => {
+            eftViewport.scrollBy({ left: 260, behavior: 'smooth' });
         });
     }
 
