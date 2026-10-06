@@ -2886,7 +2886,484 @@
             font-weight: 600;
             cursor: pointer;
         }
-    </style>
+
+        /* ==========================================================
+           DRAGGABLE & MOVABLE STATS & HEAT MAP OVERLAY HUD
+           ("the base percentages, the above the ice and other series percentages... then all the heat maps of the popularity site wide. this should be on the tablet view and the iphone view always. all these overlays the user should be able to drag them and move them around stereatech and shift bump over move change windows")
+           ========================================================== */
+        .stats-hud-overlay {
+            position: fixed;
+            z-index: 46;
+            user-select: none;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            transition: opacity 0.2s ease;
+        }
+        .stats-hud-overlay.hud-dock-bottom-right {
+            right: 16px;
+            bottom: 124px;
+            left: auto !important;
+            top: auto !important;
+        }
+        .stats-hud-overlay.hud-dock-bottom-left {
+            left: 16px;
+            bottom: 124px;
+            right: auto !important;
+            top: auto !important;
+        }
+        .stats-hud-overlay.hud-dock-top-left {
+            left: 16px;
+            top: 64px;
+            right: auto !important;
+            bottom: auto !important;
+        }
+        .stats-hud-overlay.hud-dock-top-right {
+            right: 16px;
+            top: 64px;
+            left: auto !important;
+            bottom: auto !important;
+        }
+        .stats-hud-overlay.hud-animating {
+            transition: top 0.26s cubic-bezier(0.4, 0, 0.2, 1),
+                        left 0.26s cubic-bezier(0.4, 0, 0.2, 1),
+                        right 0.26s cubic-bezier(0.4, 0, 0.2, 1),
+                        bottom 0.26s cubic-bezier(0.4, 0, 0.2, 1),
+                        transform 0.26s ease !important;
+        }
+
+        /* Minimized Mini Bar Pill */
+        .stats-hud-mini-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(7, 11, 20, 0.94);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(59, 130, 246, 0.45);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65), 0 0 12px rgba(37, 99, 235, 0.3);
+            border-radius: 9999px;
+            padding: 5px 10px;
+            color: #f1f5f9;
+            font-size: 0.74rem;
+            font-weight: 700;
+            max-width: 92vw;
+            box-sizing: border-box;
+        }
+        .hud-mini-drag {
+            cursor: grab;
+            font-size: 0.92rem;
+            color: #60a5fa;
+            padding: 2px 4px;
+            user-select: none;
+            touch-action: none;
+        }
+        .hud-mini-drag:active {
+            cursor: grabbing;
+        }
+        .hud-mini-label-btn {
+            background: transparent;
+            border: none;
+            color: #f1f5f9;
+            font-size: 0.72rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 250px;
+        }
+        .hud-mini-label-btn:hover {
+            color: #38bdf8;
+        }
+
+        /* Floating Window Container */
+        .stats-hud-window {
+            width: clamp(285px, 88vw, 360px);
+            max-height: clamp(280px, 62vh, 460px);
+            display: flex;
+            flex-direction: column;
+            background: rgba(8, 13, 25, 0.96);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7), 0 0 20px rgba(37, 99, 235, 0.25);
+            border-radius: 12px;
+            overflow: hidden;
+            color: #f1f5f9;
+            box-sizing: border-box;
+        }
+
+        /* Window Header */
+        .hud-header {
+            background: linear-gradient(90deg, #091024 0%, #0f1c3d 50%, #091024 100%);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 7px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            cursor: grab;
+            flex-shrink: 0;
+            touch-action: none;
+        }
+        .hud-header:active {
+            cursor: grabbing;
+        }
+        .hud-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+        }
+        .hud-drag-icon {
+            font-size: 0.95rem;
+            color: #60a5fa;
+            user-select: none;
+        }
+        .hud-title {
+            font-size: 0.68rem;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+            color: #93c5fd;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .hud-live-dot {
+            width: 6px;
+            height: 6px;
+            background: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #10b981;
+            animation: hudPulse 1.8s infinite;
+        }
+        .hud-live-dot.mini {
+            width: 5px;
+            height: 5px;
+        }
+        @keyframes hudPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .hud-tab-switcher {
+            display: inline-flex;
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 6px;
+            padding: 2px;
+            gap: 2px;
+        }
+        .hud-tab-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 0.64rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+        .hud-tab-btn:hover {
+            color: #f1f5f9;
+        }
+        .hud-tab-btn.active {
+            background: #2563eb;
+            color: #ffffff;
+            box-shadow: 0 1px 4px rgba(37, 99, 235, 0.4);
+        }
+
+        .hud-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        .hud-btn {
+            background: rgba(30, 41, 59, 0.85);
+            color: #cbd5e1;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            border-radius: 5px;
+            font-size: 0.66rem;
+            font-weight: 700;
+            padding: 3px 6px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+        .hud-btn:hover {
+            background: #334155;
+            color: #fff;
+            border-color: #60a5fa;
+        }
+        .hud-btn-mini {
+            padding: 2px 5px;
+            font-size: 0.66rem;
+        }
+        .hud-bump-btn {
+            background: #1e3a8a;
+            color: #93c5fd;
+            border-color: #3b82f6;
+        }
+        .hud-bump-btn:hover {
+            background: #2563eb;
+            color: #fff;
+        }
+        .hud-minimize-btn {
+            font-weight: 900;
+            line-height: 0.8;
+        }
+
+        /* Body Content */
+        .hud-scroll-body {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 8px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            scrollbar-width: thin;
+            scrollbar-color: #334155 transparent;
+        }
+        .hud-scroll-body::-webkit-scrollbar {
+            width: 4px;
+        }
+        .hud-scroll-body::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+
+        .hud-pane-section {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: rgba(15, 23, 42, 0.65);
+            border: 1px solid rgba(51, 65, 85, 0.6);
+            border-radius: 8px;
+            padding: 7px 8px;
+        }
+        .hud-pane-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+        }
+        .hud-pane-title {
+            font-size: 0.66rem;
+            font-weight: 900;
+            letter-spacing: 0.04em;
+            color: #60a5fa;
+            text-transform: uppercase;
+        }
+        .hud-pane-badge {
+            font-size: 0.63rem;
+            font-weight: 800;
+            padding: 1px 6px;
+            border-radius: 9999px;
+            background: #1e293b;
+            color: #94a3b8;
+            border: 1px solid #334155;
+        }
+        .hud-pane-badge.active-good {
+            background: #064e3b;
+            color: #34d399;
+            border-color: #059669;
+        }
+
+        /* Subsets List */
+        .hud-subsets-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            max-height: 180px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+        .hud-subset-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            cursor: pointer;
+            padding: 3px 5px;
+            border-radius: 5px;
+            transition: background 0.15s ease;
+        }
+        .hud-subset-item:hover {
+            background: rgba(30, 41, 59, 0.8);
+        }
+        .hud-subset-item.is-base {
+            border-left: 2px solid #f59e0b;
+        }
+        .hud-subset-item.is-ice {
+            border-left: 2px solid #38bdf8;
+        }
+        .hud-subset-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.67rem;
+            color: #e2e8f0;
+        }
+        .hud-subset-name {
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 170px;
+        }
+        .hud-subset-count {
+            font-size: 0.63rem;
+            color: #94a3b8;
+            font-variant-numeric: tabular-nums;
+        }
+        .hud-subset-count strong {
+            color: #38bdf8;
+        }
+        .hud-subset-track {
+            height: 5px;
+            background: #1e293b;
+            border-radius: 9999px;
+            overflow: hidden;
+            position: relative;
+        }
+        .hud-subset-bar {
+            height: 100%;
+            border-radius: 9999px;
+            background: linear-gradient(90deg, #2563eb 0%, #38bdf8 100%);
+            transition: width 0.3s ease;
+        }
+        .hud-subset-item.is-base .hud-subset-bar {
+            background: linear-gradient(90deg, #d97706 0%, #fbbf24 100%);
+        }
+        .hud-subset-item.is-ice .hud-subset-bar {
+            background: linear-gradient(90deg, #0284c7 0%, #38bdf8 100%);
+        }
+
+        /* Site-Wide Popularity Heat Map */
+        .hud-heatmap-canvas-container {
+            position: relative;
+            background: #020617;
+            border: 1px solid #1e293b;
+            border-radius: 6px;
+            padding: 4px;
+            overflow: hidden;
+        }
+        #hudSitewideHeatmapCanvas {
+            display: block;
+            width: 100%;
+            height: 48px;
+            cursor: crosshair;
+        }
+        .hud-heatmap-tooltip {
+            position: absolute;
+            bottom: 54px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0f172a;
+            border: 1px solid #3b82f6;
+            color: #f8fafc;
+            font-size: 0.68rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7);
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 50;
+        }
+        .hud-heatmap-legend {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 4px;
+            font-size: 0.61rem;
+            color: #94a3b8;
+            flex-wrap: wrap;
+            margin-top: 2px;
+        }
+        .hud-legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .hud-swatch {
+            width: 7px;
+            height: 7px;
+            border-radius: 2px;
+        }
+        .swatch-hot { background: #22c55e; }
+        .swatch-mid { background: #f59e0b; }
+        .swatch-rare { background: #ef4444; }
+        .swatch-mine { background: #38bdf8; border: 1px solid #ffffff; }
+
+        .hud-heatmap-tip {
+            font-size: 0.61rem;
+            color: #64748b;
+            font-style: italic;
+            line-height: 1.25;
+        }
+
+        /* HUD Footer */
+        .hud-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid rgba(51, 65, 85, 0.5);
+            padding-top: 6px;
+            font-size: 0.63rem;
+            color: #64748b;
+        }
+        .hud-sync-tag {
+            color: #94a3b8;
+            font-weight: 600;
+        }
+        .hud-footer-link {
+            background: transparent;
+            border: none;
+            color: #60a5fa;
+            font-size: 0.63rem;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 0;
+        }
+        .hud-footer-link:hover {
+            color: #93c5fd;
+            text-decoration: underline;
+        }
+
+        /* Tablet & Mobile specifics */
+        @media (max-width: 1080px) {
+            .stats-hud-overlay {
+                bottom: 124px;
+                right: 8px;
+            }
+            .stats-hud-window {
+                width: clamp(275px, 94vw, 340px);
+                max-height: 54vh;
+            }
+        }
+        @media (max-width: 480px) {
+            .stats-hud-overlay {
+                bottom: 124px;
+                right: 4px;
+            }
+            .stats-hud-window {
+                width: calc(100vw - 8px);
+                max-height: 50vh;
+            }
+            .hud-header {
+                padding: 6px 8px;
+            }
+            .hud-title {
+                font-size: 0.64rem;
+            }
+        }
 </head>
 <body>
 
@@ -3022,6 +3499,7 @@
                 </div>
 
                 <div class="topbar-right-cluster">
+                    <button type="button" class="trade-market-topbar-btn" id="topbarStatsHudBtn" title="Toggle Live Stats & Heat Map HUD">📊 HUD</button>
                     <button type="button" class="trade-market-topbar-btn" id="topbarTradeMarketBtn" title="Offer Trade / Simulate Card Market">🤝 Market</button>
                     <button class="mobile-menu-btn mobile-right-btn" id="openRightBarBtn" aria-label="Open collector options">👤</button>
                 </div>
@@ -3220,6 +3698,81 @@
         </div>
     </aside>
 </div>
+
+<!-- DRAGGABLE & MOVABLE STATS & HEAT MAP OVERLAY HUD -->
+<!-- ("the base percentages, the above the ice and other series percentages... then all the heat maps of the popularity site wide. this should be on the tablet view and the iphone view always. all these overlays the user should be able to drag them and move them around stereatech and shift bump over move change windows and that vierw saves with them locally and it could push it to the DB") -->
+<aside id="statsHudOverlay" class="stats-hud-overlay hud-dock-bottom-right" role="region" aria-label="Live Statistics and Heat Map HUD">
+    <!-- Minimized pill bar -->
+    <div id="statsHudMiniBar" class="stats-hud-mini-bar" style="display: none;">
+        <span class="hud-mini-drag" id="hudMiniDragHandle" title="Drag to move anywhere">⠿</span>
+        <button type="button" class="hud-mini-label-btn" id="hudMiniLabelBtn" title="Click to expand full stats & heat map">
+            <span class="hud-live-dot mini"></span>
+            <span id="hudMiniStatsText">📊 Base 0% · Ice 0% · 🔥 Heat Map</span>
+        </button>
+        <button type="button" class="hud-btn hud-btn-mini hud-bump-btn" id="hudMiniBumpBtn" title="Bump dock corner (⇄ Bump Over)">⇄</button>
+        <button type="button" class="hud-btn hud-btn-mini" id="hudMiniExpandBtn" title="Expand Window">◻</button>
+    </div>
+
+    <!-- Main floating draggable window -->
+    <div id="statsHudWindow" class="stats-hud-window">
+        <div class="hud-header" id="hudDragHandle">
+            <div class="hud-title-wrap">
+                <span class="hud-drag-icon" title="Drag overlay window anywhere">⠿</span>
+                <span class="hud-title">LIVE STATS & HEAT MAP</span>
+                <span class="hud-live-dot" title="Live stats active"></span>
+            </div>
+            <div class="hud-tab-switcher" role="tablist">
+                <button type="button" class="hud-tab-btn active" data-tab="all" title="Show all stats and site heat map">All</button>
+                <button type="button" class="hud-tab-btn" data-tab="subsets" title="Series & Subset Percentages">Subsets %</button>
+                <button type="button" class="hud-tab-btn" data-tab="heatmap" title="Site-wide Popularity Heat Map">Heat Map</button>
+            </div>
+            <div class="hud-actions">
+                <button type="button" class="hud-btn hud-bump-btn" id="hudBumpBtn" title="Shift / Bump window to opposite side or next corner (⇄ Bump Over)">⇄ Bump</button>
+                <button type="button" class="hud-btn hud-minimize-btn" id="hudMinimizeBtn" title="Minimize to compact bar">_</button>
+            </div>
+        </div>
+
+        <div class="hud-scroll-body" id="hudScrollBody">
+            <!-- SECTION 1: SERIES & SUBSET PERCENTAGES -->
+            <div class="hud-pane-section" id="hudSubsetsPane">
+                <div class="hud-pane-header">
+                    <span class="hud-pane-title">📊 SERIES & SUBSET COVERAGE</span>
+                    <span class="hud-pane-badge" id="hudOverallCoverageBadge">0% Total</span>
+                </div>
+                <div class="hud-subsets-list" id="hudSubsetsList">
+                    <!-- Dynamic subset rows: Base, Above the Ice, etc. -->
+                </div>
+            </div>
+
+            <!-- SECTION 2: SITE-WIDE POPULARITY HEAT MAP -->
+            <div class="hud-pane-section" id="hudHeatmapPane">
+                <div class="hud-pane-header">
+                    <span class="hud-pane-title">🔥 SITE-WIDE CARD CIRCULATION</span>
+                    <span class="hud-pane-badge" id="hudSitewideHoldersCountBadge">Site Activity</span>
+                </div>
+                <div class="hud-heatmap-canvas-container">
+                    <canvas id="hudSitewideHeatmapCanvas" height="48" title="Site-wide popularity heat map across all checklist cards"></canvas>
+                    <div id="hudHeatmapTooltip" class="hud-heatmap-tooltip" style="display: none;"></div>
+                </div>
+                <div class="hud-heatmap-legend">
+                    <div class="hud-legend-item"><span class="hud-swatch swatch-hot"></span> Hot / Widely Owned</div>
+                    <div class="hud-legend-item"><span class="hud-swatch swatch-mid"></span> Moderate Circulation</div>
+                    <div class="hud-legend-item"><span class="hud-swatch swatch-rare"></span> Rare / Coveted</div>
+                    <div class="hud-legend-item"><span class="hud-swatch swatch-mine"></span> 🟩 In Your Deck</div>
+                </div>
+                <div class="hud-heatmap-tip">💡 Tap or hover any bar to inspect card scarcity site-wide. Click to jump to card.</div>
+            </div>
+
+            <!-- HUD FOOTER -->
+            <div class="hud-footer">
+                <span class="hud-sync-tag" id="hudSyncTag">💾 Preferences Saved</span>
+                <div class="hud-footer-controls">
+                    <button type="button" class="hud-footer-link" id="hudResetDockBtn" title="Reset to standard bottom dock">↺ Reset Dock</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</aside>
 
 <!-- CARD MARKET & TRADE EXCHANGE DIALOG -->
 <!-- ("should be a mode a guest could enter into... they could add and sub tract to their account and offer a trade... and rig the card market") -->
@@ -3505,6 +4058,9 @@
                 state.currentUser = me;
                 state.userId = me.id;
                 state.viewId = me.id;
+                if (me.layout_prefs) {
+                    applyHudLayoutPrefs(me.layout_prefs);
+                }
             } else {
                 // Stranger / Public Guest: display Bronzo's collection openly
                 state.currentUser = null;
@@ -3979,6 +4535,8 @@
         renderFooterSpectrum();
         // Render the Rotating Stats corner widget in the bottom left footer
         renderRotatingStats();
+        // Render Draggable Stats & Site-Wide Heat Map HUD (always visible on tablet & iPhone)
+        renderStatsHud();
     }
 
     function renderFooterSpectrum() {
@@ -5472,6 +6030,7 @@
     window.addEventListener('resize', () => {
         renderSportsHighlights();
         renderFooterSpectrum();
+        renderStatsHud(true);
     });
 
     function jumpToCard(cardId) {
@@ -5889,6 +6448,588 @@
 
     setupLbarCustomization();
     applyLbarPrefs();
+
+    /* ==========================================================
+       DRAGGABLE & MOVABLE STATS & HEAT MAP OVERLAY HUD
+       ("the base percentages, the above the ice and other series percentages... then all the heat maps of the popularity site wide. this should be on the tablet view and the iphone view always. all these overlays the user should be able to drag them and move them around stereatech and shift bump over move change windows and that vierw saves with them locally and it could push it to the DB")
+       ========================================================== */
+    const hudState = {
+        dock: 'bottom-right',
+        x: null,
+        y: null,
+        minimized: false,
+        activeTab: 'all',
+        isDragging: false,
+        dragStartX: 0,
+        dragStartY: 0,
+        initialX: 0,
+        initialY: 0,
+        saveTimeout: null,
+        docks: ['bottom-right', 'bottom-left', 'top-left', 'top-right']
+    };
+
+    function initStatsHud() {
+        const overlay = document.getElementById('statsHudOverlay');
+        const hudWindow = document.getElementById('statsHudWindow');
+        const miniBar = document.getElementById('statsHudMiniBar');
+        const dragHandle = document.getElementById('hudDragHandle');
+        const miniDrag = document.getElementById('hudMiniDragHandle');
+        if (!overlay || !hudWindow || !miniBar) return;
+
+        // Restore layout from localStorage first
+        try {
+            const raw = localStorage.getItem('cards_hud_layout');
+            if (raw) {
+                applyHudLayoutPrefs(raw);
+            }
+        } catch (e) {
+            console.warn('Could not read hud layout from localStorage', e);
+        }
+
+        // Pointer & Touch Dragging for both window header and mini bar
+        [dragHandle, miniDrag].forEach(el => {
+            if (!el) return;
+
+            const onPointerDown = e => {
+                if (e.target.closest('button, .hud-tab-btn, a')) return;
+                hudState.isDragging = true;
+                hudState.dragStartX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+                hudState.dragStartY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+
+                const rect = overlay.getBoundingClientRect();
+                hudState.initialX = rect.left;
+                hudState.initialY = rect.top;
+
+                // Fix to absolute coordinates and remove dock classes
+                overlay.classList.remove('hud-dock-bottom-right', 'hud-dock-bottom-left', 'hud-dock-top-left', 'hud-dock-top-right', 'hud-animating');
+                overlay.style.left = `${rect.left}px`;
+                overlay.style.top = `${rect.top}px`;
+                overlay.style.right = 'auto';
+                overlay.style.bottom = 'auto';
+
+                if (e.pointerId && el.setPointerCapture) {
+                    try { el.setPointerCapture(e.pointerId); } catch (err) {}
+                }
+                if (e.cancelable && e.type === 'touchstart') {
+                    e.preventDefault();
+                }
+            };
+
+            const onPointerMove = e => {
+                if (!hudState.isDragging) return;
+                const curX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+                const curY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+                const dx = curX - hudState.dragStartX;
+                const dy = curY - hudState.dragStartY;
+
+                const curW = overlay.offsetWidth || 300;
+                const curH = overlay.offsetHeight || 200;
+                const minX = 4;
+                const maxX = Math.max(minX, window.innerWidth - curW - 4);
+                const minY = 52;
+                const maxY = Math.max(minY, window.innerHeight - 120 - curH);
+
+                const nextX = Math.max(minX, Math.min(maxX, hudState.initialX + dx));
+                const nextY = Math.max(minY, Math.min(maxY, hudState.initialY + dy));
+
+                overlay.style.left = `${Math.round(nextX)}px`;
+                overlay.style.top = `${Math.round(nextY)}px`;
+                overlay.style.right = 'auto';
+                overlay.style.bottom = 'auto';
+
+                if (e.cancelable && e.type === 'touchmove') {
+                    e.preventDefault();
+                }
+            };
+
+            const onPointerUp = e => {
+                if (!hudState.isDragging) return;
+                hudState.isDragging = false;
+                hudState.dock = 'custom';
+                hudState.x = parseInt(overlay.style.left, 10);
+                hudState.y = parseInt(overlay.style.top, 10);
+
+                if (e.pointerId && el.releasePointerCapture) {
+                    try { el.releasePointerCapture(e.pointerId); } catch (err) {}
+                }
+                saveHudLayout();
+            };
+
+            el.addEventListener('pointerdown', onPointerDown);
+            el.addEventListener('pointermove', onPointerMove);
+            el.addEventListener('pointerup', onPointerUp);
+            el.addEventListener('pointercancel', onPointerUp);
+
+            // Touch fallbacks
+            el.addEventListener('touchstart', onPointerDown, { passive: false });
+            el.addEventListener('touchmove', onPointerMove, { passive: false });
+            el.addEventListener('touchend', onPointerUp);
+            el.addEventListener('touchcancel', onPointerUp);
+        });
+
+        // Bump Button: shifts dock position to next corner ("stereatech and shift, bump over, move change windows")
+        const bumpBtns = [document.getElementById('hudBumpBtn'), document.getElementById('hudMiniBumpBtn')];
+        bumpBtns.forEach(btn => {
+            if (!btn) return;
+            btn.addEventListener('click', e => {
+                e.stopPropagation();
+                bumpHudPosition();
+            });
+        });
+
+        // Minimize Button
+        const minBtn = document.getElementById('hudMinimizeBtn');
+        if (minBtn) {
+            minBtn.addEventListener('click', e => {
+                e.stopPropagation();
+                minimizeHud(true);
+            });
+        }
+
+        // Expand Buttons
+        const expBtn = document.getElementById('hudMiniExpandBtn');
+        const miniLabelBtn = document.getElementById('hudMiniLabelBtn');
+        [expBtn, miniLabelBtn].forEach(b => {
+            if (!b) return;
+            b.addEventListener('click', e => {
+                e.stopPropagation();
+                minimizeHud(false);
+            });
+        });
+
+        // Topbar HUD Button
+        const topbarHudBtn = document.getElementById('topbarStatsHudBtn');
+        if (topbarHudBtn) {
+            topbarHudBtn.addEventListener('click', () => {
+                if (hudState.minimized) {
+                    minimizeHud(false);
+                } else {
+                    // Flash brief focus glow
+                    overlay.classList.add('hud-animating');
+                    overlay.style.transform = 'scale(1.04)';
+                    setTimeout(() => {
+                        overlay.style.transform = '';
+                        setTimeout(() => overlay.classList.remove('hud-animating'), 200);
+                    }, 180);
+                }
+            });
+        }
+
+        // Tabs switcher
+        const tabBtns = document.querySelectorAll('.hud-tab-btn');
+        tabBtns.forEach(tabBtn => {
+            tabBtn.addEventListener('click', () => {
+                const tab = tabBtn.dataset.tab;
+                switchHudTab(tab);
+            });
+        });
+
+        // Reset Dock Button
+        const resetBtn = document.getElementById('hudResetDockBtn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                setHudDock('bottom-right');
+            });
+        }
+
+        // Site-wide Heatmap Canvas hover / tap interaction
+        setupHeatmapCanvasInteraction();
+    }
+
+    function bumpHudPosition() {
+        const overlay = document.getElementById('statsHudOverlay');
+        if (!overlay) return;
+
+        let curIdx = hudState.docks.indexOf(hudState.dock);
+        if (curIdx === -1) curIdx = 0;
+        const nextDock = hudState.docks[(curIdx + 1) % hudState.docks.length];
+        setHudDock(nextDock);
+    }
+
+    function setHudDock(dockName) {
+        const overlay = document.getElementById('statsHudOverlay');
+        if (!overlay) return;
+
+        hudState.dock = dockName;
+        hudState.x = null;
+        hudState.y = null;
+
+        overlay.classList.add('hud-animating');
+        overlay.classList.remove('hud-dock-bottom-right', 'hud-dock-bottom-left', 'hud-dock-top-left', 'hud-dock-top-right');
+        overlay.classList.add(`hud-dock-${dockName}`);
+        overlay.style.left = '';
+        overlay.style.top = '';
+        overlay.style.right = '';
+        overlay.style.bottom = '';
+
+        setTimeout(() => {
+            overlay.classList.remove('hud-animating');
+            renderStatsHud(true);
+        }, 280);
+
+        saveHudLayout();
+    }
+
+    function minimizeHud(minimized) {
+        hudState.minimized = Boolean(minimized);
+        const hudWindow = document.getElementById('statsHudWindow');
+        const miniBar = document.getElementById('statsHudMiniBar');
+        if (hudWindow && miniBar) {
+            if (hudState.minimized) {
+                hudWindow.style.display = 'none';
+                miniBar.style.display = 'flex';
+            } else {
+                hudWindow.style.display = 'flex';
+                miniBar.style.display = 'none';
+                renderStatsHud(true);
+            }
+        }
+        saveHudLayout();
+    }
+
+    function switchHudTab(tab) {
+        hudState.activeTab = tab;
+        document.querySelectorAll('.hud-tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === tab);
+        });
+
+        const subsetsPane = document.getElementById('hudSubsetsPane');
+        const heatmapPane = document.getElementById('hudHeatmapPane');
+
+        if (subsetsPane) {
+            subsetsPane.style.display = (tab === 'all' || tab === 'subsets') ? 'flex' : 'none';
+        }
+        if (heatmapPane) {
+            heatmapPane.style.display = (tab === 'all' || tab === 'heatmap') ? 'flex' : 'none';
+        }
+
+        if (tab === 'all' || tab === 'heatmap') {
+            setTimeout(() => drawSitewideHeatmap(), 50);
+        }
+
+        saveHudLayout();
+    }
+
+    function saveHudLayout() {
+        const payload = {
+            dock: hudState.dock,
+            x: hudState.x,
+            y: hudState.y,
+            minimized: hudState.minimized,
+            activeTab: hudState.activeTab,
+            updatedAt: Date.now()
+        };
+
+        try {
+            localStorage.setItem('cards_hud_layout', JSON.stringify(payload));
+        } catch (e) {
+            console.warn('Could not save cards_hud_layout to localStorage', e);
+        }
+
+        const syncTag = document.getElementById('hudSyncTag');
+        if (syncTag) syncTag.textContent = '💾 Saved locally';
+
+        if (state.currentUser?.id) {
+            if (hudState.saveTimeout) clearTimeout(hudState.saveTimeout);
+            hudState.saveTimeout = setTimeout(async () => {
+                try {
+                    await api('set_layout_prefs', {}, { layout_prefs: JSON.stringify(payload) });
+                    if (syncTag) syncTag.textContent = '☁️ Synced to DB';
+                } catch (err) {
+                    console.warn('Could not sync layout prefs to DB:', err);
+                }
+            }, 600);
+        }
+    }
+
+    function applyHudLayoutPrefs(prefsStr) {
+        try {
+            const data = (typeof prefsStr === 'string') ? JSON.parse(prefsStr) : prefsStr;
+            if (!data) return;
+
+            const overlay = document.getElementById('statsHudOverlay');
+            if (data.dock && data.dock !== 'custom') {
+                hudState.dock = data.dock;
+                hudState.x = null;
+                hudState.y = null;
+                if (overlay) {
+                    overlay.classList.remove('hud-dock-bottom-right', 'hud-dock-bottom-left', 'hud-dock-top-left', 'hud-dock-top-right');
+                    overlay.classList.add(`hud-dock-${data.dock}`);
+                    overlay.style.left = '';
+                    overlay.style.top = '';
+                    overlay.style.right = '';
+                    overlay.style.bottom = '';
+                }
+            } else if (data.x !== null && data.y !== null && overlay) {
+                hudState.dock = 'custom';
+                hudState.x = data.x;
+                hudState.y = data.y;
+                overlay.classList.remove('hud-dock-bottom-right', 'hud-dock-bottom-left', 'hud-dock-top-left', 'hud-dock-top-right');
+                overlay.style.left = `${data.x}px`;
+                overlay.style.top = `${data.y}px`;
+                overlay.style.right = 'auto';
+                overlay.style.bottom = 'auto';
+            }
+
+            if (data.minimized !== undefined) {
+                minimizeHud(data.minimized);
+            }
+
+            if (data.activeTab) {
+                switchHudTab(data.activeTab);
+            }
+        } catch (err) {
+            console.warn('Failed parsing layout_prefs:', err);
+        }
+    }
+
+    function renderStatsHud(forceRedraw = false) {
+        if (!state.cards || state.cards.length === 0) return;
+
+        const total = state.cards.length;
+        const have = state.cards.filter(c => c.quantity > 0).length;
+        const overallPct = total > 0 ? Math.round((have / total) * 100) : 0;
+
+        const coverageBadge = document.getElementById('hudOverallCoverageBadge');
+        if (coverageBadge) {
+            coverageBadge.textContent = `${have}/${total} (${overallPct}%)`;
+            coverageBadge.classList.toggle('active-good', overallPct >= 50);
+        }
+
+        // Group cards by subset
+        const setsMap = new Map();
+        for (const card of state.cards) {
+            if (!setsMap.has(card.set_name)) setsMap.set(card.set_name, []);
+            setsMap.get(card.set_name).push(card);
+        }
+
+        // Sort subsets: Base first, Above the Ice second, then others
+        const sortedSets = Array.from(setsMap.entries()).sort((a, b) => {
+            const nameA = a[0].toLowerCase();
+            const nameB = b[0].toLowerCase();
+            if (nameA.includes('base') && !nameB.includes('base')) return -1;
+            if (!nameA.includes('base') && nameB.includes('base')) return 1;
+            if (nameA.includes('ice') && !nameB.includes('ice')) return -1;
+            if (!nameA.includes('ice') && nameB.includes('ice')) return 1;
+            return nameA.localeCompare(nameB);
+        });
+
+        // Populate Subsets List in HUD
+        const subsetsListEl = document.getElementById('hudSubsetsList');
+        if (subsetsListEl) {
+            let sHtml = '';
+            let basePct = 0;
+            let icePct = 0;
+
+            for (const [setName, setCards] of sortedSets) {
+                const sHave = setCards.filter(c => c.quantity > 0).length;
+                const sTotal = setCards.length;
+                const sPct = sTotal > 0 ? Math.round((sHave / sTotal) * 100) : 0;
+
+                const isBase = setName.toLowerCase().includes('base');
+                const isIce = setName.toLowerCase().includes('ice');
+                if (isBase) basePct = sPct;
+                if (isIce) icePct = sPct;
+
+                const rowClass = isBase ? 'is-base' : (isIce ? 'is-ice' : '');
+
+                sHtml += `
+                    <div class="hud-subset-item ${rowClass}" data-set="${esc(setName)}" title="Click to jump to ${esc(setName)}">
+                        <div class="hud-subset-info">
+                            <span class="hud-subset-name">${esc(setName)}</span>
+                            <span class="hud-subset-count"><strong>${sHave}/${sTotal}</strong> (${sPct}%)</span>
+                        </div>
+                        <div class="hud-subset-track">
+                            <div class="hud-subset-bar" style="width: ${sPct}%"></div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            subsetsListEl.innerHTML = sHtml;
+
+            // Clicking any subset jumps to it
+            subsetsListEl.querySelectorAll('.hud-subset-item').forEach(row => {
+                row.addEventListener('click', () => {
+                    const setName = row.dataset.set;
+                    const cleanId = cleanSetId(setName);
+                    const setDetails = document.getElementById('set-' + cleanId);
+                    if (setDetails) {
+                        setDetails.open = true;
+                        state.collapsed.delete(setName);
+                        setDetails.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            });
+
+            // Update mini pill text
+            const miniStatsText = document.getElementById('hudMiniStatsText');
+            if (miniStatsText) {
+                miniStatsText.textContent = `📊 Base ${basePct}% · Ice ${icePct}% · Overall ${overallPct}% · 🔥 Heat Map`;
+            }
+        }
+
+        // Draw Site-Wide Heatmap
+        drawSitewideHeatmap(forceRedraw);
+    }
+
+    function drawSitewideHeatmap() {
+        const canvas = document.getElementById('hudSitewideHeatmapCanvas');
+        if (!canvas || !state.cards || state.cards.length === 0) return;
+
+        const container = canvas.parentElement;
+        const rect = container.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        const w = rect.width ? Math.floor(rect.width - 8) : 280;
+        const h = 48;
+
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+        canvas.style.width = `${w}px`;
+        canvas.style.height = `${h}px`;
+
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+        ctx.clearRect(0, 0, w, h);
+
+        const cards = state.cards;
+        const total = cards.length;
+        const maxHolders = Math.max(1, ...cards.map(c => c.sitewide_holders || 0));
+
+        // Update badge
+        const badge = document.getElementById('hudSitewideHoldersCountBadge');
+        if (badge) {
+            badge.textContent = `🔥 Max ${maxHolders} owners / card`;
+        }
+
+        const slotW = w / total;
+
+        // Baseline
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(0, h - 2, w, 2);
+
+        for (let i = 0; i < total; i++) {
+            const card = cards[i];
+            const x = i * slotW;
+            const holders = card.sitewide_holders || 0;
+            const ratio = holders / maxHolders;
+            const barH = Math.max(5, Math.round(ratio * (h - 10)));
+            const barW = Math.max(1.2, slotW - 0.4);
+
+            // Thermal Popularity Gradient
+            let grad = ctx.createLinearGradient(0, h - barH, 0, h);
+            if (ratio >= 0.7) {
+                // Hot / Widely owned
+                grad.addColorStop(0, '#34d399');
+                grad.addColorStop(1, '#059669');
+            } else if (ratio >= 0.3) {
+                // Moderate
+                grad.addColorStop(0, '#fbbf24');
+                grad.addColorStop(1, '#d97706');
+            } else {
+                // Rare / Coveted
+                grad.addColorStop(0, '#f87171');
+                grad.addColorStop(1, '#dc2626');
+            }
+
+            ctx.fillStyle = grad;
+            ctx.fillRect(x, h - barH, barW, barH);
+
+            // Ownership indicators:
+            if (card.quantity > 0) {
+                // User owns this card: bright cyan marker at the top of the bar
+                ctx.fillStyle = '#38bdf8';
+                ctx.fillRect(x, h - barH - 3, Math.max(2, barW), 2.5);
+
+                if (card.quantity >= 2) {
+                    // Double / Trade: dual gold dot
+                    ctx.fillStyle = '#facc15';
+                    ctx.fillRect(x, h - barH - 6, Math.max(2, barW), 2);
+                }
+            }
+        }
+    }
+
+    function setupHeatmapCanvasInteraction() {
+        const canvas = document.getElementById('hudSitewideHeatmapCanvas');
+        const tooltip = document.getElementById('hudHeatmapTooltip');
+        if (!canvas || !tooltip) return;
+
+        let hideTimer = null;
+
+        const onMove = e => {
+            if (!state.cards || state.cards.length === 0) return;
+            if (hideTimer) clearTimeout(hideTimer);
+
+            const rect = canvas.getBoundingClientRect();
+            const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+            const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
+            const x = clientX - rect.left;
+
+            if (x < 0 || x > rect.width) {
+                tooltip.style.display = 'none';
+                return;
+            }
+
+            const idx = Math.floor((x / rect.width) * state.cards.length);
+            const card = state.cards[idx];
+            if (!card) {
+                tooltip.style.display = 'none';
+                return;
+            }
+
+            const holders = card.sitewide_holders || 0;
+            const doubles = card.sitewide_doubles || 0;
+            const myStatus = card.quantity > 0
+                ? (card.quantity >= 2 ? `🟥 2x In Trade (${card.quantity})` : '🟩 In Your Deck')
+                : '🔻 Needed';
+
+            tooltip.innerHTML = `
+                <div style="font-weight:800; color:#38bdf8;">#${card.card_number || ''} ${esc(card.player_name)}</div>
+                <div style="font-size:0.64rem; color:#cbd5e1;">${esc(card.set_name)}</div>
+                <div style="margin-top:2px; font-size:0.64rem;">🔥 <strong>${holders}</strong> owner(s) site-wide · <strong>${doubles}</strong> in trade</div>
+                <div style="margin-top:2px; font-size:0.64rem; font-weight:700;">${myStatus}</div>
+            `;
+            tooltip.style.display = 'block';
+
+            // Center tooltip clamped within container
+            const tipW = tooltip.offsetWidth || 150;
+            const containerW = canvas.parentElement.offsetWidth || 300;
+            const clampedX = Math.max(tipW / 2 + 4, Math.min(containerW - tipW / 2 - 4, x));
+            tooltip.style.left = `${clampedX}px`;
+            tooltip.style.bottom = `${rect.height + 8}px`;
+        };
+
+        const onLeave = () => {
+            hideTimer = setTimeout(() => {
+                tooltip.style.display = 'none';
+            }, 300);
+        };
+
+        const onClick = e => {
+            if (!state.cards || state.cards.length === 0) return;
+            const rect = canvas.getBoundingClientRect();
+            const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+            const x = clientX - rect.left;
+            const idx = Math.floor((x / rect.width) * state.cards.length);
+            const card = state.cards[idx];
+            if (card) {
+                jumpToCard(card.id);
+            }
+        };
+
+        canvas.addEventListener('mousemove', onMove);
+        canvas.addEventListener('mouseleave', onLeave);
+        canvas.addEventListener('click', onClick);
+
+        // Touch events
+        canvas.addEventListener('touchstart', onMove, { passive: true });
+        canvas.addEventListener('touchmove', onMove, { passive: true });
+        canvas.addEventListener('touchend', onClick);
+    }
+
+    // Initialize HUD Overlay
+    initStatsHud();
 
     // Initial check
     checkAuthAndInit();
