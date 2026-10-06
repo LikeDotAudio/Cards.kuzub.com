@@ -605,30 +605,239 @@
             font-weight: 700;
             border-radius: 6px;
         }
-        .right-bar-help-card {
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 10px 12px;
-            font-size: 0.74rem;
-            color: #475569;
-        }
-        .right-bar-tips {
-            margin: 6px 0 0 0;
-            padding-left: 14px;
+        /* ==========================================================
+           SPORTS CHANNEL HIGHLIGHTS PACKAGE & NEWS FEED
+           ("bottom right corner, sprinkled cards, green-red gradient, completeness, sports channel news feed")
+           ========================================================== */
+        .sports-highlights-deck {
+            background: #090d16;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 12px;
+            color: #e2e8f0;
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            line-height: 1.35;
+            gap: 10px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin-top: auto; /* Docks cleanly to the bottom right corner of the right bar */
         }
-        .right-bar-tips kbd {
-            background: #e2e8f0;
-            padding: 1px 4px;
+        .hl-broadcast-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #1e293b;
+        }
+        .hl-live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #dc2626;
+            color: #ffffff;
+            font-size: 0.62rem;
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            padding: 2px 6px;
             border-radius: 3px;
-            font-size: 0.7rem;
-            font-family: inherit;
+            text-transform: uppercase;
+        }
+        .hl-live-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #ffffff;
+            animation: hlPulse 1.2s infinite ease-in-out;
+        }
+        @keyframes hlPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(0.7); }
+        }
+        .hl-series-label {
+            font-size: 0.64rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: #94a3b8;
+            text-transform: uppercase;
+        }
+        /* Completeness Box ("not in percentage... but in completeness") */
+        .hl-completeness-box {
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 8px;
+            padding: 8px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .hl-completeness-label {
+            font-size: 0.6rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+        .hl-completeness-score {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+        .hl-have-num {
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: #10b981;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            line-height: 1;
+        }
+        .hl-of-total {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #cbd5e1;
+        }
+        .hl-breakdown-sub {
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: #94a3b8;
+            padding-top: 2px;
+        }
+        /* Sprinkled Set Spectrum Canvas */
+        .hl-spectrum-container {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .hl-spectrum-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.62rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+        .hl-spectrum-hint {
+            font-size: 0.58rem;
             font-weight: 700;
-            color: #1e293b;
+            color: #38bdf8;
+            letter-spacing: normal;
+        }
+        .hl-spectrum-canvas-wrap {
+            background: #050811;
+            border: 1px solid #1e293b;
+            border-radius: 6px;
+            padding: 3px;
+            position: relative;
+            cursor: crosshair;
+        }
+        #hlSpectrumCanvas {
+            width: 100%;
+            height: 48px;
+            display: block;
+        }
+        .hl-spectrum-legend {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: #94a3b8;
+            padding: 0 2px;
+        }
+        .leg-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+        }
+        /* Subset Completeness & Interaction Graph */
+        .hl-subsets-graph {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .hl-interaction-tag {
+            font-size: 0.58rem;
+            color: #eab308;
+            font-weight: 800;
+        }
+        .hl-subset-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .hl-subset-row {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .hl-subset-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.62rem;
+            font-weight: 700;
+            color: #cbd5e1;
+        }
+        .hl-subset-track {
+            height: 6px;
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+        .hl-subset-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #22c55e 60%, #eab308 85%, #ef4444 100%);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+        /* Sports Channel News Ticker ("like a news feed, like a sports channel") */
+        .hl-news-ticker {
+            display: flex;
+            align-items: center;
+            background: #050811;
+            border: 1px solid #1e293b;
+            border-radius: 6px;
+            overflow: hidden;
+            height: 24px;
+        }
+        .ticker-badge {
+            background: #1e3a8a;
+            color: #93c5fd;
+            font-size: 0.58rem;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            padding: 0 6px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+            text-transform: uppercase;
+        }
+        .ticker-track-wrap {
+            flex: 1;
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+        }
+        .ticker-track {
+            display: inline-block;
+            white-space: nowrap;
+            padding-left: 100%;
+            animation: tickerScroll 24s linear infinite;
+        }
+        .ticker-track:hover {
+            animation-play-state: paused;
+        }
+        @keyframes tickerScroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+        .ticker-item {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #e2e8f0;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            margin-right: 28px;
         }
 
         /* Sticky top bar */
@@ -2005,24 +2214,9 @@
                     </div>
                 </div>
 
-                <!-- Pro Audio VU Meter Bar (Directly adjacent to the collection stats) -->
-                <div class="vu-meter-housing" id="vuMeterHousing" title="Live collection meter">
-                    <div class="vu-scale-ticks">
-                        <span>0%</span>
-                        <span>25%</span>
-                        <span>50%</span>
-                        <span>75%</span>
-                        <span>90%</span>
-                        <span class="peak-tick">100% PEAK</span>
-                    </div>
-                    <div class="vu-meter-track">
-                        <div class="vu-meter-fill" id="vuMeterFill" style="width: 0%"></div>
-                    </div>
-                    <div class="vu-channel-label" id="vuChannelLabel">VU LEVEL • COLLECTION METER</div>
-                </div>
-
                 <!-- Hidden holders for legacy VU readouts so all JS bindings remain valid -->
-                <div id="vuLegacyStats" hidden>
+                <div id="vuLegacyHousing" hidden>
+                    <div id="vuMeterHousing"><div id="vuMeterFill"></div><div id="vuChannelLabel"></div></div>
                     <div id="vuStatHave"><span id="vuStatHaveNum">0</span><span id="vuStatHavePct">0%</span></div>
                     <div id="vuStatNeed"><span id="vuStatNeedNum">0</span></div>
                     <div id="vuStatDoubles"><span id="vuStatDoublesNum">0</span></div>
@@ -2080,14 +2274,57 @@
             </div>
         </div>
 
-        <!-- QUICK SHORTCUTS & TIPS -->
-        <div class="right-bar-section right-bar-help-card">
-            <div class="right-bar-section-title">Quick Actions</div>
-            <ul class="right-bar-tips">
-                <li><kbd>Click card twice</kbd> to declare double/triple or remove</li>
-                <li><kbd>Push & hold</kbd> on any card for Wikipedia bio</li>
-                <li><kbd>⚡ Series Chips</kbd> jump directly to binder sheets</li>
-            </ul>
+        <!-- SPORTS CHANNEL HIGHLIGHTS PACKAGE & NEWS FEED ("on the bottom right corner like a news feed like a sports channel a highlights package") -->
+        <div class="sports-highlights-deck" id="sportsHighlightsDeck">
+            <div class="hl-broadcast-header">
+                <div class="hl-live-badge"><span class="hl-live-dot"></span>LIVE DESK</div>
+                <div class="hl-series-label" id="hlSeriesLabel">HIGHLIGHTS</div>
+            </div>
+
+            <!-- Completeness ("not in percentage... but in completeness") -->
+            <div class="hl-completeness-box">
+                <div class="hl-completeness-label">COLLECTION COMPLETENESS</div>
+                <div class="hl-completeness-score">
+                    <span class="hl-have-num" id="hlHaveNum">0</span>
+                    <span class="hl-of-total">/ <span id="hlTotalNum">0</span> Cards Complete</span>
+                </div>
+                <div class="hl-breakdown-sub" id="hlBreakdownSub">0 Owned · 0 Needed · 0 Trade</div>
+            </div>
+
+            <!-- Set Spectrum: Cards sprinkled across the set with green-to-red gradient -->
+            <div class="hl-spectrum-container">
+                <div class="hl-spectrum-title">
+                    <span>SET SPECTRUM</span>
+                    <span class="hl-spectrum-hint" id="hlSpectrumHint">Interactive Map</span>
+                </div>
+                <div class="hl-spectrum-canvas-wrap">
+                    <canvas id="hlSpectrumCanvas" width="250" height="48" title="Cards sprinkled across checklist"></canvas>
+                </div>
+                <div class="hl-spectrum-legend">
+                    <span class="leg-item leg-owned">🟩 Owned</span>
+                    <span class="leg-item leg-doubles">🟨 2x Trade</span>
+                    <span class="leg-item leg-needed">🟥 Needed</span>
+                </div>
+            </div>
+
+            <!-- Subset Completeness & Interaction Graph -->
+            <div class="hl-subsets-graph">
+                <div class="hl-spectrum-title">
+                    <span>SUBSET COVERAGE</span>
+                    <span class="hl-interaction-tag" id="hlInteractionTag">This Season</span>
+                </div>
+                <div class="hl-subset-bars" id="hlSubsetBars"></div>
+            </div>
+
+            <!-- Sports Channel News Feed Ticker -->
+            <div class="hl-news-ticker">
+                <div class="ticker-badge">TICKER</div>
+                <div class="ticker-track-wrap">
+                    <div class="ticker-track" id="tickerTrack">
+                        <span class="ticker-item">🏒 2026-27 UD Tim Hortons live highlights feed</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </aside>
 </div>
