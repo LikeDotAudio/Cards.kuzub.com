@@ -2849,16 +2849,42 @@
             </div>
         </div>
 
-        <!-- Sidebar Footer -->
-        <div class="sidebar-footer">
-            <div class="user-summary">
-                Signed in as <strong id="sideUserName"></strong><br>
-                <span class="user-team-badge" id="sideUserTeamBadge"></span>
+        <!-- Sidebar Footer (L Bar Space: Rotating Stats corner widget instead of static login info) -->
+        <div class="sidebar-footer" id="sidebarFooter">
+            <!-- Rotating Collection Stats Widget in bottom-left footer corner -->
+            <div class="side-rotating-stats-widget" id="sideRotatingStatsWidget">
+                <div class="srw-header">
+                    <div class="srw-title-wrap">
+                        <span class="srw-live-dot"></span>
+                        <span class="srw-badge-title">COLLECTION STATS</span>
+                    </div>
+                    <div class="srw-controls">
+                        <button type="button" class="srw-btn srw-speed-btn" id="srwSpeedBtn" title="Broadcast & Rotating Stats Speed (0.5x, 1x, 2x, 5x)">⚡ 1x</button>
+                        <button type="button" class="srw-btn srw-nav-btn" id="srwPrevCardBtn" title="Previous Stat">‹</button>
+                        <button type="button" class="srw-btn srw-nav-btn" id="srwNextCardBtn" title="Next Stat">›</button>
+                    </div>
+                </div>
+                <div class="srw-card-stage" id="srwStage" title="Click to filter cards by this stat">
+                    <!-- Populated dynamically via renderRotatingStats() -->
+                </div>
+                <div class="srw-dots-row" id="srwDotsRow"></div>
             </div>
-            <div class="sidebar-actions">
-                <a href="admin.php" id="sideAdminLink" class="admin-link-btn" hidden>⚙️ Admin</a>
-                <button type="button" id="editTeamBtn">Edit Team</button>
-                <button type="button" id="signOutBtn" onclick="handleSignOut(event)" class="primary">Sign out</button>
+
+            <!-- Compact User Profile Strip & Actions -->
+            <div class="side-user-strip" id="sideUserStrip">
+                <div class="user-summary">
+                    <span><strong id="sideUserName"></strong></span>
+                    <span class="user-team-badge" id="sideUserTeamBadge"></span>
+                </div>
+                <div class="sidebar-actions">
+                    <a href="admin.php" id="sideAdminLink" class="admin-link-btn" hidden>⚙️ Admin</a>
+                    <button type="button" id="editTeamBtn">Team ⚙️</button>
+                    <button type="button" id="signOutBtn" onclick="handleSignOut(event)" class="primary">Sign out</button>
+                </div>
+            </div>
+
+            <div class="side-widget-customizer">
+                <button type="button" class="btn-customize-widgets" id="btnCustomizeWidgets" title="Customize L-bar widgets">⚙️ Customize L-Bar</button>
             </div>
         </div>
     </aside>
@@ -2868,10 +2894,17 @@
         <header class="topbar">
             <div class="bar">
                 <button class="mobile-menu-btn" id="openSidebarBtn" aria-label="Open menu">☰</button>
+                <button type="button" class="mobile-subsets-btn" id="mobileSubsetsBtn" title="Subsets & Quick Jump">⚡ Subsets</button>
                 <h1>
                     <span id="topbarSeriesTitle">2026-27 UD Tim Hortons</span>
                     <span class="series-tag" id="topbarSeriesTag">$1 / account</span>
                 </h1>
+
+                <!-- Direct View Layout Switcher in Topbar ("user should be able to click on the style type list or sheet should show up") -->
+                <div class="topbar-layout-switcher layout-switcher" id="topbarLayoutSwitcher" title="View Layout Style">
+                    <button type="button" class="layout-btn active" data-layout="page" title="3x3 Binder Page Sheet view">📄 3×3 Page</button>
+                    <button type="button" class="layout-btn" data-layout="list" title="Compact List view">☰ List</button>
+                </div>
 
                 <button type="button" id="newCollectorTopbarBtn" class="primary">+ Collector</button>
 
@@ -2887,7 +2920,15 @@
                     <button data-filter="team_needs" id="teamNeedsFilterBtn" hidden title="Cards nobody on your team has collected yet">Team Needs</button>
                 </div>
 
-                <button class="mobile-menu-btn mobile-right-btn" id="openRightBarBtn" aria-label="Open collector options">👤</button>
+                <div class="topbar-right-cluster">
+                    <button type="button" class="trade-market-topbar-btn" id="topbarTradeMarketBtn" title="Offer Trade / Simulate Card Market">🤝 Market</button>
+                    <button class="mobile-menu-btn mobile-right-btn" id="openRightBarBtn" aria-label="Open collector options">👤</button>
+                </div>
+            </div>
+            <!-- Mobile Subsets Slide-Down Bar -->
+            <div class="mobile-subsets-bar" id="mobileSubsetsBar" hidden>
+                <div class="msb-title">⚡ QUICK JUMP SUBSETS</div>
+                <div class="msb-chips" id="mobileSubsetsChips"></div>
             </div>
         </header>
 
@@ -2896,12 +2937,12 @@
             <div id="cardsContainer"></div>
         </main>
 
-        <!-- ELECTION DESK / SPORTS CHANNEL FOOTER TICKER -->
-        <!-- ("this ticker should be a footer. when the user seese these or hovers they should cycle... maybe a walk though the collection like a live animated news cast thingking like an election") -->
-        <footer class="election-footer-ticker" id="electionFooterTicker" aria-label="Collection Desk Election Ticker">
+        <!-- SELECTION DESK FOOTER TICKER -->
+        <!-- ("SELECTION DESK - when the user seese these or hovers they should cycle... maybe a walk though the collection like a live animated news cast thingking like an election") -->
+        <footer class="election-footer-ticker" id="electionFooterTicker" aria-label="Selection Desk Footer Ticker">
             <div class="eft-desk-badge">
                 <span class="eft-live-dot"></span>
-                <span class="eft-badge-title">ELECTION DESK</span>
+                <span class="eft-badge-title">SELECTION DESK</span>
             </div>
             <div class="eft-call-chip" id="eftCallChip" title="Set projection tally">
                 <span class="eft-call-lbl">CALL:</span>
@@ -2913,6 +2954,7 @@
                 </div>
             </div>
             <div class="eft-actions">
+                <button type="button" class="eft-btn eft-speed-btn" id="eftSpeedBtn" title="Broadcast Speed (Click to cycle: 0.5x, 1x, 2x, 5x)">⚡ 1x</button>
                 <button type="button" class="eft-btn" id="eftPrevBtn" title="Scroll Previous" aria-label="Previous">‹</button>
                 <button type="button" class="eft-btn eft-pause-btn" id="eftPauseBtn" title="Pause / Resume Ticker" aria-label="Pause/Resume">⏸</button>
                 <button type="button" class="eft-btn" id="eftNextBtn" title="Scroll Next" aria-label="Next">›</button>
@@ -2999,6 +3041,16 @@
             </div>
         </div>
 
+        <!-- QUICK TRADE / CARD MARKET ACTION TILE -->
+        <div class="right-bar-section right-bar-market-card" id="rightBarMarketCard">
+            <div class="right-bar-section-title">Card Market</div>
+            <div class="market-quick-card">
+                <div class="mqc-badge">⚡ ACTIVE TRADING</div>
+                <div class="mqc-text" id="mqcStatusText">Simulate trades, find mutual partner doubles, and test the market.</div>
+                <button type="button" class="btn-open-market" id="rbOpenMarketBtn">🤝 Open Trade Exchange</button>
+            </div>
+        </div>
+
         <!-- SPORTS CHANNEL HIGHLIGHTS PACKAGE & NEWS FEED ("on the bottom right corner like a news feed like a sports channel a highlights package") -->
         <div class="sports-highlights-deck" id="sportsHighlightsDeck">
             <div class="hl-broadcast-header">
@@ -3027,8 +3079,8 @@
                 </div>
                 <div class="hl-spectrum-legend">
                     <span class="leg-item leg-owned">🟩 Owned</span>
-                    <span class="leg-item leg-doubles">🟨 2x Trade</span>
-                    <span class="leg-item leg-needed">🟥 Needed</span>
+                    <span class="leg-item leg-doubles">🟥 2x Trade</span>
+                    <span class="leg-item leg-needed">🟩 🔻 Needed</span>
                 </div>
             </div>
 
@@ -3043,6 +3095,74 @@
         </div>
     </aside>
 </div>
+
+<!-- CARD MARKET & TRADE EXCHANGE DIALOG -->
+<!-- ("should be a mode a guest could enter into... they could add and sub tract to their account and offer a trade... and rig the card market") -->
+<dialog id="tradeMarketDialog" class="trade-market-dialog">
+    <div class="tmd-header">
+        <div class="tmd-title-wrap">
+            <span class="tmd-icon">🤝</span>
+            <div>
+                <h3>Card Market & Trade Exchange</h3>
+                <p class="tmd-subtitle">Simulate swaps, negotiate doubles, and test the hockey card market</p>
+            </div>
+        </div>
+        <button type="button" class="close-sidebar-btn" id="closeTradeMarketBtn" aria-label="Close dialog">✕</button>
+    </div>
+    <div class="tmd-body">
+        <div class="tmd-split">
+            <div class="tmd-col tmd-my-col">
+                <div class="tmd-col-head">
+                    <span class="tmd-pill tmd-pill-trade">⭐️ YOUR DOUBLES FOR TRADE (RED)</span>
+                </div>
+                <div class="tmd-card-list" id="tmdMyDoublesList">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+            <div class="tmd-exchange-icon">⇄</div>
+            <div class="tmd-col tmd-target-col">
+                <div class="tmd-col-head">
+                    <label class="tmd-select-label" style="font-size:0.75rem; font-weight:800; color:#475569;">Trading Partner:
+                        <select id="tmdPartnerSelect" class="tmd-partner-select"></select>
+                    </label>
+                    <span class="tmd-pill tmd-pill-need">🔻 NEEDED ACQUISITIONS (GREEN)</span>
+                </div>
+                <div class="tmd-card-list" id="tmdTargetNeedsList">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+        </div>
+        <div class="tmd-match-summary" id="tmdMatchSummary">
+            Select a partner to analyze mutual trade matches!
+        </div>
+    </div>
+    <div class="tmd-footer">
+        <button type="button" class="btn-rig-market primary" id="btnRigMarket">⚡ Rig the Card Market (Simulate Swap)</button>
+        <button type="button" class="btn-lock-trade" id="btnLockTrade" style="background:#0f172a; color:#fff; border-radius:6px; font-size:0.82rem; font-weight:700; padding:6px 12px; cursor:pointer;">💾 Lock In (+ Collector)</button>
+        <button type="button" id="cancelTradeMarketBtn">Close</button>
+    </div>
+</dialog>
+
+<!-- L-BAR WIDGET CUSTOMIZATION DIALOG -->
+<dialog id="lbarCustomizeDialog" class="lbar-customize-dialog">
+    <div class="lcd-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+        <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:#0f172a;">⚙️ Customize L-Bar Widgets</h3>
+        <button type="button" class="close-sidebar-btn" id="closeLbarCustomizeBtn" aria-label="Close">✕</button>
+    </div>
+    <div class="lcd-body">
+        <p style="font-size:0.84rem; color:#475569; margin-bottom:12px;">Toggle or reorder which modules appear in the Left Bar:</p>
+        <div class="lcd-widget-list">
+            <label class="lcd-item"><input type="checkbox" id="toggleWidgetSeries" checked> <span>🏒 Hockey Series Checklist Selector</span></label>
+            <label class="lcd-item"><input type="checkbox" id="toggleWidgetSubsets" checked> <span>⚡ Subsets & Quick Jump Menu</span></label>
+            <label class="lcd-item"><input type="checkbox" id="toggleWidgetTeam" checked> <span>👥 Team Hub & Teammates List</span></label>
+            <label class="lcd-item"><input type="checkbox" id="toggleWidgetStats" checked> <span>📊 Footer Rotating Stats Corner</span></label>
+        </div>
+    </div>
+    <div class="lcd-footer" style="margin-top:14px; display:flex; justify-content:flex-end; gap:8px;">
+        <button type="button" id="resetLbarCustomizeBtn">Reset Defaults</button>
+        <button type="button" class="primary" id="saveLbarCustomizeBtn">Save Preferences</button>
+    </div>
+</dialog>
 
 <div class="toast" id="toast" hidden></div>
 
@@ -3510,6 +3630,7 @@
             }
         } else {
             // Stranger / guest viewing public collections
+            html += `<option value="guest">${state.viewId === 'guest' ? '✓ ' : ''}🎭 Guest Trader (Sandbox / My Deck)</option>`;
             html += `<optgroup label="Public Collectors">`;
             for (const u of state.users) {
                 const isBronzo = (u.collector_name || '').toLowerCase() === 'bronzo';
@@ -3525,7 +3646,40 @@
         }
     }
 
+    function isGuestMode() {
+        return !state.userId && state.viewId === 'guest';
+    }
+
+    function getGuestCardsKey() {
+        return `cards_guest_${state.series || '2026-27'}`;
+    }
+
+    function getGuestCardsMap() {
+        try {
+            return JSON.parse(localStorage.getItem(getGuestCardsKey()) || '{}');
+        } catch (e) {
+            return {};
+        }
+    }
+
+    function saveGuestCardsMap(map) {
+        try {
+            localStorage.setItem(getGuestCardsKey(), JSON.stringify(map));
+            localStorage.setItem('cards_guest_active', '1');
+        } catch (e) {}
+    }
+
+    function applyGuestCards() {
+        const guestMap = getGuestCardsMap();
+        for (const card of state.cards) {
+            const q = guestMap[card.id] || 0;
+            card.quantity = q;
+            card.my_quantity = q;
+        }
+    }
+
     function isOwn() {
+        if (isGuestMode()) return true;
         return Boolean(state.userId && state.viewId === state.userId);
     }
 
@@ -3538,11 +3692,18 @@
     }
 
     function canEdit() {
+        if (isGuestMode()) return true;
         return isOwn() || isAdminTinkering();
     }
 
     function switchToOwnCollection() {
-        if (!state.userId) return;
+        if (!state.userId) {
+            state.viewId = 'guest';
+            const viewSel = document.getElementById('viewSelect');
+            if (viewSel) viewSel.value = 'guest';
+            loadCards();
+            return;
+        }
         state.viewId = state.userId;
         const viewSel = document.getElementById('viewSelect');
         if (viewSel) viewSel.value = String(state.userId);
@@ -3550,6 +3711,7 @@
     }
 
     function viewedName() {
+        if (isGuestMode()) return 'Guest Trader';
         if (isTeamView()) return `Team ${state.currentUser?.team_name ?? ''}`;
         return state.users.find(u => u.id === state.viewId)?.collector_name ?? (state.currentUser?.collector_name || 'Bronzo');
     }
@@ -3558,10 +3720,15 @@
         const params = { series: state.series || '2026-27' };
         if (state.viewId === 'team') {
             params.user_id = 'team';
+        } else if (state.viewId === 'guest') {
+            params.user_id = 'guest';
         } else if (state.viewId) {
             params.user_id = state.viewId;
         }
         state.cards = await api('get_cards', params);
+        if (isGuestMode() || (!state.userId && state.viewId === 'guest')) {
+            applyGuestCards();
+        }
         render();
         renderViewSelect();
         loadTeamSummary();
@@ -3662,6 +3829,8 @@
 
         // Render the Sports Highlights Deck in the bottom right corner
         renderSportsHighlights();
+        // Render the Rotating Stats corner widget in the bottom left footer
+        renderRotatingStats();
     }
 
     function renderSportsHighlights() {
@@ -3715,8 +3884,8 @@
                 const qty = card.quantity || 0;
 
                 if (qty === 0) {
-                    // Needed card: subtle red/crimson tick
-                    ctx.fillStyle = 'rgba(239, 68, 68, 0.45)';
+                    // Needed card: subtle green tick matching needed market acquisition targets
+                    ctx.fillStyle = 'rgba(16, 185, 129, 0.45)';
                     ctx.fillRect(x, h - 4, Math.max(1, slotW - 0.5), 3);
                 } else if (qty === 1) {
                     // Single owned: vibrant emerald green bar
@@ -3727,11 +3896,11 @@
                     ctx.fillStyle = grad;
                     ctx.fillRect(x, h - barH, Math.max(1.2, slotW), barH);
                 } else {
-                    // Doubles (2x+): taller golden amber bar with yellow peak
+                    // Doubles (2x+): taller red trade surplus bar
                     const barH = 42;
                     const grad = ctx.createLinearGradient(0, h - barH, 0, h);
-                    grad.addColorStop(0, '#fbbf24');
-                    grad.addColorStop(1, '#d97706');
+                    grad.addColorStop(0, '#f87171');
+                    grad.addColorStop(1, '#dc2626');
                     ctx.fillStyle = grad;
                     ctx.fillRect(x, h - barH, Math.max(1.4, slotW), barH);
                 }
@@ -3766,8 +3935,7 @@
             subsetBarsEl.innerHTML = sHtml;
         }
 
-        // Election Desk / Sports Broadcast Footer Ticker
-        // ("walk though the collection like a live animated news cast thingking like an election")
+        // Selection Desk / Sports Broadcast Footer Ticker
         const eftCallVal = document.getElementById('eftCallVal');
         if (eftCallVal) {
             eftCallVal.textContent = `${have}/${total} SECURED`;
@@ -3790,12 +3958,14 @@
                 </div>
             `);
 
-            // Walk through collection cards like an election race results desk
+            // Walk through collection cards like a live election / selection desk
+            // "the red needed should be including red down arrows"
+            // "the have double of should be RED and the the ones we need should be green in the ticker"
             for (let i = 0; i < total; i++) {
                 const card = state.cards[i];
                 const qty = card.quantity || 0;
                 let pillClass = 'eft-pill-needed';
-                let pillText = '❓ NEEDED';
+                let pillText = '🔻 NEEDED';
                 if (qty >= 2) {
                     pillClass = 'eft-pill-trade';
                     pillText = `⭐️ ${qty}x TRADE`;
@@ -3831,7 +4001,7 @@
             items.push(`
                 <div class="eft-callout">
                     <span class="eft-callout-badge">TRADE DESK</span>
-                    <span>${doublesCount} ACTIVE TRADE DOUBLES AVAILABLE</span>
+                    <span>${doublesCount} ACTIVE TRADE DOUBLES AVAILABLE (RED)</span>
                 </div>
             `);
             items.push(`
@@ -3844,10 +4014,143 @@
             // Duplicate array for seamless infinite ticker loop
             eftStream.innerHTML = items.join('') + items.join('');
 
-            // Pace the walk-through at 1/10th the speed (calm, slow broadcast crawl ~14s per item)
-            const durationSec = Math.max(350, Math.min(2400, items.length * 14));
+            // Pace the walk-through according to broadcast speed
+            const speed = state.broadcastSpeed || 1;
+            const durationSec = Math.max(90, Math.min(2400, Math.round((items.length * 14) / speed)));
             eftStream.style.animationDuration = `${durationSec}s`;
         }
+    }
+
+    // Rotating Stats in L-Bar bottom left footer
+    // ("these stats should rotate on the L bar bottom left footer corner instea of the login information")
+    let rotatingStatsTimer = null;
+    function renderRotatingStats() {
+        const total = state.cards.length;
+        if (total === 0) return;
+
+        const have = state.cards.filter(c => c.quantity > 0).length;
+        const need = Math.max(0, total - have);
+        const doublesCount = state.cards.filter(c => c.quantity >= 2).length;
+        const pct = Math.round((have / total) * 100);
+        const teamName = state.currentUser?.team_name || 'Hawks';
+        const teamHave = state.teamProgress?.total_collected || have;
+        const teamPct = Math.round((teamHave / total) * 100);
+
+        state.rotatingStatCards = [
+            {
+                type: 'have',
+                filter: 'all',
+                label: 'COLLECTION SECURED',
+                value: `${have} / ${total}`,
+                sub: `${pct}% Complete`,
+                accent: '#10b981',
+                icon: '🟢'
+            },
+            {
+                type: 'need',
+                filter: 'missing',
+                label: 'WANTED TARGETS',
+                value: `${need} CARDS`,
+                sub: '🔻 NEEDED IN SET',
+                accent: '#ef4444',
+                icon: '🔻'
+            },
+            {
+                type: 'trade',
+                filter: 'doubles',
+                label: 'SURPLUS INVENTORY',
+                value: `${doublesCount} DOUBLES`,
+                sub: '⭐️ FOR TRADE (RED)',
+                accent: '#f59e0b',
+                icon: '⭐️'
+            },
+            {
+                type: 'team',
+                filter: 'team_needs',
+                label: `TEAM ${teamName.toUpperCase()}`,
+                value: `${teamHave} / ${total}`,
+                sub: `👥 ${teamPct}% Synergy`,
+                accent: '#38bdf8',
+                icon: '🏒'
+            }
+        ];
+
+        state.rotatingStatIdx = (state.rotatingStatIdx || 0) % state.rotatingStatCards.length;
+        displayCurrentRotatingStat();
+        restartRotatingStatsTimer();
+    }
+
+    function displayCurrentRotatingStat() {
+        const stage = document.getElementById('srwStage');
+        const dotsRow = document.getElementById('srwDotsRow');
+        const cards = state.rotatingStatCards;
+        if (!stage || !cards || cards.length === 0) return;
+
+        const cur = cards[state.rotatingStatIdx];
+        stage.style.borderColor = cur.accent;
+        stage.innerHTML = `
+            <div style="display:flex; flex-direction:column; gap:2px; line-height:1.2;">
+                <span style="font-size:0.62rem; font-weight:800; color:${cur.accent}; letter-spacing:0.06em; text-transform:uppercase;">${cur.label}</span>
+                <span style="font-size:1.05rem; font-weight:900; color:#f8fafc; font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">${cur.value}</span>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
+                <span style="font-size:1.15rem; line-height:1;">${cur.icon}</span>
+                <span style="font-size:0.65rem; font-weight:700; color:#cbd5e1;">${cur.sub}</span>
+            </div>
+        `;
+        stage.onclick = () => setFilter(cur.filter);
+
+        if (dotsRow) {
+            dotsRow.innerHTML = cards.map((c, i) => `
+                <span class="srw-dot ${i === state.rotatingStatIdx ? 'active' : ''}" data-idx="${i}" onclick="jumpRotatingStat(${i})"></span>
+            `).join('');
+        }
+    }
+
+    function jumpRotatingStat(idx) {
+        if (!state.rotatingStatCards) return;
+        state.rotatingStatIdx = idx % state.rotatingStatCards.length;
+        displayCurrentRotatingStat();
+        restartRotatingStatsTimer();
+    }
+
+    function cycleBroadcastSpeed() {
+        const speeds = [0.5, 1, 2, 5];
+        const cur = state.broadcastSpeed || 1;
+        const nextIdx = (speeds.indexOf(cur) + 1) % speeds.length;
+        setBroadcastSpeed(speeds[nextIdx]);
+    }
+
+    function setBroadcastSpeed(speed) {
+        state.broadcastSpeed = speed;
+        try { localStorage.setItem('cards_broadcast_speed', String(speed)); } catch (e) {}
+
+        const label = `⚡ ${speed}x`;
+        const srwSpeedBtn = document.getElementById('srwSpeedBtn');
+        const eftSpeedBtn = document.getElementById('eftSpeedBtn');
+        if (srwSpeedBtn) srwSpeedBtn.textContent = label;
+        if (eftSpeedBtn) eftSpeedBtn.textContent = label;
+
+        // Recalculate ticker speed
+        const eftStream = document.getElementById('eftStream');
+        if (eftStream && state.cards?.length > 0) {
+            const baseDuration = Math.max(350, Math.min(2400, state.cards.length * 14));
+            eftStream.style.animationDuration = `${Math.round(baseDuration / speed)}s`;
+        }
+
+        restartRotatingStatsTimer();
+        toast(`Broadcast & stats speed updated to ${speed}x`);
+    }
+
+    function restartRotatingStatsTimer() {
+        if (rotatingStatsTimer) clearInterval(rotatingStatsTimer);
+        const speed = state.broadcastSpeed || 1;
+        const intervalMs = Math.round(3600 / speed);
+        rotatingStatsTimer = setInterval(() => {
+            if (!state.rotatingStatCards || state.rotatingStatCards.length === 0) return;
+            state.rotatingStatIdx = (state.rotatingStatIdx + 1) % state.rotatingStatCards.length;
+            displayCurrentRotatingStat();
+        }, intervalMs);
     }
 
     function renderSeriesNav(sets) {
@@ -3911,6 +4214,7 @@
 
         updateVUMeterAndHighlights();
         renderSeriesNav(sets);
+        setupMobileSubsetsBar(sets);
         container.classList.toggle('readonly', !canEdit());
 
         let html = '';
@@ -3918,6 +4222,22 @@
             html += `<div class="notice team-notice">
                 👥 <strong>Team ${esc(state.currentUser?.team_name ?? '')} Combined Progress</strong>.
                 Cards marked with ✓ are owned by at least one teammate. Team members only see cards within their own team!
+            </div>`;
+        } else if (isGuestMode()) {
+            html += `<div class="notice guest-sandbox-banner" style="background:#f0fdf4; border:2px solid #22c55e; border-radius:10px; padding:12px 16px; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                <div>
+                    <div style="font-weight:900; color:#15803d; font-size:1rem; display:flex; align-items:center; gap:6px;">
+                        <span>🎭 GUEST TRADER SANDBOX:</span>
+                        <span style="color:#0f172a;">Active Collection</span>
+                    </div>
+                    <div style="font-size:0.84rem; color:#334155; margin-top:2px;">
+                        You are in Guest Mode! Add and subtract cards, configure doubles, and offer trades against other collectors in the market!
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <button type="button" onclick="openTradeMarket()" style="background:#0f172a; color:#fff; font-size:0.84rem; font-weight:800; padding:6px 12px; border-radius:6px; cursor:pointer;">🤝 Offer Trade / Rig Market</button>
+                    <button type="button" onclick="document.getElementById('newCollectorTopbarBtn').click()" style="background:#16a34a; color:#fff; font-size:0.84rem; font-weight:800; padding:6px 12px; border-radius:6px; cursor:pointer;">💾 Lock In (+ Collector)</button>
+                </div>
             </div>`;
         } else if (!isOwn()) {
             const isGuest = !state.userId;
@@ -3938,9 +4258,9 @@
                     </div>
                 </div>`;
             } else {
-                html += `<div class="notice">
-                    Viewing <strong>${esc(viewedName())}</strong>'s collection (read-only).
-                    ${isGuest ? 'Browse the complete 3×3 hockey card binder sheets openly! <a href="./" style="font-weight:700; color:#0284c7; text-decoration:underline;">Sign In</a> or click + Collector to track your own cards.' : (state.userId ? 'Cards marked <span class="need">NEED</span> are their doubles you\'re missing.' : '')}
+                html += `<div class="notice" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                    <div>Viewing <strong>${esc(viewedName())}</strong>'s collection (read-only). ${isGuest ? 'Cards marked <span class="need" style="color:#10b981; border-color:#10b981;">🔻 NEED</span> are their doubles you can trade for!' : (state.userId ? 'Cards marked <span class="need">NEED</span> are their doubles you\'re missing.' : '')}</div>
+                    <button type="button" onclick="openTradeMarket(${state.viewId})" style="background:#0f172a; color:#fff; font-size:0.8rem; font-weight:700; padding:5px 12px; border-radius:6px; cursor:pointer;">🤝 Trade with ${esc(viewedName())}</button>
                 </div>`;
             }
         }
