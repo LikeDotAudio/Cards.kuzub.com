@@ -359,7 +359,15 @@ if ($action === 'create_user' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         fail('Too many new collectors. Try again later.', 429);
     }
 
-    $teamInfo = resolveTeam($pdo, $input['team_id'] ?? null, $input['team_name'] ?? '');
+    $rawTeam = trim($input['team_name'] ?? '');
+    if ($rawTeam === '' || $rawTeam === '__new__') {
+        $candidateCode = trim($input['discount_code'] ?? $input['cheat_code'] ?? $input['team_code'] ?? '');
+        if ($candidateCode !== '' && $candidateCode !== '0' && strtoupper($candidateCode) !== 'PUBLIC') {
+            $rawTeam = $candidateCode;
+        }
+    }
+
+    $teamInfo = resolveTeam($pdo, $input['team_id'] ?? null, $rawTeam);
     $teamName = $teamInfo['name'];
     $teamId = $teamInfo['id'];
 
@@ -367,10 +375,11 @@ if ($action === 'create_user' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         fail('Team name must be 50 characters or less');
     }
 
-    // Pricing / Discount: $1 fee OR cheat code HAWK (free team entry)
-    $isFreeCheatCode = ($discountCode === 'HAWK' || $initials === 'HAWK' || (!empty($teamInfo['cheat_code']) && $discountCode === strtoupper($teamInfo['cheat_code'])));
+    // Pricing / Discount: Entering ANY team name/code unlocks 100% free trading community access!
+    $hasTeam = (!empty($teamName) && $teamName !== '0' && strtoupper($teamName) !== 'PUBLIC');
+    $isFreeCheatCode = ($hasTeam || $discountCode === 'HAWK' || $initials === 'HAWK' || (!empty($teamInfo['cheat_code']) && $discountCode === strtoupper($teamInfo['cheat_code'])));
     if (!$isFreeCheatCode && !$paid) {
-        fail('Sign-up requires $1.00 fee or valid team cheat code.');
+        fail('Enter any Team Name or Buddy Circle Code to register for 100% FREE (or complete $1.00 fee).');
     }
 
     try {
@@ -413,7 +422,14 @@ if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $paid = !empty($input['paid']) || ($input['payment_mode'] ?? '') === 'paid_dollar';
     $cleanPass = strtoupper($password);
 
-    $teamInfo = resolveTeam($pdo, $input['team_id'] ?? null, $input['team_name'] ?? '');
+    $rawTeam = trim($input['team_name'] ?? '');
+    if ($rawTeam === '' || $rawTeam === '__new__') {
+        $candidateCode = trim($input['discount_code'] ?? $input['cheat_code'] ?? $input['team_code'] ?? '');
+        if ($candidateCode !== '' && $candidateCode !== '0' && strtoupper($candidateCode) !== 'PUBLIC') {
+            $rawTeam = $candidateCode;
+        }
+    }
+    $teamInfo = resolveTeam($pdo, $input['team_id'] ?? null, $rawTeam);
     $teamName = $teamInfo['name'];
     $teamId = $teamInfo['id'];
 
@@ -425,9 +441,10 @@ if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $userId = (int) $row['id'];
         } else {
             // New collector auto-registration through login gate
-            $isFreeCheatCode = ($discountCode === 'HAWK' || $cleanPass === 'HAWK' || (!empty($teamInfo['cheat_code']) && $discountCode === strtoupper($teamInfo['cheat_code'])));
+            $hasTeam = (!empty($teamName) && $teamName !== '0' && strtoupper($teamName) !== 'PUBLIC');
+            $isFreeCheatCode = ($hasTeam || $discountCode === 'HAWK' || $cleanPass === 'HAWK' || (!empty($teamInfo['cheat_code']) && $discountCode === strtoupper($teamInfo['cheat_code'])));
             if (!$isFreeCheatCode && !$paid) {
-                fail('Registration requires $1.00 fee or valid team cheat code.');
+                fail('Registration requires $1.00 fee or valid team / buddy circle code.');
             }
 
             if ($isFreeCheatCode || preg_match('/^[A-Z]{1,5}$/', $cleanPass)) {

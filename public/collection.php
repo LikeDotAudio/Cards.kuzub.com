@@ -1047,30 +1047,112 @@
            ("this ticker should be a footer. when the user seese these or hovers they should cycle... walk though the collection like a live animated news cast thingking like an election")
            ========================================================== */
         /* ==========================================================
-           ELECTION DESK & SPORTS BROADCAST FOOTER TICKER
-           ("2x in size 1/10th the speed")
+           ELECTION DESK & SET SPECTRUM DUAL BROADCAST FOOTER
+           ("this is so goo d that it should be the footer below the selection desk")
            ========================================================== */
-        .election-footer-ticker {
+        .app-broadcast-footer {
             position: fixed;
             bottom: 0;
             left: var(--left-bar-width);
             right: var(--right-bar-width);
-            height: 64px;
-            background: linear-gradient(90deg, #070b14 0%, #0d1527 50%, #070b14 100%);
-            border-top: 3px solid #2563eb;
-            box-shadow: 0 -6px 28px rgba(0, 0, 0, 0.55);
-            display: flex;
-            align-items: center;
             z-index: 35;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            overflow: hidden;
+            background: #070b14;
+            border-top: 3px solid #2563eb;
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.65);
+            display: flex;
+            flex-direction: column;
             user-select: none;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
         @media (max-width: 1080px) {
-            .election-footer-ticker {
+            .app-broadcast-footer {
                 left: 0;
                 right: 0;
             }
+        }
+        .election-footer-ticker {
+            position: relative;
+            height: 52px;
+            background: linear-gradient(90deg, #070b14 0%, #0d1527 50%, #070b14 100%);
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            border-bottom: 1px solid #1e293b;
+            flex-shrink: 0;
+        }
+        .footer-spectrum-dock {
+            padding: 5px 12px 6px;
+            background: #040711;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        .fsd-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            font-size: 0.68rem;
+            color: #94a3b8;
+            flex-wrap: wrap;
+        }
+        .fsd-title-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .fsd-badge {
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            color: #38bdf8;
+            font-size: 0.74rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .fsd-hint {
+            color: #38bdf8;
+            font-weight: 700;
+            background: rgba(56, 189, 248, 0.12);
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            font-size: 0.72rem;
+            max-width: 420px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .fsd-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .fsd-counts {
+            font-weight: 700;
+            color: #cbd5e1;
+            font-size: 0.72rem;
+        }
+        .fsd-legend {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 0.64rem;
+        }
+        .fsd-canvas-wrap {
+            position: relative;
+            background: #020409;
+            border: 1px solid #1e293b;
+            border-radius: 4px;
+            padding: 2px 4px;
+            cursor: crosshair;
+        }
+        #footerSpectrumCanvas {
+            width: 100%;
+            height: 32px;
+            display: block;
         }
         .eft-desk-badge {
             display: inline-flex;
@@ -1470,7 +1552,7 @@
             max-width: 1600px;
             width: 100%;
             margin: 0 auto;
-            padding: 14px 16px 88px;
+            padding: 14px 16px 120px;
         }
 
         /* Collector Dashboard Unit: Sentence Stats + Pro Audio VU Meter (no visual void) */
@@ -1587,17 +1669,16 @@
             display: flex;
             flex-wrap: wrap;
             gap: 4px;
-            max-height: 180px;
-            overflow-y: auto;
-            padding-right: 2px;
+            overflow: visible;
+            padding-right: 0;
         }
         .series-chip {
             display: inline-flex;
             align-items: center;
             justify-content: space-between;
             gap: 5px;
-            padding: 3px 6px;
-            border-radius: 5px;
+            padding: 4px 7px;
+            border-radius: 6px;
             border: 1px solid #cbd5e1;
             background: #f8fafc;
             color: #334155;
@@ -1625,7 +1706,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 72px;
+            max-width: 80px;
         }
         .series-chip .chip-count {
             font-size: 0.62rem;
@@ -1642,44 +1723,44 @@
         }
 
         /* Sub-list row for Sheet/Number quick jumps */
+        /* ("base quick jump... has all this vertical space and a scroll bar. avoid the scroll bar at all costs") */
         .series-sublist-row {
             background: #f1f5f9;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 6px 8px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 8px 10px;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
+            overflow: visible;
         }
         .sublist-lead {
-            font-size: 0.68rem;
+            font-size: 0.72rem;
             font-weight: 800;
             color: #1e293b;
             white-space: nowrap;
         }
         .sublist-pills-wrap {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            max-height: 140px;
-            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+            overflow: visible;
             padding: 2px 0;
         }
         .sublist-jump-btn {
-            display: inline-flex;
+            display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 4px;
-            padding: 2px 6px;
-            border-radius: 4px;
+            padding: 4px 6px;
+            border-radius: 5px;
             border: 1px solid #cbd5e1;
             background: #ffffff;
             cursor: pointer;
             white-space: nowrap;
             transition: all 0.15s ease;
             line-height: 1.15;
-            flex: 1 1 calc(50% - 4px);
-            min-width: 88px;
+            min-width: 0;
         }
         .sublist-jump-btn:hover {
             background: #0284c7;
@@ -2527,7 +2608,7 @@
             .mobile-subsets-btn { display: inline-flex !important; }
             .mobile-right-btn { display: inline-flex; }
             header.topbar { padding: 6px 10px; }
-            main { padding: 8px 10px 88px; }
+            main { padding: 8px 10px 120px; }
             .collector-dashboard-unit {
                 padding: 8px 10px;
                 gap: 10px;
@@ -2937,27 +3018,51 @@
             <div id="cardsContainer"></div>
         </main>
 
-        <!-- SELECTION DESK FOOTER TICKER -->
-        <!-- ("SELECTION DESK - when the user seese these or hovers they should cycle... maybe a walk though the collection like a live animated news cast thingking like an election") -->
-        <footer class="election-footer-ticker" id="electionFooterTicker" aria-label="Selection Desk Footer Ticker">
-            <div class="eft-desk-badge">
-                <span class="eft-live-dot"></span>
-                <span class="eft-badge-title">SELECTION DESK</span>
-            </div>
-            <div class="eft-call-chip" id="eftCallChip" title="Set projection tally">
-                <span class="eft-call-lbl">CALL:</span>
-                <span class="eft-call-val" id="eftCallVal">0/0 SECURED</span>
-            </div>
-            <div class="eft-viewport" id="eftViewport">
-                <div class="eft-stream" id="eftStream">
-                    <!-- Populated dynamically: walk through collection cards + breaking set calls -->
+        <!-- BROADCAST DUAL FOOTER: SELECTION DESK TICKER + SET SPECTRUM -->
+        <!-- ("this is so goo d that it should be the footer below the selection desk") -->
+        <footer class="app-broadcast-footer" id="appBroadcastFooter" aria-label="Selection Desk and Set Spectrum Footer">
+            <!-- Row 1: SELECTION DESK FOOTER TICKER -->
+            <div class="election-footer-ticker" id="electionFooterTicker" aria-label="Selection Desk Footer Ticker">
+                <div class="eft-desk-badge">
+                    <span class="eft-live-dot"></span>
+                    <span class="eft-badge-title">SELECTION DESK</span>
+                </div>
+                <div class="eft-call-chip" id="eftCallChip" title="Set projection tally">
+                    <span class="eft-call-lbl">CALL:</span>
+                    <span class="eft-call-val" id="eftCallVal">0/0 SECURED</span>
+                </div>
+                <div class="eft-viewport" id="eftViewport">
+                    <div class="eft-stream" id="eftStream">
+                        <!-- Populated dynamically: walk through collection cards + breaking set calls -->
+                    </div>
+                </div>
+                <div class="eft-actions">
+                    <button type="button" class="eft-btn eft-speed-btn" id="eftSpeedBtn" title="Broadcast Speed (Click to cycle: 0.5x, 1x, 2x, 5x)">⚡ 1x</button>
+                    <button type="button" class="eft-btn" id="eftPrevBtn" title="Scroll Previous" aria-label="Previous">‹</button>
+                    <button type="button" class="eft-btn eft-pause-btn" id="eftPauseBtn" title="Pause / Resume Ticker" aria-label="Pause/Resume">⏸</button>
+                    <button type="button" class="eft-btn" id="eftNextBtn" title="Scroll Next" aria-label="Next">›</button>
                 </div>
             </div>
-            <div class="eft-actions">
-                <button type="button" class="eft-btn eft-speed-btn" id="eftSpeedBtn" title="Broadcast Speed (Click to cycle: 0.5x, 1x, 2x, 5x)">⚡ 1x</button>
-                <button type="button" class="eft-btn" id="eftPrevBtn" title="Scroll Previous" aria-label="Previous">‹</button>
-                <button type="button" class="eft-btn eft-pause-btn" id="eftPauseBtn" title="Pause / Resume Ticker" aria-label="Pause/Resume">⏸</button>
-                <button type="button" class="eft-btn" id="eftNextBtn" title="Scroll Next" aria-label="Next">›</button>
+
+            <!-- Row 2: SET SPECTRUM FOOTER DOCK ("this is so goo d that it should be the footer below the selection desk") -->
+            <div class="footer-spectrum-dock" id="footerSpectrumDock" aria-label="Set Spectrum Collection Map">
+                <div class="fsd-header">
+                    <div class="fsd-title-group">
+                        <span class="fsd-badge">📊 SET SPECTRUM</span>
+                        <span class="fsd-hint" id="footerSpectrumHint">Interactive Map (Hover or Click to Jump)</span>
+                    </div>
+                    <div class="fsd-meta">
+                        <span class="fsd-counts" id="footerSpectrumCounts">0 Owned · 0 Needed · 0 Trade</span>
+                        <div class="fsd-legend">
+                            <span class="leg-item leg-owned">🟩 Owned</span>
+                            <span class="leg-item leg-doubles">🟥 2x Trade</span>
+                            <span class="leg-item leg-needed">🟩 🔻 Needed</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="fsd-canvas-wrap">
+                    <canvas id="footerSpectrumCanvas" height="32" title="Click or hover any card in the collection"></canvas>
+                </div>
             </div>
         </footer>
     </div>
@@ -3167,44 +3272,61 @@
 <div class="toast" id="toast" hidden></div>
 
 <!-- NEW COLLECTOR DIALOG (+ Collector button) -->
+<!-- NEW COLLECTOR DIALOG (+ Collector button) -->
+<!-- ("Team code this can be anything. This should be the TEAM NAME and this should be encouraging to use the team name... then buddy name -0 public trader like a circle of teams mates that trade a trading community") -->
 <dialog id="newCollectorDialog">
     <form id="newCollectorForm">
-        <strong>Create New Collector Account</strong>
-        <label>Collector Name (shown to other traders)
-            <input name="collector_name" id="newCollectorName" maxlength="50" minlength="2" required placeholder="e.g. Anthony" autocomplete="off">
-        </label>
-        <label>Ask to Join a Team (Optional)
-            <select id="newCollectorTeamSelect">
-                <option value="">— No Team (Individual Collector) —</option>
-            </select>
-        </label>
-        <div id="newCollectorNewTeamRow" hidden>
-            <label>New Team Name
-                <input id="newCollectorNewTeamName" maxlength="50" placeholder="e.g. Blackhawks">
-            </label>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:1.4rem;">🤝</span>
+            <div>
+                <strong style="display:block; font-size:1.05rem;">Join the Trading Community</strong>
+                <span style="font-size:0.75rem; color:#64748b;">Create your collector profile & trade cards with buddies</span>
+            </div>
         </div>
-        <label>Password (your initials or cheat code HAWK)
-            <input name="password" id="newCollectorPass" type="password" maxlength="5" required placeholder="1-5 letters or HAWK" autocomplete="new-password">
+
+        <label>Collector Name (shown to other traders)
+            <input name="collector_name" id="newCollectorName" maxlength="50" minlength="2" required placeholder="e.g. Anthony, Josh, etc." autocomplete="off">
         </label>
 
-        <!-- Pricing & Cheat Code Box -->
-        <div class="pricing-box">
-            <div class="pricing-header">
-                <span>Account Fee</span>
-                <span class="pricing-amount is-free" id="newCollectorPricingAmount">FREE ($0.00)</span>
+        <!-- Team Code / Trading Community Circle -->
+        <div class="team-community-box" style="background:#f8fafc; border:1.5px solid #cbd5e1; border-radius:8px; padding:10px 12px; margin:10px 0;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                <label style="margin:0; font-weight:800; font-size:0.82rem; color:#0f172a;" for="newCollectorDiscountCode">
+                    🏒 Team Code / Trading Circle Name
+                </label>
+                <span class="pricing-amount is-free" id="newCollectorPricingAmount" style="font-size:0.8rem; font-weight:800; color:#15803d; background:#dcfce7; padding:2px 8px; border-radius:999px;">FREE ($0.00)</span>
             </div>
-            <label style="margin: 0; font-size: 0.78rem;">Discount / Cheat Code (Enter HAWK for Free)
-                <input id="newCollectorDiscountCode" value="HAWK" placeholder="Enter HAWK" style="text-transform: uppercase;">
-            </label>
-            <div class="discount-status-pill free" id="newCollectorDiscountPill">
-                <span>🎉</span> <span id="newCollectorDiscountText">Cheat code HAWK applied — 100% Free!</span>
+            <p style="margin:0 0 6px; font-size:0.73rem; color:#475569; line-height:1.35;">
+                <strong>This can be anything!</strong> Enter a team or buddy circle name to trade cards together. Teammates share doubles, view combined progress, and trade cards with <strong>100% FREE access</strong>!
+            </p>
+            <input id="newCollectorDiscountCode" value="HAWK" placeholder="Enter ANY Team Name (e.g. Blackhawks, Oilers, Buddies, or HAWK)" style="text-transform: uppercase; font-weight:700;">
+
+            <div style="margin-top:6px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px;">
+                <label style="margin:0; font-size:0.72rem; color:#64748b;">Or join existing team:
+                    <select id="newCollectorTeamSelect" style="padding:2px 6px; font-size:0.72rem; margin-left:4px;">
+                        <option value="">— Pick a Team Circle —</option>
+                    </select>
+                </label>
+                <div style="font-size:0.7rem; color:#94a3b8;">
+                    Enter <code>0</code> or blank for Public Trader
+                </div>
+            </div>
+
+            <div class="discount-status-pill free" id="newCollectorDiscountPill" style="margin-top:8px;">
+                <span id="newCollectorPillIcon">🎉</span> <span id="newCollectorDiscountText">Team circle HAWK applied — 100% Free Trading Community!</span>
             </div>
         </div>
+
+        <input type="hidden" id="newCollectorNewTeamName" value="">
+
+        <label>Password (your initials or cheat code HAWK)
+            <input name="password" id="newCollectorPass" type="password" maxlength="5" required placeholder="1-5 letters (e.g. initials or HAWK)" autocomplete="new-password">
+        </label>
 
         <div class="error" id="newCollectorError"></div>
         <div class="actions">
             <button type="button" id="cancelNewCollector">Cancel</button>
-            <button type="submit" class="primary" id="newCollectorSubmitBtn">Register (FREE with HAWK)</button>
+            <button type="submit" class="primary" id="newCollectorSubmitBtn">Register (FREE with Team HAWK) →</button>
         </div>
     </form>
 </dialog>
@@ -3442,41 +3564,45 @@
     );
 
     // Live Discount / Cheat Code Watcher
+    // Live Team Code / Trading Community Watcher
+    // ("Team code this can be anything. This should be the TEAM NAME and this should be encouraging to use the team name... then buddy name -0 public trader like a circle of teams mates that trade a trading community")
     function setupDiscountWatcher(inputEl, amountEl, pillEl, textEl, submitBtnEl, baseLabel) {
         if (!inputEl) return;
         function update() {
-            const val = inputEl.value.trim().toUpperCase();
-            if (val === 'HAWK') {
+            const raw = inputEl.value.trim();
+            const val = raw.toUpperCase();
+            if (val !== '' && val !== '0' && val !== 'PUBLIC') {
                 amountEl.textContent = 'FREE ($0.00)';
                 amountEl.className = 'pricing-amount is-free';
                 pillEl.className = 'discount-status-pill free';
-                textEl.textContent = 'Cheat code HAWK applied — 100% Free Team Access!';
-                submitBtnEl.textContent = `${baseLabel} (FREE with HAWK) →`;
-            } else if (val !== '') {
-                const matchedTeam = state.teams.find(t => (t.cheat_code || 'HAWK').toUpperCase() === val);
-                if (matchedTeam) {
-                    amountEl.textContent = 'FREE ($0.00)';
-                    amountEl.className = 'pricing-amount is-free';
-                    pillEl.className = 'discount-status-pill free';
-                    textEl.textContent = `Team ${matchedTeam.name} cheat code applied — FREE!`;
-                    submitBtnEl.textContent = `${baseLabel} (FREE with Code) →`;
-                } else {
-                    amountEl.textContent = '$1.00 USD';
-                    amountEl.className = 'pricing-amount';
-                    pillEl.className = 'discount-status-pill standard';
-                    textEl.textContent = 'Code not recognized — Standard Account Fee: $1.00';
-                    submitBtnEl.textContent = `Pay $1.00 & ${baseLabel} →`;
-                }
+                textEl.textContent = `🎉 Team circle "${raw}" joined — 100% Free! Circle of teammates & buddies that trade!`;
+                submitBtnEl.textContent = `${baseLabel} (FREE with Team "${raw}") →`;
+            } else if (val === '0' || val === 'PUBLIC') {
+                amountEl.textContent = '$1.00 USD';
+                amountEl.className = 'pricing-amount';
+                pillEl.className = 'discount-status-pill standard';
+                textEl.textContent = '🌐 Public Trader mode. Tip: Enter ANY team or buddy circle above to trade with teammates for 100% FREE!';
+                submitBtnEl.textContent = `Pay $1.00 & ${baseLabel} (Public Trader) →`;
             } else {
                 amountEl.textContent = '$1.00 USD';
                 amountEl.className = 'pricing-amount';
                 pillEl.className = 'discount-status-pill standard';
-                textEl.textContent = 'Standard Account Fee: $1.00 (or enter cheat code HAWK)';
+                textEl.textContent = '💡 Enter ANY Team Name above to join a trading circle with buddies and register for 100% FREE!';
                 submitBtnEl.textContent = `Pay $1.00 & ${baseLabel} →`;
             }
         }
         inputEl.addEventListener('input', update);
         update();
+
+        const selectEl = document.getElementById('newCollectorTeamSelect');
+        if (selectEl) {
+            selectEl.addEventListener('change', () => {
+                if (selectEl.value && selectEl.value !== '__new__') {
+                    inputEl.value = selectEl.value;
+                    inputEl.dispatchEvent(new Event('input'));
+                }
+            });
+        }
     }
 
     setupDiscountWatcher(
@@ -4558,15 +4684,23 @@
     newCollectorForm.addEventListener('submit', async e => {
         e.preventDefault();
         const name = document.getElementById('newCollectorName').value.trim();
-        const teamSelect = document.getElementById('newCollectorTeamSelect').value;
-        const newTeamName = document.getElementById('newCollectorNewTeamName').value.trim();
+        const teamSelect = document.getElementById('newCollectorTeamSelect')?.value || '';
+        const newTeamName = document.getElementById('newCollectorNewTeamName')?.value?.trim() || '';
         const pass = document.getElementById('newCollectorPass').value.trim();
         const discountCode = document.getElementById('newCollectorDiscountCode').value.trim();
         const errorEl = document.getElementById('newCollectorError');
         errorEl.textContent = '';
 
-        const finalTeam = teamSelect === '__new__' ? newTeamName : teamSelect;
-        const isFreeCheat = discountCode.toUpperCase() === 'HAWK' || pass.toUpperCase() === 'HAWK';
+        let finalTeam = discountCode;
+        if (discountCode === '0' || discountCode.toUpperCase() === 'PUBLIC') {
+            finalTeam = '';
+        } else if (!finalTeam && teamSelect && teamSelect !== '__new__') {
+            finalTeam = teamSelect;
+        } else if (!finalTeam && newTeamName) {
+            finalTeam = newTeamName;
+        }
+
+        const isFreeCheat = finalTeam !== '' || pass.toUpperCase() === 'HAWK' || discountCode.toUpperCase() === 'HAWK';
 
         try {
             const res = await api('create_user', {}, {
@@ -4579,6 +4713,22 @@
             state.currentUser = res.user || res;
             state.userId = state.currentUser.id;
             state.viewId = state.currentUser.id;
+
+            // Migrate any guest sandbox cards to newly created user account
+            const guestMap = getGuestCardsMap();
+            const cardEntries = Object.entries(guestMap);
+            if (cardEntries.length > 0) {
+                for (const [cardId, qty] of cardEntries) {
+                    if (Number(qty) > 0) {
+                        await api('set_quantity', {}, {
+                            card_id: Number(cardId),
+                            quantity: Number(qty)
+                        }).catch(() => {});
+                    }
+                }
+                try { localStorage.removeItem(`cards_guest_${state.series || '2026-27'}`); } catch (err) {}
+            }
+
             const [usersData, teamsData] = await Promise.all([
                 api('get_users').catch(() => []),
                 api('get_teams').catch(() => [])
@@ -4590,7 +4740,7 @@
             renderAccountInfo();
             renderViewSelect();
             await Promise.all([loadTeamSummary(), loadCards()]);
-            toast(isFreeCheat ? `Created collector ${name}! Free with HAWK discount.` : `Created collector ${name}! ($1.00 fee processed)`);
+            toast(finalTeam ? `🎉 Welcome to Team "${finalTeam}"! 100% Free Trading Community activated.` : `Created collector ${name}! ($1.00 fee processed)`);
         } catch (err) {
             errorEl.textContent = err.message;
         }
