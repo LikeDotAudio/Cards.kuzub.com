@@ -2910,7 +2910,132 @@
         let channelLabel = 'VU LEVEL • MY COLLECTION';
         if (isTeamView()) channelLabel = `VU LEVEL • TEAM ${state.currentUser?.team_name ?? ''} COMBINED`;
         else if (!isOwn()) channelLabel = `VU LEVEL • ${viewedName().toUpperCase()}`;
-        document.getElementById('vuChannelLabel').textContent = channelLabel;
+        const chanEl = document.getElementById('vuChannelLabel');
+        if (chanEl) chanEl.textContent = channelLabel;
+
+        // Render the Sports Highlights Deck in the bottom right corner
+        renderSportsHighlights();
+    }
+
+    function renderSportsHighlights() {
+        const total = state.cards.length;
+        if (total === 0) return;
+
+        const have = state.cards.filter(c => c.quantity > 0).length;
+        const need = Math.max(0, total - have);
+        const doublesCount = state.cards.filter(c => c.quantity >= 2).length;
+
+        // Completeness readout ("not in percentage... but in completeness")
+        const haveEl = document.getElementById('hlHaveNum');
+        const totalEl = document.getElementById('hlTotalNum');
+        const subEl = document.getElementById('hlBreakdownSub');
+        if (haveEl) haveEl.textContent = have;
+        if (totalEl) totalEl.textContent = total;
+        if (subEl) {
+            subEl.textContent = `${have} Owned · ${need} Needed · ${doublesCount} Trade`;
+        }
+
+        const seriesLabelEl = document.getElementById('hlSeriesLabel');
+        if (seriesLabelEl) {
+            seriesLabelEl.textContent = state.series === '2025-26' ? '2025-26 ARCHIVE' : '2026-27 UD TIM HORTONS';
+        }
+
+        // Draw Set Spectrum on Canvas ("list of cards as a set sprinkled, green to red gradient")
+        const canvas = document.getElementById('hlSpectrumCanvas');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            const w = rect.width || 250;
+            const h = 48;
+            canvas.width = w * dpr;
+            canvas.height = h * dpr;
+            ctx.scale(dpr, dpr);
+
+            // Dark sports broadcast background
+            ctx.fillStyle = '#050811';
+            ctx.fillRect(0, 0, w, h);
+
+            // Baseline tick bar
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(0, h - 3, w, 3);
+
+            // Sprinkled cards mapped across the checklist
+            const slotW = Math.max(1, w / total);
+            for (let i = 0; i < total; i++) {
+                const card = state.cards[i];
+                const x = (i / total) * w;
+                const qty = card.quantity || 0;
+
+                if (qty === 0) {
+                    // Needed card: subtle red/crimson tick
+                    ctx.fillStyle = 'rgba(239, 68, 68, 0.45)';
+                    ctx.fillRect(x, h - 4, Math.max(1, slotW - 0.5), 3);
+                } else if (qty === 1) {
+                    // Single owned: vibrant emerald green bar
+                    const barH = 26;
+                    const grad = ctx.createLinearGradient(0, h - barH, 0, h);
+                    grad.addColorStop(0, '#34d399');
+                    grad.addColorStop(1, '#059669');
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(x, h - barH, Math.max(1.2, slotW), barH);
+                } else {
+                    // Doubles (2x+): taller golden amber bar with yellow peak
+                    const barH = 42;
+                    const grad = ctx.createLinearGradient(0, h - barH, 0, h);
+                    grad.addColorStop(0, '#fbbf24');
+                    grad.addColorStop(1, '#d97706');
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(x, h - barH, Math.max(1.4, slotW), barH);
+                }
+            }
+        }
+
+        // Subsets coverage & interaction graph
+        const setsMap = new Map();
+        for (const card of state.cards) {
+            if (!setsMap.has(card.set_name)) setsMap.set(card.set_name, []);
+            setsMap.get(card.set_name).push(card);
+        }
+
+        const subsetBarsEl = document.getElementById('hlSubsetBars');
+        if (subsetBarsEl) {
+            let sHtml = '';
+            let count = 0;
+            for (const [setName, setCards] of setsMap) {
+                if (count++ >= 3) break;
+                const sHave = setCards.filter(c => c.quantity > 0).length;
+                const sPct = setCards.length > 0 ? Math.round((sHave / setCards.length) * 100) : 0;
+                sHtml += `<div class="hl-subset-row">
+                    <div class="hl-subset-meta">
+                        <span>${esc(setName)}</span>
+                        <span>${sHave}/${setCards.length} (${sPct}%)</span>
+                    </div>
+                    <div class="hl-subset-track">
+                        <div class="hl-subset-fill" style="width: ${sPct}%"></div>
+                    </div>
+                </div>`;
+            }
+            subsetBarsEl.innerHTML = sHtml;
+        }
+
+        // Sports Channel News Feed Ticker
+        const tickerTrack = document.getElementById('tickerTrack');
+        if (tickerTrack) {
+            const seriesName = state.series === '2025-26' ? '2025-26 Tim Hortons' : '2026-27 UD Tim Hortons';
+            const userTitle = isOwn() ? (state.currentUser?.collector_name || 'My Collection') : viewedName();
+            const teamName = state.currentUser?.team_name || 'Hawks';
+
+            const headlines = [
+                `🏒 [SET HIGHLIGHT] ${userTitle}: ${have} of ${total} cards secured in ${seriesName}`,
+                `🔁 [TRADE DESK] ${doublesCount} active doubles ready for trading`,
+                `👥 [TEAM ${teamName.toUpperCase()}] Team tracking active across the roster`,
+                `⚡ [CHECKLIST WATCH] ${need > 0 ? need + ' cards needed to complete full set' : 'FULL SET COLLECTED!'}`,
+                `💡 [PRO TIP] Push & hold any card for Wikipedia bio · Click twice for double/triple`
+            ];
+
+            tickerTrack.innerHTML = headlines.map(h => `<span class="ticker-item">${esc(h)}</span>`).join('');
+        }
     }
 
     function renderSeriesNav(sets) {
@@ -3747,6 +3872,41 @@
     document.getElementById('openRightBarBtn')?.addEventListener('click', openRightBar);
     document.getElementById('closeRightBarBtn')?.addEventListener('click', closeSidebar);
     backdrop?.addEventListener('click', closeSidebar);
+
+    // Interactive mouse hover & click on Set Spectrum canvas
+    const spectrumCanvas = document.getElementById('hlSpectrumCanvas');
+    const spectrumHint = document.getElementById('hlSpectrumHint');
+    if (spectrumCanvas) {
+        spectrumCanvas.addEventListener('mousemove', e => {
+            if (!state.cards || state.cards.length === 0) return;
+            const rect = spectrumCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const idx = Math.min(state.cards.length - 1, Math.max(0, Math.floor((x / rect.width) * state.cards.length)));
+            const card = state.cards[idx];
+            if (card && spectrumHint) {
+                const status = card.quantity >= 2 ? `${card.quantity}x Trade` : card.quantity === 1 ? 'Owned' : 'Needed';
+                spectrumHint.textContent = `#${card.card_number} ${card.player_name} (${status})`;
+            }
+        });
+        spectrumCanvas.addEventListener('mouseleave', () => {
+            if (spectrumHint) spectrumHint.textContent = 'Interactive Map';
+        });
+        spectrumCanvas.addEventListener('click', e => {
+            if (!state.cards || state.cards.length === 0) return;
+            const rect = spectrumCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const idx = Math.min(state.cards.length - 1, Math.max(0, Math.floor((x / rect.width) * state.cards.length)));
+            const card = state.cards[idx];
+            if (card) {
+                const cardEl = document.querySelector(`.card[data-id="${card.id}"]`);
+                if (cardEl) {
+                    cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    cardEl.classList.add('jump-highlight');
+                    setTimeout(() => cardEl.classList.remove('jump-highlight'), 1600);
+                }
+            }
+        });
+    }
 
     // Initial check
     checkAuthAndInit();
