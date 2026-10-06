@@ -32,6 +32,8 @@
             --vu-yellow: #fbbf24;
             --vu-red: #ef4444;
             --vu-blue: #38bdf8;
+            --topbar-height: 53px;
+            --ifs-height: 48px;
         }
         * { box-sizing: border-box; }
         body {
@@ -1248,67 +1250,74 @@
         .eft-item {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            padding: 8px 16px;
-            border-radius: 8px;
-            background: rgba(15, 23, 42, 0.92);
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 6px;
+            background: rgba(15, 23, 42, 0.94);
             border: 1px solid #1e293b;
-            font-size: 0.92rem;
+            font-size: 0.9rem;
             color: #cbd5e1;
             flex-shrink: 0;
             cursor: pointer;
             transition: all 0.15s ease;
         }
         .eft-item:hover {
-            background: #1e293b;
-            border-color: #38bdf8;
             transform: translateY(-2px);
-            color: #ffffff;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+        }
+        /* Red and blue text: needed cards in red, owned/secured cards in blue */
+        .eft-item.eft-status-needed {
+            border-color: rgba(239, 68, 68, 0.45);
+            background: rgba(239, 68, 68, 0.1);
+        }
+        .eft-item.eft-status-needed:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+        }
+        .eft-item.eft-status-owned {
+            border-color: rgba(56, 189, 248, 0.45);
+            background: rgba(56, 189, 248, 0.1);
+        }
+        .eft-item.eft-status-owned:hover {
+            background: rgba(56, 189, 248, 0.2);
+            border-color: #38bdf8;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+        }
+        .eft-item.eft-status-trade {
+            border-color: rgba(245, 158, 11, 0.45);
+            background: rgba(245, 158, 11, 0.1);
+        }
+        .eft-item.eft-status-trade:hover {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: #f59e0b;
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+        }
+        .eft-needed-text {
+            color: #ef4444 !important;
+        }
+        .eft-owned-text {
+            color: #38bdf8 !important;
+        }
+        .eft-trade-text {
+            color: #f59e0b !important;
         }
         .eft-item-num {
             font-weight: 900;
-            color: #f8fafc;
             font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-            font-size: 1.15rem;
+            font-size: 1.05rem;
         }
         .eft-item-name {
             font-weight: 700;
-            color: #e2e8f0;
-            font-size: 0.95rem;
+            font-size: 0.92rem;
         }
         .eft-item-set {
-            font-size: 0.8rem;
+            font-size: 0.72rem;
             color: #94a3b8;
             text-transform: uppercase;
-        }
-        .eft-pill {
-            display: inline-block;
-            font-size: 0.82rem;
-            font-weight: 900;
-            letter-spacing: 0.05em;
-            padding: 3px 9px;
-            border-radius: 4px;
-            text-transform: uppercase;
-        }
-        .eft-pill-owned {
-            background: rgba(56, 189, 248, 0.18);
-            border: 1px solid #38bdf8;
-            color: #38bdf8;
-        }
-        /* The have double of should be RED in the ticker (surplus trade inventory) */
-        .eft-pill-trade {
-            background: rgba(239, 68, 68, 0.25);
-            border: 1px solid #ef4444;
-            color: #f87171;
-            box-shadow: 0 0 8px rgba(239, 68, 68, 0.2);
-        }
-        /* The ones we need should be GREEN in the ticker (market acquisition targets) */
-        .eft-pill-needed {
-            background: rgba(16, 185, 129, 0.22);
-            border: 1px solid #10b981;
-            color: #34d399;
-            box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            padding: 1px 5px;
+            border-radius: 3px;
         }
         .eft-callout {
             display: inline-flex;
@@ -2175,6 +2184,68 @@
             color: #0369a1;
             padding: 0 6px 0 calc(2.6em + 15px);
             margin-top: -2px;
+        }
+        .card-nhl-team {
+            flex: 0 0 auto;
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: #475569;
+            background: #f1f5f9;
+            padding: 1px 4px;
+            border-radius: 3px;
+            border: 1px solid #e2e8f0;
+            letter-spacing: 0.02em;
+        }
+        .card-wiki-lookup-btn {
+            flex: 0 0 auto;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            font-size: 0.72rem;
+            line-height: 1;
+            padding: 2px 4px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .card-wiki-lookup-btn:hover {
+            background: #0284c7;
+            color: #ffffff;
+            border-color: #0284c7;
+            transform: scale(1.08);
+        }
+        .page-card-team-pill {
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: #0284c7;
+            background: rgba(2, 132, 199, 0.1);
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-left: auto;
+        }
+        .page-card-wiki-btn {
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            font-size: 0.72rem;
+            line-height: 1;
+            padding: 2px 4px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .page-card-wiki-btn:hover {
+            background: #0284c7;
+            color: #ffffff;
+            border-color: #0284c7;
+            transform: scale(1.08);
+        }
+        .card-player-team {
+            font-size: 0.72rem;
+            color: #64748b;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 1px;
         }
 
         /* Wikipedia Player Bio Modal */
@@ -3369,6 +3440,9 @@
            DIGIKEY-STYLE PARAMETRIC INVENTORY FILTER
            ========================================================== */
         .inventory-filter-section {
+            position: sticky;
+            top: var(--topbar-height, 53px);
+            z-index: 18;
             background: #ffffff;
             border: 1px solid #cbd5e1;
             border-radius: 6px;
@@ -3377,6 +3451,22 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             color: #1e293b;
             overflow: hidden;
+            transition: box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .inventory-filter-section.is-stuck {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+            border-color: #94a3b8;
+        }
+        .inventory-filter-section.is-stuck .ifs-col-list {
+            max-height: 170px;
+        }
+        /* Keep target subsets and sheets visible below sticky header and sticky filter */
+        details.set,
+        .binder-page-sheet,
+        .binder-grid-group,
+        .cards-group,
+        .card {
+            scroll-margin-top: calc(var(--topbar-height, 53px) + var(--ifs-height, 48px) + 14px);
         }
         .ifs-header-bar {
             background: #f8fafc;
@@ -3531,21 +3621,28 @@
             gap: 12px;
         }
 
-        /* Individual Parametric Box Column */
+        /* Individual Parametric Box Column - Same height and scrolls */
         .ifs-col {
             background: #ffffff;
             border: 1px solid #cbd5e1;
-            border-radius: 3px;
+            border-radius: 4px;
             display: flex;
             flex-direction: column;
-            min-width: 195px;
-            max-width: 230px;
+            min-width: 200px;
+            max-width: 235px;
+            height: 235px;
+            min-height: 235px;
+            max-height: 235px;
             flex-shrink: 0;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
         }
         .ifs-columns-wrapper.mode-stacked .ifs-col {
             min-width: 0;
             max-width: none;
+            height: 235px;
+            min-height: 235px;
+            max-height: 235px;
         }
         .ifs-col-head {
             background: #eaeff5;
@@ -3558,11 +3655,13 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex-shrink: 0;
         }
         .ifs-col-search-box {
             padding: 5px 8px;
             border-bottom: 1px solid #e2e8f0;
             background: #f8fafc;
+            flex-shrink: 0;
         }
         .ifs-col-search-input {
             width: 100%;
@@ -3578,8 +3677,10 @@
         }
         .ifs-col-list {
             padding: 4px 0;
-            max-height: 195px;
+            flex: 1 1 0;
+            min-height: 0;
             overflow-y: auto;
+            overflow-x: hidden;
             scrollbar-width: thin;
         }
         .ifs-col-list::-webkit-scrollbar {
@@ -3721,6 +3822,527 @@
             background: #f8fafc;
             border-color: #64748b;
         }
+        /* ==========================================================================
+           MCMASTER-CARR BY-JOB & SPECS CATALOG LENS
+           ========================================================================== */
+        .mc-catalog-wrapper {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 24px;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #0f172a;
+        }
+        .mc-top-accent {
+            height: 3px;
+            background: #f5b800; /* Signature McMaster Golden Yellow */
+            width: 100%;
+        }
+        .mc-header-bar {
+            padding: 10px 16px;
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .mc-breadcrumbs {
+            font-size: 0.82rem;
+            color: #64748b;
+        }
+        .mc-breadcrumbs span {
+            color: #94a3b8;
+            margin: 0 4px;
+        }
+        .mc-breadcrumbs strong {
+            color: #13683a; /* Signature McMaster Hunter Green */
+        }
+        .mc-view-toggles {
+            display: inline-flex;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 2px;
+            gap: 2px;
+        }
+        .mc-mode-toggle {
+            padding: 4px 10px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            border-radius: 3px;
+            border: none;
+            background: transparent;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .mc-mode-toggle:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+        .mc-mode-toggle.active {
+            background: #13683a;
+            color: #ffffff;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .mc-catalog-body {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            min-height: 600px;
+        }
+        @media (max-width: 920px) {
+            .mc-catalog-body {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* Left Sidebar: "Choose a Category / Job" */
+        .mc-sidebar {
+            background: #f8fafc;
+            border-right: 1px solid #e2e8f0;
+            padding: 16px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .mc-sidebar-section-title {
+            font-size: 0.84rem;
+            font-weight: 800;
+            color: #0f172a;
+            padding-bottom: 4px;
+            border-bottom: 2px solid #f5b800;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .mc-sidebar-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .mc-sidebar-btn {
+            width: 100%;
+            text-align: left;
+            background: transparent;
+            border: none;
+            padding: 6px 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #334155;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.12s ease;
+        }
+        .mc-sidebar-btn:hover {
+            background: #e7f7ed;
+            color: #13683a;
+            font-weight: 700;
+        }
+        .mc-sidebar-btn.active {
+            background: #13683a;
+            color: #ffffff;
+            font-weight: 700;
+        }
+        .mc-sidebar-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            background: #e2e8f0;
+            color: #475569;
+            padding: 1px 6px;
+            border-radius: 10px;
+        }
+        .mc-sidebar-btn.active .mc-sidebar-badge {
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+        }
+        .mc-filter-box {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        /* Right Main Panel */
+        .mc-main-panel {
+            padding: 18px 22px;
+            background: #ffffff;
+            overflow-x: hidden;
+        }
+        .mc-summary-banner {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 20px;
+        }
+        .mc-summary-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .mc-summary-stats {
+            font-size: 0.82rem;
+            color: #475569;
+            font-weight: 600;
+        }
+        .mc-job-group {
+            margin-bottom: 34px;
+        }
+        .mc-section-h2 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #13683a; /* McMaster Hunter Green */
+            margin: 0 0 4px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #13683a;
+            padding-bottom: 4px;
+        }
+        .mc-section-counts {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #475569;
+        }
+        .mc-section-desc {
+            font-size: 0.8rem;
+            line-height: 1.4;
+            color: #475569;
+            margin: 6px 0 14px 0;
+            background: #f8fafc;
+            border-left: 3px solid #13683a;
+            padding: 6px 10px;
+            border-radius: 0 4px 4px 0;
+        }
+        /* Visual Catalog Mode */
+        .mc-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+            gap: 16px 12px;
+            align-items: start;
+        }
+        .card.mc-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            background: transparent;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+        .card.mc-card:hover {
+            transform: translateY(-2px);
+        }
+        .mc-thumb {
+            width: 82px;
+            height: 110px;
+            border-radius: 4px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 4px;
+            position: relative;
+            transition: all 0.15s ease;
+        }
+        .card.mc-card:hover .mc-thumb {
+            border-color: #13683a;
+            box-shadow: 0 4px 10px rgba(19, 104, 58, 0.18);
+        }
+        .card.mc-card.collected .mc-thumb {
+            border: 1.5px solid #13683a;
+            background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+        }
+        .card.mc-card.doubles .mc-thumb {
+            border: 1.5px solid #d97706;
+            background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
+        }
+        .card.mc-card.missing .mc-thumb {
+            border: 1.5px dashed #94a3b8;
+            background: #f8fafc;
+        }
+        .mc-thumb-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+        .mc-num-badge {
+            font-size: 0.62rem;
+            font-weight: 800;
+            color: #ffffff;
+            background: #0f172a;
+            padding: 1px 4px;
+            border-radius: 2px;
+        }
+        .card.mc-card.collected .mc-num-badge {
+            background: #13683a;
+        }
+        .card.mc-card.doubles .mc-num-badge {
+            background: #d97706;
+        }
+        .card.mc-card.missing .mc-num-badge {
+            background: #64748b;
+        }
+        .mc-pos-badge {
+            font-size: 0.6rem;
+            font-weight: 800;
+            color: #475569;
+            background: #e2e8f0;
+            padding: 1px 3px;
+            border-radius: 2px;
+        }
+        .mc-thumb-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 0;
+            padding: 2px 0;
+        }
+        .mc-jersey-icon {
+            font-size: 1.6rem;
+            line-height: 1;
+            filter: drop-shadow(0 1px 1px rgba(0,0,0,0.1));
+        }
+        .card.mc-card.missing .mc-jersey-icon {
+            opacity: 0.35;
+            filter: grayscale(1);
+        }
+        .mc-thumb-foot {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+        .mc-status-pill {
+            font-size: 0.6rem;
+            font-weight: 800;
+            padding: 1px 4px;
+            border-radius: 3px;
+            white-space: nowrap;
+        }
+        .card.mc-card.collected .mc-status-pill {
+            color: #13683a;
+            background: #bbf7d0;
+        }
+        .card.mc-card.doubles .mc-status-pill {
+            color: #92400e;
+            background: #fef08a;
+        }
+        .card.mc-card.missing .mc-status-pill {
+            color: #64748b;
+            background: #e2e8f0;
+        }
+        .mc-card-caption {
+            margin-top: 5px;
+            width: 100%;
+            max-width: 95px;
+        }
+        .mc-player-name {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.22;
+            word-break: break-word;
+        }
+        .mc-player-role {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #13683a;
+            margin-top: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .mc-player-timeline {
+            font-size: 0.62rem;
+            color: #64748b;
+            font-weight: 600;
+        }
+        /* Engineering Specs Table Mode */
+        .mc-spec-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            margin-bottom: 24px;
+        }
+        .mc-spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.78rem;
+            text-align: left;
+            white-space: nowrap;
+        }
+        .mc-spec-table th {
+            background: #f8fafc;
+            color: #0f172a;
+            font-weight: 800;
+            padding: 8px 10px;
+            border-bottom: 2px solid #13683a;
+            border-right: 1px solid #e2e8f0;
+            cursor: pointer;
+            user-select: none;
+        }
+        .mc-spec-table th:hover {
+            background: #f1f5f9;
+        }
+        .mc-spec-table td {
+            padding: 6px 10px;
+            border-bottom: 1px solid #e2e8f0;
+            border-right: 1px solid #f1f5f9;
+            color: #334155;
+            vertical-align: middle;
+        }
+        .mc-spec-table tbody tr:hover {
+            background: #f0fdf4;
+        }
+        .mc-part-num {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-weight: 700;
+            color: #13683a;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .mc-table-btn {
+            background: #13683a;
+            color: #ffffff;
+            border: none;
+            border-radius: 3px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            cursor: pointer;
+            transition: background 0.12s ease;
+        }
+        .mc-table-btn:hover {
+            background: #0f512c;
+        }
+        /* Detail Popover / Flyout (Screenshot 3) */
+        .mc-detail-drawer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 360px;
+            max-width: calc(100vw - 32px);
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            box-shadow: 0 10px 28px rgba(0,0,0,0.18);
+            z-index: 1000;
+            display: flex;
+            overflow: hidden;
+            animation: mcSlideIn 0.2s ease-out;
+        }
+        @keyframes mcSlideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .mc-drawer-yellow-stripe {
+            width: 6px;
+            background: #f5b800;
+            flex-shrink: 0;
+        }
+        .mc-drawer-content {
+            flex: 1;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .mc-drawer-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .mc-drawer-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            line-height: 1;
+            cursor: pointer;
+            color: #64748b;
+        }
+        .mc-drawer-close:hover {
+            color: #0f172a;
+        }
+        .mc-drawer-img-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 8px;
+            min-height: 120px;
+        }
+        .mc-drawer-img {
+            max-height: 120px;
+            max-width: 100%;
+            object-fit: contain;
+            border-radius: 3px;
+        }
+        .mc-drawer-specs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px 12px;
+            background: #f8fafc;
+            padding: 8px 10px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+            font-size: 0.76rem;
+        }
+        .mc-drawer-spec-item strong {
+            color: #0f172a;
+        }
+        .mc-order-box {
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 10px;
+            background: #fafafa;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .mc-add-btn {
+            background: #13683a; /* McMaster Green */
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.84rem;
+            font-weight: 800;
+            padding: 9px 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            transition: background 0.12s ease;
+        }
+        .mc-add-btn:hover {
+            background: #0e4c29;
+        }
     </style>
 </head>
 <body>
@@ -3840,6 +4462,7 @@
                 <div class="topbar-layout-switcher layout-switcher" id="topbarLayoutSwitcher" title="View Layout Style">
                     <button type="button" class="layout-btn active" data-layout="page" title="3x3 Binder Page Sheet view">📄 3×3 Page</button>
                     <button type="button" class="layout-btn" data-layout="list" title="Compact List view">☰ List</button>
+                    <button type="button" class="layout-btn" data-layout="job" title="🛠️ By Job: McMaster-Carr Catalog Lens with Player Roles, Specs & Timelines">🛠️ By Job</button>
                 </div>
 
                 <button type="button" id="newCollectorTopbarBtn" class="primary">+ Collector</button>
@@ -3905,14 +4528,39 @@
                         <!-- Column 1: Common Attributes / Collection Status -->
                         <div class="ifs-col" data-col="status">
                             <div class="ifs-col-head">Common Attributes</div>
+                            <div class="ifs-col-search-box">
+                                <input type="text" class="ifs-col-search-input" placeholder="Search Filter" data-target="ifsColStatusList">
+                            </div>
                             <div class="ifs-col-list" id="ifsColStatusList">
                                 <!-- Populated dynamically -->
                             </div>
                         </div>
 
-                        <!-- Column 2: Subset / Insert Series -->
+                        <!-- Column 2: Card Series -->
+                        <div class="ifs-col" data-col="series">
+                            <div class="ifs-col-head">Card Series</div>
+                            <div class="ifs-col-search-box">
+                                <input type="text" class="ifs-col-search-input" placeholder="Search Filter" data-target="ifsColSeriesList">
+                            </div>
+                            <div class="ifs-col-list" id="ifsColSeriesList">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Column 3: Checklist Year -->
+                        <div class="ifs-col" data-col="year">
+                            <div class="ifs-col-head">Checklist Year</div>
+                            <div class="ifs-col-search-box">
+                                <input type="text" class="ifs-col-search-input" placeholder="Search Filter" data-target="ifsColYearList">
+                            </div>
+                            <div class="ifs-col-list" id="ifsColYearList">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Column 4: Subsets / Inserts -->
                         <div class="ifs-col" data-col="subsets">
-                            <div class="ifs-col-head">Subsets / Series</div>
+                            <div class="ifs-col-head">Subsets / Inserts</div>
                             <div class="ifs-col-search-box">
                                 <input type="text" class="ifs-col-search-input" placeholder="Search Filter" data-target="ifsColSubsetsList">
                             </div>
@@ -3921,17 +4569,12 @@
                             </div>
                         </div>
 
-                        <!-- Column 3: Season / Series Year -->
-                        <div class="ifs-col" data-col="series">
-                            <div class="ifs-col-head">Checklist Year</div>
-                            <div class="ifs-col-list" id="ifsColSeriesList">
-                                <!-- Populated dynamically -->
-                            </div>
-                        </div>
-
                         <!-- Column 4: Card Number Range -->
                         <div class="ifs-col" data-col="ranges">
                             <div class="ifs-col-head">Card Number Range</div>
+                            <div class="ifs-col-search-box">
+                                <input type="text" class="ifs-col-search-input" placeholder="Search Filter" data-target="ifsColRangesList">
+                            </div>
                             <div class="ifs-col-list" id="ifsColRangesList">
                                 <!-- Populated dynamically -->
                             </div>
@@ -3940,6 +4583,9 @@
                         <!-- Column 5: Scarcity / Popularity Tier -->
                         <div class="ifs-col" data-col="scarcity">
                             <div class="ifs-col-head">Circulation / Scarcity</div>
+                            <div class="ifs-col-search-box">
+                                <input type="text" class="ifs-col-search-input" placeholder="Search Filter" data-target="ifsColScarcityList">
+                            </div>
                             <div class="ifs-col-list" id="ifsColScarcityList">
                                 <!-- Populated dynamically -->
                             </div>
@@ -3948,6 +4594,9 @@
                         <!-- Column 6: Quantity in Collection -->
                         <div class="ifs-col" data-col="quantity">
                             <div class="ifs-col-head">Quantity in Deck</div>
+                            <div class="ifs-col-search-box">
+                                <input type="text" class="ifs-col-search-input" placeholder="Search Filter" data-target="ifsColQuantityList">
+                            </div>
                             <div class="ifs-col-list" id="ifsColQuantityList">
                                 <!-- Populated dynamically -->
                             </div>
@@ -4134,6 +4783,7 @@
             <div class="layout-switcher right-bar-layout-switcher" id="layoutSwitcher">
                 <button type="button" class="layout-btn active" data-layout="page" title="3x3 Binder Page Sheet view">📄 3×3 Page</button>
                 <button type="button" class="layout-btn" data-layout="list" title="Compact List view">☰ List</button>
+                <button type="button" class="layout-btn" data-layout="job" title="🛠️ By Job: McMaster-Carr Catalog Lens with Player Roles, Specs & Timelines">🛠️ By Job</button>
             </div>
         </div>
 
@@ -4471,8 +5121,9 @@
         </div>
     </div>
     <div class="wiki-footer">
-        <span class="wiki-hint">💡 Push and hold any card to view Wikipedia bio</span>
-        <div style="display:flex; gap:8px;">
+        <span class="wiki-hint">💡 Click 🌐 or push & hold any card to view Wikipedia bio</span>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <a href="#" target="_blank" rel="noopener noreferrer" id="wikiCommonsLink" class="wiki-commons-btn" style="font-size:0.82rem; font-weight:700; padding:6px 12px; border-radius:6px; background:#475569; color:#fff; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">📷 Commons Photos ↗</a>
             <a href="#" target="_blank" rel="noopener noreferrer" id="wikiFullLink" class="wiki-full-btn">Read on Wikipedia ↗</a>
             <button type="button" id="dismissWikiBtn">Close</button>
         </div>
@@ -4489,7 +5140,9 @@
         viewId: null,       // number (user_id) or 'team'
         cards: [],
         filter: 'all',
-        layout: localStorage.getItem('cards_layout') || 'page', // 'page' (3x3 binder sheet) or 'list'
+        layout: localStorage.getItem('cards_layout') || 'page', // 'page', 'list', or 'job'
+        jobMode: localStorage.getItem('cards_job_mode') || 'visual', // 'visual' or 'table'
+        selectedJob: 'all',
         collapsed: new Set(),
         teamSummary: null,
         activeNavSet: null,
@@ -4921,6 +5574,12 @@
             params.user_id = state.viewId;
         }
         state.cards = await api('get_cards', params);
+        if (state.cards && Array.isArray(state.cards)) {
+            state.cards.forEach(c => {
+                c.series = c.series || 'Upper Deck Tim Hortons';
+                c.year = c.year || state.series || '2026-27';
+            });
+        }
         if (isGuestMode() || (!state.userId && state.viewId === 'guest')) {
             applyGuestCards();
         }
@@ -4937,8 +5596,9 @@
         mode: 'scrolling', // 'scrolling' | 'stacked'
         collapsed: false,
         status: new Set(),
-        subsets: new Set(),
         series: new Set(),
+        year: new Set(),
+        subsets: new Set(),
         ranges: new Set(),
         scarcity: new Set(),
         quantity: new Set(),
@@ -4951,8 +5611,9 @@
         return Boolean(
             paramState.searchWithin ||
             paramState.status.size > 0 ||
-            paramState.subsets.size > 0 ||
             paramState.series.size > 0 ||
+            paramState.year.size > 0 ||
+            paramState.subsets.size > 0 ||
             paramState.ranges.size > 0 ||
             paramState.scarcity.size > 0 ||
             paramState.quantity.size > 0 ||
@@ -4995,10 +5656,19 @@
             if (!paramState.subsets.has(card.set_name)) return false;
         }
 
-        // Series / Season
+        // Card Series
         if (paramState.series.size > 0) {
-            const cardSeries = card.series || state.series || '2026-27';
-            if (!paramState.series.has(cardSeries)) return false;
+            const cardSeries = card.series || 'Upper Deck Tim Hortons';
+            const matchesSeries = Array.from(paramState.series).some(s =>
+                cardSeries.toLowerCase().includes(s.toLowerCase()) || s.toLowerCase().includes(cardSeries.toLowerCase())
+            );
+            if (!matchesSeries) return false;
+        }
+
+        // Checklist Year
+        if (paramState.year.size > 0) {
+            const cardYear = card.year || state.series || '2026-27';
+            if (!paramState.year.has(cardYear)) return false;
         }
 
         // Number Ranges
@@ -5277,7 +5947,7 @@
     function setupCallMetrics() {
         const total = state.cards?.length || 0;
         if (total === 0) {
-            state.callMetrics = [{ label: 'CALL:', value: '0/0 SECURED', badgeColor: '#38bdf8', valColor: '#10b981' }];
+            state.callMetrics = [{ label: 'CALL:', value: '0/0 (0%)', badgeColor: '#38bdf8', valColor: '#10b981' }];
             displayCurrentCallMetric();
             return;
         }
@@ -5288,17 +5958,17 @@
         const pct = Math.round((have / total) * 100);
 
         const metrics = [
-            // 1. Overall Completeness Graph Call
+            // 1. Overall Completeness Graph Call (compact without verbose SECURED)
             {
-                label: 'COMPLETION:',
-                value: `${have}/${total} SECURED (${pct}%)`,
+                label: 'CALL:',
+                value: `${have}/${total} (${pct}%)`,
                 badgeColor: '#38bdf8',
-                valColor: '#10b981'
+                valColor: '#38bdf8'
             },
             // 2. Set Spectrum Walk-Through Summary
             {
                 label: 'SPECTRUM:',
-                value: `${have} OWNED · ${need} NEEDED · ${doublesCount} TRADE`,
+                value: `${have} OWNED · ${need} NEEDED · ${doublesCount} DBL`,
                 badgeColor: '#c084fc',
                 valColor: '#38bdf8'
             }
@@ -5317,7 +5987,7 @@
             const sPct = sTotal > 0 ? Math.round((sHave / sTotal) * 100) : 0;
             metrics.push({
                 label: `${setName.toUpperCase()}:`,
-                value: `${sHave}/${sTotal} SECURED (${sPct}%)`,
+                value: `${sHave}/${sTotal} (${sPct}%)`,
                 badgeColor: '#f59e0b',
                 valColor: sHave === sTotal ? '#22c55e' : (sPct >= 50 ? '#38bdf8' : '#e2e8f0')
             });
@@ -5327,7 +5997,7 @@
         if (doublesCount > 0 || need > 0) {
             metrics.push({
                 label: 'TRADE DECK:',
-                value: `${doublesCount} DOUBLES (RED) ⇄ ${need} NEEDED (GREEN)`,
+                value: `${doublesCount} DOUBLES ⇄ ${need} NEEDED`,
                 badgeColor: '#ef4444',
                 valColor: '#facc15'
             });
@@ -5339,7 +6009,7 @@
             const teamPct = state.teamProgress?.team_pct || pct;
             metrics.push({
                 label: `TEAM ${state.currentUser.team_name.toUpperCase()}:`,
-                value: `${teamHave}/${total} SECURED (${teamPct}%)`,
+                value: `${teamHave}/${total} (${teamPct}%)`,
                 badgeColor: '#06b6d4',
                 valColor: '#10b981'
             });
@@ -5507,32 +6177,42 @@
             items.push(`
                 <div class="eft-callout">
                     <span class="eft-callout-badge">LIVE CALL</span>
-                    <span>${esc(userTitle)}: ${have}/${total} (${pct}%) SECURED IN ${esc(seriesName.toUpperCase())}</span>
+                    <span>${esc(userTitle)}: ${have}/${total} (${pct}%) IN ${esc(seriesName.toUpperCase())}</span>
                 </div>
             `);
 
-            // Walk through collection cards like a live election / selection desk
-            // "the red needed should be including red down arrows"
-            // "the have double of should be RED and the the ones we need should be green in the ticker"
+            // Walk through collection cards with compact red & blue text
+            // "this should be red and ble text   secured and needed are too many words and too much space
+            // make the player name and card number worth the colout and apped or prepend"
             for (let i = 0; i < total; i++) {
                 const card = state.cards[i];
                 const qty = card.quantity || 0;
-                let pillClass = 'eft-pill-needed';
-                let pillText = '🔻 NEEDED';
-                if (qty >= 2) {
-                    pillClass = 'eft-pill-trade';
-                    pillText = `⭐️ ${qty}x TRADE`;
+                let itemStatusCls = 'eft-status-needed';
+                let numHtml = '';
+                let nameHtml = '';
+
+                if (qty === 0) {
+                    // Needed card: red text, 🔻 prepended to card number
+                    itemStatusCls = 'eft-status-needed';
+                    numHtml = `<span class="eft-item-num eft-needed-text">🔻 #${esc(card.card_number)}</span>`;
+                    nameHtml = `<span class="eft-item-name eft-needed-text">${esc(card.player_name)}</span>`;
                 } else if (qty === 1) {
-                    pillClass = 'eft-pill-owned';
-                    pillText = '✓ SECURED';
+                    // Single owned/secured: blue text, ✓ appended to player name
+                    itemStatusCls = 'eft-status-owned';
+                    numHtml = `<span class="eft-item-num eft-owned-text">#${esc(card.card_number)}</span>`;
+                    nameHtml = `<span class="eft-item-name eft-owned-text">${esc(card.player_name)} ✓</span>`;
+                } else {
+                    // Trade surplus double: amber/red text, ⭐️${qty}x appended
+                    itemStatusCls = 'eft-status-trade';
+                    numHtml = `<span class="eft-item-num eft-trade-text">#${esc(card.card_number)}</span>`;
+                    nameHtml = `<span class="eft-item-name eft-trade-text">${esc(card.player_name)} ⭐️${qty}x</span>`;
                 }
 
                 items.push(`
-                    <div class="eft-item" data-id="${card.id}" title="Click to jump to #${esc(card.card_number)} ${esc(card.player_name)}">
-                        <span class="eft-item-num">#${esc(card.card_number)}</span>
-                        <span class="eft-item-name">${esc(card.player_name)}</span>
+                    <div class="eft-item ${itemStatusCls}" data-id="${card.id}" title="Click to jump to #${esc(card.card_number)} ${esc(card.player_name)}">
+                        ${numHtml}
+                        ${nameHtml}
                         <span class="eft-item-set">${esc(card.set_name)}</span>
-                        <span class="eft-pill ${pillClass}">${pillText}</span>
                     </div>
                 `);
 
@@ -5541,10 +6221,11 @@
                     const subsetInfo = setsMap.get(card.set_name);
                     const sHave = subsetInfo ? subsetInfo.filter(c => c.quantity > 0).length : 0;
                     const sTot = subsetInfo ? subsetInfo.length : 0;
+                    const sPct = sTot > 0 ? Math.round((sHave / sTot) * 100) : 0;
                     items.push(`
                         <div class="eft-callout">
                             <span class="eft-callout-badge">SUBSET CALL</span>
-                            <span>${esc(card.set_name)}: ${sHave}/${sTot} SECURED</span>
+                            <span>${esc(card.set_name)}: ${sHave}/${sTot} (${sPct}%)</span>
                         </div>
                     `);
                 }
@@ -5759,6 +6440,662 @@
         sublistRow.innerHTML = sublistHtml;
     }
 
+    // ==========================================================================
+    // MCMASTER-CARR BY-JOB & SPECIFICATIONS CATALOG LENS
+    // ==========================================================================
+    const JOB_CATEGORIES = {
+        netminder: {
+            id: 'netminder',
+            title: 'Netminders & Crease Anchors',
+            icon: '🥅',
+            shortDesc: 'Puck stoppers & crease commanders',
+            longDesc: 'The primary defensive anchor. Responsible for turning away high-danger chances, tracking cross-ice feeds, rebound control, and maintaining positioning in the blue paint under heavy barrage.',
+        },
+        defense: {
+            id: 'defense',
+            title: 'Blue Liners & Puck Movers',
+            icon: '🛡️',
+            shortDesc: 'Transition quarterbacks & blue line stoppers',
+            longDesc: 'Guards the defensive perimeter, initiates zone breakouts with tape-to-tape transition passes, logs heavy all-situation minutes, and quarterbacks offensive blue-line pressure.',
+        },
+        sniper: {
+            id: 'sniper',
+            title: 'Snipers & Goal Finishers',
+            icon: '🎯',
+            shortDesc: 'One-timer specialists & lethal marksmen',
+            longDesc: 'High-velocity offensive weapons specializing in high-danger conversion, quick wrist releases, pinpoint one-timers from the circles, and elite shooting percentage.',
+        },
+        playmaker: {
+            id: 'playmaker',
+            title: 'Playmakers & Ice Generals',
+            icon: '🧠',
+            shortDesc: 'Visionary distributors & 200-foot pivots',
+            longDesc: 'Controls offensive pace, dissects defensive coverage with elite vision, wins crucial center-ice draws, and manufactures high-danger scoring lanes for linemates.',
+        },
+        power_forward: {
+            id: 'power_forward',
+            title: 'Power Forwards & Two-Way Battlers',
+            icon: '💥',
+            shortDesc: 'Net-front disruption & physical board battlers',
+            longDesc: 'Combines heavy physical presence with scoring touch. Dominates board battles, screens goaltenders in the blue paint, and forces turnovers deep in opponent zones.',
+        },
+        phenom: {
+            id: 'phenom',
+            title: 'Next-Gen Phenoms & Rising Rookies',
+            icon: '🌟',
+            shortDesc: 'First-round talent & breakthrough rookies',
+            longDesc: 'The vanguard of NHL talent. Highly touted draft picks and breakthrough rookies making immediate impacts on team trajectories and collector market demand.',
+        },
+        legend: {
+            id: 'legend',
+            title: 'Franchise Icons & Legends',
+            icon: '👑',
+            shortDesc: 'Heritage champions & historical cornerstones',
+            longDesc: 'Foundational historical figures, multi-Cup champions, and legendary franchise cornerstones who defined the game and hockey lore across generations.',
+        }
+    };
+
+    const PLAYER_SPECS = {
+        // Goalies / Netminders
+        'Jeremy Swayman': { role: 'Crease Anchor', job: 'netminder', pos: 'G', team: 'BOS', shoots: 'L', age: 27, born: 1998, draft: '2017 #111', timeline: '2021–Pres', desc: 'Elite positioning and post-to-post agility' },
+        'Igor Shesterkin': { role: 'Franchise Netminder', job: 'netminder', pos: 'G', team: 'NYR', shoots: 'L', age: 30, born: 1995, draft: '2014 #118', timeline: '2019–Pres', desc: 'Vezina Trophy winner, high-danger rebound control' },
+        'Connor Hellebuyck': { role: 'Workhorse Stopper', job: 'netminder', pos: 'G', team: 'WPG', shoots: 'L', age: 32, born: 1993, draft: '2012 #130', timeline: '2015–Pres', desc: '2x Vezina winner, heavy-volume workhorse crease commander' },
+        'Andrei Vasilevskiy': { role: 'Championship Anchor', job: 'netminder', pos: 'G', team: 'TBL', shoots: 'L', age: 31, born: 1994, draft: '2012 #19', timeline: '2014–Pres', desc: '2x Stanley Cup, Conn Smythe, big-game clutch performer' },
+        'Jake Oettinger': { role: 'Crease Anchor', job: 'netminder', pos: 'G', team: 'DAL', shoots: 'L', age: 27, born: 1998, draft: '2017 #26', timeline: '2020–Pres', desc: 'Size, calm butterfly technique and playoff poise' },
+        'Ilya Sorokin': { role: 'Acrobatic Stopper', job: 'netminder', pos: 'G', team: 'NYI', shoots: 'L', age: 30, born: 1995, draft: '2014 #78', timeline: '2020–Pres', desc: 'Exceptional lateral explosiveness and paddle saves' },
+        'Dustin Wolf': { role: 'Next-Gen Netminder', job: 'netminder', pos: 'G', team: 'CGY', shoots: 'L', age: 24, born: 2001, draft: '2019 #214', timeline: '2023–Pres', desc: '2x AHL MVP, ultra-quick reflexes and tracking' },
+        'Linus Ullmark': { role: 'Vezina Stopper', job: 'netminder', pos: 'G', team: 'OTT', shoots: 'L', age: 32, born: 1993, draft: '2012 #163', timeline: '2015–Pres', desc: 'Vezina Trophy winner, technically sound size and tracking' },
+        'Darcy Kuemper': { role: 'Veteran Anchor', job: 'netminder', pos: 'G', team: 'LAK', shoots: 'L', age: 35, born: 1990, draft: '2009 #161', timeline: '2013–Pres', desc: 'Stanley Cup champion netminder with veteran mileage' },
+        'Jordan Binnington': { role: 'Cup Champion Stopper', job: 'netminder', pos: 'G', team: 'STL', shoots: 'L', age: 32, born: 1993, draft: '2011 #88', timeline: '2016–Pres', desc: 'Stanley Cup champion with fiery competitive crease edge' },
+        'Stuart Skinner': { role: 'Crease Starter', job: 'netminder', pos: 'G', team: 'EDM', shoots: 'L', age: 27, born: 1998, draft: '2017 #78', timeline: '2021–Pres', desc: 'Homegrown starter anchoring deep playoff runs' },
+        'Joey Daccord': { role: 'Breakout Stopper', job: 'netminder', pos: 'G', team: 'SEA', shoots: 'L', age: 29, born: 1996, draft: '2015 #199', timeline: '2019–Pres', desc: 'Acrobatic puck-handling netminder with breakout save percentage' },
+        'Filip Gustavsson': { role: 'Crease Stopper', job: 'netminder', pos: 'G', team: 'MIN', shoots: 'L', age: 27, born: 1998, draft: '2016 #55', timeline: '2020–Pres', desc: 'Calm positional goalie with elite puck tracking' },
+        'Anthony Stolarz': { role: 'Big-Frame Stopper', job: 'netminder', pos: 'G', team: 'TOR', shoots: 'L', age: 32, born: 1994, draft: '2012 #45', timeline: '2016–Pres', desc: '6-foot-6 frame, 2024 Stanley Cup ring, high save efficiency' },
+        'Sergei Bobrovsky': { role: 'Championship Anchor', job: 'netminder', pos: 'G', team: 'FLA', shoots: 'L', age: 37, born: 1988, draft: 'Undrafted', timeline: '2010–Pres', desc: '2x Vezina, 2024 Stanley Cup champion, acrobatic recovery' },
+        'Lukas Dostal': { role: 'Rising Stopper', job: 'netminder', pos: 'G', team: 'ANA', shoots: 'L', age: 25, born: 2000, draft: '2018 #85', timeline: '2021–Pres', desc: 'World Championship MVP, rapid recovery and glove speed' },
+        'Joseph Woll': { role: 'Technique Stopper', job: 'netminder', pos: 'G', team: 'TOR', shoots: 'L', age: 27, born: 1998, draft: '2016 #62', timeline: '2021–Pres', desc: 'Composed technical style with calm lateral slides' },
+        'Adin Hill': { role: 'Cup Champion Anchor', job: 'netminder', pos: 'G', team: 'VGK', shoots: 'L', age: 29, born: 1996, draft: '2015 #76', timeline: '2017–Pres', desc: '2023 Stanley Cup winning netminder, huge wingspan' },
+        'Logan Thompson': { role: 'Athletic Stopper', job: 'netminder', pos: 'G', team: 'WSH', shoots: 'R', age: 29, born: 1997, draft: 'Undrafted', timeline: '2021–Pres', desc: 'Rare right-catching starter with dynamic athletic recovery' },
+        'Juuse Saros': { role: 'Elite Reflex Anchor', job: 'netminder', pos: 'G', team: 'NSH', shoots: 'L', age: 30, born: 1995, draft: '2013 #99', timeline: '2015–Pres', desc: 'Lightning-fast recovery, precise edge control and vision' },
+        'Thatcher Demko': { role: 'Vezina Finalist', job: 'netminder', pos: 'G', team: 'VAN', shoots: 'L', age: 30, born: 1995, draft: '2014 #36', timeline: '2018–Pres', desc: 'Massive butterfly coverage, flexible post-integration' },
+        'Sam Montembeault': { role: 'Workhorse Stopper', job: 'netminder', pos: 'G', team: 'MTL', shoots: 'L', age: 29, born: 1996, draft: '2015 #77', timeline: '2018–Pres', desc: 'High-volume save producer, calm under heavy shot counts' },
+        'Jacob Markstrom': { role: 'Towering Stopper', job: 'netminder', pos: 'G', team: 'NJD', shoots: 'L', age: 36, born: 1990, draft: '2008 #31', timeline: '2010–Pres', desc: '6-foot-6 veteran anchor with aggressive depth control' },
+
+        // Defensemen / Blue Liners
+        'Cale Makar': { role: 'Franchise Blue Liner', job: 'defense', pos: 'D', team: 'COL', shoots: 'R', age: 27, born: 1998, draft: '2017 #4', timeline: '2019–Pres', desc: 'Generational offensive defenseman, Norris & Conn Smythe' },
+        'Quinn Hughes': { role: 'Puck-Moving General', job: 'defense', pos: 'D', team: 'VAN', shoots: 'L', age: 26, born: 1999, draft: '2018 #7', timeline: '2019–Pres', desc: 'Norris Trophy winner, transcendent edge work and transition' },
+        'Adam Fox': { role: 'IQ Quarterback', job: 'defense', pos: 'D', team: 'NYR', shoots: 'R', age: 28, born: 1998, draft: '2016 #66', timeline: '2019–Pres', desc: 'Norris Trophy winner, elite deception and breakout vision' },
+        'Miro Heiskanen': { role: 'All-Situation Anchor', job: 'defense', pos: 'D', team: 'DAL', shoots: 'L', age: 26, born: 1999, draft: '2017 #3', timeline: '2018–Pres', desc: 'Smooth skating, shuts down elite forwards and logs 26+ mins' },
+        'Evan Bouchard': { role: 'Heavy Artillery Blue Liner', job: 'defense', pos: 'D', team: 'EDM', shoots: 'R', age: 26, born: 1999, draft: '2018 #10', timeline: '2018–Pres', desc: 'Devastating slap shot, elite powerplay quarterback' },
+        'Rasmus Dahlin': { role: 'Franchise Cornerstone', job: 'defense', pos: 'D', team: 'BUF', shoots: 'L', age: 25, born: 2000, draft: '2018 #1', timeline: '2018–Pres', desc: 'Physical, skilled two-way workhorse captain' },
+        'Drew Doughty': { role: 'Hall of Fame Anchor', job: 'defense', pos: 'D', team: 'LAK', shoots: 'R', age: 36, born: 1989, draft: '2008 #2', timeline: '2008–Pres', desc: '2x Stanley Cup, Norris Trophy, elite competitive intensity' },
+        'Victor Hedman': { role: 'Towering General', job: 'defense', pos: 'D', team: 'TBL', shoots: 'L', age: 35, born: 1990, draft: '2009 #2', timeline: '2009–Pres', desc: '6-foot-7 icon, 2x Cup, Norris, Conn Smythe champion' },
+        'Roman Josi': { role: 'Rush Catalyst', job: 'defense', pos: 'D', team: 'NSH', shoots: 'L', age: 35, born: 1990, draft: '2008 #38', timeline: '2011–Pres', desc: 'Norris Trophy winner, dynamic end-to-end puck carrier' },
+        'Josh Morrissey': { role: 'Two-Way Blue Liner', job: 'defense', pos: 'D', team: 'WPG', shoots: 'L', age: 30, born: 1995, draft: '2013 #13', timeline: '2015–Pres', desc: 'Elite transition passing and defensive zone entry denial' },
+        'Zach Werenski': { role: 'Offensive Anchor', job: 'defense', pos: 'D', team: 'CBJ', shoots: 'L', age: 28, born: 1997, draft: '2015 #8', timeline: '2016–Pres', desc: 'Dynamic offensive defenseman and powerplay quarterback' },
+        'Shea Theodore': { role: 'Puck-Moving Maestro', job: 'defense', pos: 'D', team: 'VGK', shoots: 'L', age: 30, born: 1995, draft: '2013 #26', timeline: '2015–Pres', desc: 'Stanley Cup champion, effortless skating and poise under pressure' },
+        'Brock Faber': { role: 'Shutdown Quarterback', job: 'defense', pos: 'D', team: 'MIN', shoots: 'R', age: 23, born: 2002, draft: '2020 #45', timeline: '2023–Pres', desc: 'Calder finalist, logged massive minutes in rookie season' },
+        'Noah Dobson': { role: 'High-Output General', job: 'defense', pos: 'D', team: 'NYI', shoots: 'R', age: 26, born: 2000, draft: '2018 #12', timeline: '2019–Pres', desc: 'Top-tier offensive distributor with reach and smooth mobility' },
+        'Moritz Seider': { role: 'Heavyweight Stopper', job: 'defense', pos: 'D', team: 'DET', shoots: 'R', age: 24, born: 2001, draft: '2019 #6', timeline: '2021–Pres', desc: 'Calder Trophy winner, punishing open-ice hits and minutes muncher' },
+        'Charlie McAvoy': { role: 'Two-Way Juggernaut', job: 'defense', pos: 'D', team: 'BOS', shoots: 'R', age: 28, born: 1997, draft: '2016 #14', timeline: '2017–Pres', desc: 'Physical force, rugged defender, dynamic transition driver' },
+        'Morgan Rielly': { role: 'Rush Quarterback', job: 'defense', pos: 'D', team: 'TOR', shoots: 'L', age: 32, born: 1994, draft: '2012 #5', timeline: '2013–Pres', desc: 'Longtime defensive catalyst and playoff scoring threat' },
+
+        // Snipers & Finishers
+        'Auston Matthews': { role: 'Generational Sniper', job: 'sniper', pos: 'C', team: 'TOR', shoots: 'L', age: 28, born: 1997, draft: '2016 #1', timeline: '2016–Pres', desc: '3x Rocket Richard, 69-goal season, lethal drag release' },
+        'Alex Ovechkin': { role: 'All-Time Goal King', job: 'sniper', pos: 'LW', team: 'WSH', shoots: 'R', age: 40, born: 1985, draft: '2004 #1', timeline: '2005–Pres', desc: '9x Rocket Richard, chasing all-time NHL goal scoring record' },
+        'David Pastrnak': { role: 'Elite Finisher', job: 'sniper', pos: 'RW', team: 'BOS', shoots: 'R', age: 29, born: 1996, draft: '2014 #25', timeline: '2014–Pres', desc: 'Rocket Richard winner, deadly one-timer from left circle' },
+        'Nikita Kucherov': { role: 'Master Gunner & Architect', job: 'sniper', pos: 'RW', team: 'TBL', shoots: 'L', age: 32, born: 1993, draft: '2011 #58', timeline: '2013–Pres', desc: '2x Art Ross, Hart Trophy, 100-assist scorer, deceptive release' },
+        'Sam Reinhart': { role: 'High-Percentage Finisher', job: 'sniper', pos: 'RW', team: 'FLA', shoots: 'R', age: 30, born: 1995, draft: '2014 #2', timeline: '2014–Pres', desc: '57-goal season, 2024 Cup champion, elite bumper-slot marksman' },
+        'Brock Boeser': { role: 'Pure Marksman', job: 'sniper', pos: 'RW', team: 'VAN', shoots: 'R', age: 28, born: 1997, draft: '2015 #23', timeline: '2017–Pres', desc: 'Lethal wrist shot, heavy one-timer, clutch playoff goal-scorer' },
+        'Kevin Fiala': { role: 'Dynamic Winger', job: 'sniper', pos: 'LW', team: 'LAK', shoots: 'L', age: 29, born: 1996, draft: '2014 #11', timeline: '2015–Pres', desc: 'Explosive skater, creative perimeter threat and sniper' },
+        'Matt Boldy': { role: 'Power Winger', job: 'sniper', pos: 'LW', team: 'MIN', shoots: 'L', age: 24, born: 2001, draft: '2019 #12', timeline: '2021–Pres', desc: 'Size, soft hands in tight, rapid wrist release' },
+        'Cole Caufield': { role: 'Quick-Draw Specialist', job: 'sniper', pos: 'RW', team: 'MTL', shoots: 'R', age: 25, born: 2001, draft: '2019 #15', timeline: '2021–Pres', desc: 'Lightning release, finds shooting lanes with minimal space' },
+        'Kyle Connor': { role: 'Perimeter Finisher', job: 'sniper', pos: 'LW', team: 'WPG', shoots: 'L', age: 29, born: 1996, draft: '2015 #17', timeline: '2016–Pres', desc: 'Perennial 35+ goal scorer with breakaway speed and elite hands' },
+        'Tage Thompson': { role: 'Long-Range Cannon', job: 'sniper', pos: 'C/RW', team: 'BUF', shoots: 'R', age: 28, born: 1997, draft: '2016 #26', timeline: '2017–Pres', desc: '6-foot-6 frame, 100mph one-timer, dangling puck skill' },
+        'Jason Robertson': { role: 'Clinical Slot Scorer', job: 'sniper', pos: 'LW', team: 'DAL', shoots: 'L', age: 26, born: 1999, draft: '2017 #39', timeline: '2019–Pres', desc: 'Deceptive release, supreme anticipation and scoring touch' },
+        'Kirill Kaprizov': { role: 'Explosive Gamebreaker', job: 'sniper', pos: 'LW', team: 'MIN', shoots: 'L', age: 28, born: 1997, draft: '2015 #135', timeline: '2020–Pres', desc: 'Calder Trophy winner, elusive lower-body power and finishing' },
+
+        // Playmakers & Ice Generals
+        'Connor McDavid': { role: 'Generational Maestro', job: 'playmaker', pos: 'C', team: 'EDM', shoots: 'L', age: 29, born: 1997, draft: '2015 #1', timeline: '2015–Pres', desc: '3x Hart, 5x Art Ross, Conn Smythe, transcendent speed and IQ' },
+        'Nathan MacKinnon': { role: 'High-Power Ice General', job: 'playmaker', pos: 'C', team: 'COL', shoots: 'R', age: 30, born: 1995, draft: '2013 #1', timeline: '2013–Pres', desc: 'Hart Trophy, Stanley Cup champion, explosive bull-rush speed' },
+        'Leon Draisaitl': { role: 'Puck-Protection General', job: 'playmaker', pos: 'C', team: 'EDM', shoots: 'L', age: 30, born: 1995, draft: '2014 #3', timeline: '2014–Pres', desc: 'Hart Trophy, Art Ross, premier backhand passer and shooter' },
+        'Jack Eichel': { role: 'Transition Commander', job: 'playmaker', pos: 'C', team: 'VGK', shoots: 'R', age: 29, born: 1996, draft: '2015 #2', timeline: '2015–Pres', desc: 'Stanley Cup champion, powerful long stride and vision' },
+        'Nick Suzuki': { role: '200-Foot Captain', job: 'playmaker', pos: 'C', team: 'MTL', shoots: 'R', age: 26, born: 1999, draft: '2017 #13', timeline: '2019–Pres', desc: 'Captain of Montreal, cerebral distributor and clutch playmaker' },
+        'Sebastian Aho': { role: 'Complete Pivot', job: 'playmaker', pos: 'C', team: 'CAR', shoots: 'L', age: 28, born: 1997, draft: '2015 #35', timeline: '2016–Pres', desc: 'Two-way catalyst, high-IQ penalty killer and offensive engine' },
+        'Tim Stützle': { role: 'Electrifying Playmaker', job: 'playmaker', pos: 'C', team: 'OTT', shoots: 'L', age: 24, born: 2002, draft: '2020 #3', timeline: '2020–Pres', desc: 'High-speed agility, creative zone entries and vision' },
+        'Mitch Marner': { role: 'Pass-First Maestro', job: 'playmaker', pos: 'RW', team: 'TOR', shoots: 'R', age: 28, born: 1997, draft: '2015 #4', timeline: '2016–Pres', desc: 'Magic hands, elite penalty killer, premier assist generator' },
+        'Jack Hughes': { role: 'Dynamic Rush Driver', job: 'playmaker', pos: 'C', team: 'NJD', shoots: 'L', age: 24, born: 2001, draft: '2019 #1', timeline: '2019–Pres', desc: 'Effortless edge work, deceptive passing and rapid transition' },
+        'Dylan Strome': { role: 'Playmaking Pivot', job: 'playmaker', pos: 'C', team: 'WSH', shoots: 'L', age: 29, born: 1997, draft: '2015 #3', timeline: '2016–Pres', desc: 'Soft touch around the net, excellent powerplay distributor' },
+        'Mark Scheifele': { role: 'Top-Unit Pivot', job: 'playmaker', pos: 'C', team: 'WPG', shoots: 'R', age: 32, born: 1993, draft: '2011 #7', timeline: '2011–Pres', desc: 'Franchise center, precise one-timers and high-IQ playmaking' },
+        'Robert Thomas': { role: 'Elite Visionary', job: 'playmaker', pos: 'C', team: 'STL', shoots: 'R', age: 26, born: 1999, draft: '2017 #20', timeline: '2018–Pres', desc: 'Stanley Cup champion, one of the NHL’s purest passers' },
+        'Brayden Point': { role: 'Clutch Speed General', job: 'playmaker', pos: 'C', team: 'TBL', shoots: 'R', age: 29, born: 1996, draft: '2014 #79', timeline: '2016–Pres', desc: '2x Cup champion, phenomenal playoff performer in tight spaces' },
+
+        // Power Forwards & Battlers
+        'Matthew Tkachuk': { role: 'Franchise Agitator', job: 'power_forward', pos: 'LW', team: 'FLA', shoots: 'L', age: 28, born: 1997, draft: '2016 #6', timeline: '2016–Pres', desc: '2024 Cup champion, relentless net-front disrupter and leader' },
+        'Brady Tkachuk': { role: 'Power Forward Captain', job: 'power_forward', pos: 'LW', team: 'OTT', shoots: 'L', age: 26, born: 1999, draft: '2018 #4', timeline: '2018–Pres', desc: 'Physical wrecking ball, high shot volume, fearless team leader' },
+        'Aleksander Barkov': { role: 'Selke Trophy Icon', job: 'power_forward', pos: 'C', team: 'FLA', shoots: 'L', age: 30, born: 1995, draft: '2013 #2', timeline: '2013–Pres', desc: '2024 Stanley Cup captain, 2x Selke winner, 200-foot juggernaut' },
+        'Travis Konecny': { role: 'High-Motor Agitator', job: 'power_forward', pos: 'RW', team: 'PHI', shoots: 'R', age: 29, born: 1997, draft: '2015 #24', timeline: '2016–Pres', desc: 'Tenacious forechecker, breakaway speed, gritty heart-and-soul' },
+        'Tyler Bertuzzi': { role: 'Net-Front Grinder', job: 'power_forward', pos: 'LW', team: 'CHI', shoots: 'L', age: 31, born: 1995, draft: '2013 #58', timeline: '2016–Pres', desc: 'Greasy net-front goals, tip-in specialist, relentless physical battle' },
+        'Tom Wilson': { role: 'Heavyweight Enforcer & Scorer', job: 'power_forward', pos: 'RW', team: 'WSH', shoots: 'R', age: 32, born: 1994, draft: '2012 #16', timeline: '2013–Pres', desc: 'Cup champion, punishing physical presence with top-six skill' },
+        'Brad Marchand': { role: 'Playoff Pest & Leader', job: 'power_forward', pos: 'LW', team: 'BOS', shoots: 'L', age: 37, born: 1988, draft: '2006 #71', timeline: '2009–Pres', desc: 'Cup champion captain, Hall of Fame resume, elite penalty killer' },
+        'Sam Bennett': { role: 'Playoff Battering Ram', job: 'power_forward', pos: 'C', team: 'FLA', shoots: 'L', age: 29, born: 1996, draft: '2014 #4', timeline: '2015–Pres', desc: '2024 Cup champion, physical playoff forechecker' },
+        'Zach Hyman': { role: 'Net-Front Workhorse', job: 'power_forward', pos: 'LW', team: 'EDM', shoots: 'R', age: 33, born: 1992, draft: '2010 #123', timeline: '2015–Pres', desc: '54-goal scorer, unmatched work ethic in the crease blue paint' },
+
+        // Next-Gen Phenoms & Rookies
+        'Ivan Demidov': { role: 'Russian Prodigy', job: 'phenom', pos: 'RW', team: 'MTL', shoots: 'L', age: 20, born: 2005, draft: '2024 #5', timeline: '2024–Pres', desc: 'High-end skill, dynamic skating and playmaking vision' },
+        'Matvei Michkov': { role: 'Offensive Wizard', job: 'phenom', pos: 'RW', team: 'PHI', shoots: 'L', age: 21, born: 2004, draft: '2023 #7', timeline: '2024–Pres', desc: 'Electrifying creativity, lacrosse-style Michigan goals and swagger' },
+        'Macklin Celebrini': { role: 'Franchise Centerpiece', job: 'phenom', pos: 'C', team: 'SJS', shoots: 'L', age: 19, born: 2006, draft: '2024 #1', timeline: '2024–Pres', desc: '#1 overall pick, Hobey Baker winner, 200-foot complete pivot' },
+        'Will Smith': { role: 'Playmaking Phenom', job: 'phenom', pos: 'C', team: 'SJS', shoots: 'R', age: 20, born: 2005, draft: '2023 #4', timeline: '2024–Pres', desc: 'Silky smooth hands, Boston College star, dynamic offensive instinct' },
+        'Connor Bedard': { role: 'Generational Talent', job: 'phenom', pos: 'C', team: 'CHI', shoots: 'R', age: 20, born: 2005, draft: '2023 #1', timeline: '2023–Pres', desc: 'Calder Trophy winner, world-class curl-and-drag wrist shot' },
+        'Leo Carlsson': { role: 'Towering Playmaker', job: 'phenom', pos: 'C', team: 'ANA', shoots: 'L', age: 21, born: 2004, draft: '2023 #2', timeline: '2023–Pres', desc: '6-foot-3 Swedish prodigy, poise, soft touch, exceptional reach' },
+        'Leo Carlson': { role: 'Towering Playmaker', job: 'phenom', pos: 'C', team: 'ANA', shoots: 'L', age: 21, born: 2004, draft: '2023 #2', timeline: '2023–Pres', desc: '6-foot-3 Swedish prodigy, poise, soft touch, exceptional reach' },
+        'Lane Hutson': { role: 'Deceptive Blue Liner', job: 'phenom', pos: 'D', team: 'MTL', shoots: 'L', age: 22, born: 2004, draft: '2022 #62', timeline: '2024–Pres', desc: 'World-class head fakes, vision, and dynamic blue-line walk' },
+        'Adam Fantilli': { role: 'Power Pivot Phenom', job: 'phenom', pos: 'C', team: 'CBJ', shoots: 'L', age: 21, born: 2004, draft: '2023 #3', timeline: '2023–Pres', desc: 'Hobey Baker winner, rare combo of explosive speed, power, and shot' },
+        'Logan Stankoven': { role: 'High-Octane Spark', job: 'phenom', pos: 'C/RW', team: 'DAL', shoots: 'R', age: 23, born: 2003, draft: '2021 #47', timeline: '2024–Pres', desc: 'Endless engine, fearless competitor, rapid offensive attack' },
+        'William Eklund': { role: 'Swedish Wizard', job: 'phenom', pos: 'LW', team: 'SJS', shoots: 'L', age: 23, born: 2002, draft: '2021 #7', timeline: '2021–Pres', desc: 'Cerebral playmaker with quick-strike scoring touch' },
+        'Juraj Slafkovsky': { role: 'Power Forward Prodigy', job: 'phenom', pos: 'LW', team: 'MTL', shoots: 'L', age: 21, born: 2004, draft: '2022 #1', timeline: '2022–Pres', desc: '6-foot-3 #1 pick, physical cycle dominance and growing finish' },
+        'Juraj Slavkovsky': { role: 'Power Forward Prodigy', job: 'phenom', pos: 'LW', team: 'MTL', shoots: 'L', age: 21, born: 2004, draft: '2022 #1', timeline: '2022–Pres', desc: '6-foot-3 #1 pick, physical cycle dominance and growing finish' },
+
+        // Franchise Icons & Legends
+        'Tim Horton': { role: 'Hall of Fame Legend', job: 'legend', pos: 'D', team: 'TOR/BUF', shoots: 'R', age: 44, born: 1930, draft: 'Historical', timeline: '1949–1974', desc: '4x Stanley Cup champion with Toronto, HOF 1977, Canadian coffee icon' },
+        'Sidney Crosby': { role: 'All-Time Icon', job: 'legend', pos: 'C', team: 'PIT', shoots: 'L', age: 38, born: 1987, draft: '2005 #1', timeline: '2005–Pres', desc: '3x Stanley Cup, 2x Conn Smythe, Olympic gold hero, generational captain' },
+        'Patrick Kane': { role: 'American Scoring Icon', job: 'legend', pos: 'RW', team: 'DET', shoots: 'L', age: 37, born: 1988, draft: '2007 #1', timeline: '2007–Pres', desc: '3x Stanley Cup champion, Hart Trophy, Conn Smythe, premier stickhandler' },
+        'Steven Stamkos': { role: 'Franchise 500-Goal Scorer', job: 'legend', pos: 'C/RW', team: 'NSH', shoots: 'R', age: 36, born: 1990, draft: '2008 #1', timeline: '2008–Pres', desc: '2x Stanley Cup captain, 2x Rocket Richard, legendary left-circle blast' },
+        'Evgeni Malkin': { role: 'Power General Icon', job: 'legend', pos: 'C', team: 'PIT', shoots: 'L', age: 39, born: 1986, draft: '2004 #2', timeline: '2006–Pres', desc: '3x Stanley Cup, Hart Trophy, Conn Smythe, unstoppable physical beast' }
+    };
+
+    function getPlayerSpec(name, card = null) {
+        const cleanName = (name || '').trim();
+        if (PLAYER_SPECS[cleanName]) {
+            return { ...PLAYER_SPECS[cleanName] };
+        }
+        // Normalize common typos or variations
+        const normalized = cleanName.replace('Stutzle', 'Stützle');
+        if (PLAYER_SPECS[normalized]) {
+            return { ...PLAYER_SPECS[normalized] };
+        }
+
+        // Duo or composite card check (e.g. McDavid/Draisaitl)
+        if (cleanName.includes('/')) {
+            const parts = cleanName.split('/');
+            const first = getPlayerSpec(parts[0], card);
+            return {
+                role: 'Dual Franchise Pairing',
+                job: first.job || 'playmaker',
+                pos: 'DUO',
+                team: first.team || 'NHL',
+                shoots: first.shoots || 'L',
+                age: first.age || 28,
+                born: first.born || 1997,
+                draft: 'Featured Tandem',
+                timeline: 'Co-Star Era',
+                desc: `Featured star duo featuring ${parts.join(' and ')}.`
+            };
+        }
+
+        // Heuristic derivation based on subset or name patterns
+        const setName = (card?.set_name || '').toLowerCase();
+        if (setName.includes('goalie') || setName.includes('crease')) {
+            return { role: 'Crease Netminder', job: 'netminder', pos: 'G', team: 'NHL', shoots: 'L', age: 27, born: 1998, draft: 'Drafted', timeline: 'Active Era', desc: 'Puck-stopping netminder guarding the goal crease.' };
+        }
+        if (setName.includes('above the ice')) {
+            return { role: 'Acetate Defender', job: 'defense', pos: 'D', team: 'NHL', shoots: 'L', age: 26, born: 1999, draft: 'Drafted', timeline: 'Active Era', desc: 'Premier blue-line anchor patrolling above the ice.' };
+        }
+        if (setName.includes('next gen') || setName.includes('phenom') || setName.includes('young gun') || setName.includes('rookie')) {
+            return { role: 'Breakthrough Phenom', job: 'phenom', pos: 'F', team: 'NHL', shoots: 'L', age: 21, born: 2004, draft: 'Top Pick', timeline: 'Rookie Era', desc: 'Emerging rookie phenom with high-ceiling potential.' };
+        }
+        if (setName.includes('attack angle') || setName.includes('celly')) {
+            return { role: 'Dynamic Finisher', job: 'sniper', pos: 'W', team: 'NHL', shoots: 'R', age: 27, born: 1998, draft: 'Drafted', timeline: 'Active Era', desc: 'Perimeter finisher attacking high-danger angles.' };
+        }
+        if (setName.includes('first liner') || setName.includes('pillar') || setName.includes('profile')) {
+            return { role: 'Top-Unit Pivot', job: 'playmaker', pos: 'C', team: 'NHL', shoots: 'L', age: 28, born: 1997, draft: 'Drafted', timeline: 'Active Era', desc: 'Core franchise cornerstone and primary playmaker.' };
+        }
+        if (setName.includes('signature') || setName.includes('relic') || setName.includes('timbits')) {
+            return { role: 'Franchise Star', job: 'legend', pos: 'F', team: 'NHL', shoots: 'L', age: 31, born: 1994, draft: 'Drafted', timeline: 'Veteran Era', desc: 'Featured superstar with premium collectible memorabilia.' };
+        }
+
+        // Safe fallback
+        return {
+            role: 'Professional Skater',
+            job: 'playmaker',
+            pos: 'F',
+            team: 'NHL',
+            shoots: 'L',
+            age: 26,
+            born: 1999,
+            draft: 'Drafted',
+            timeline: 'Active Era',
+            desc: 'Professional NHL skater contributing 200-foot gameplay.'
+        };
+    }
+
+    function renderJobCatalog(sets) {
+        const allCards = state.cards;
+        const visibleCards = allCards.filter(c => matchesFilter(c) && (!hasActiveParamFilters() || matchesParamFilters(c)));
+        const haveTotal = allCards.filter(c => c.quantity > 0).length;
+        const totalCards = allCards.length;
+        const overallPct = totalCards ? Math.round((haveTotal / totalCards) * 100) : 0;
+        const mode = state.jobMode || 'visual';
+        const selectedJob = state.selectedJob || 'all';
+
+        // Group cards by job
+        const jobMap = new Map();
+        Object.keys(JOB_CATEGORIES).forEach(key => jobMap.set(key, []));
+
+        visibleCards.forEach(card => {
+            const spec = getPlayerSpec(card.player_name, card);
+            if (!jobMap.has(spec.job)) jobMap.set(spec.job, []);
+            jobMap.get(spec.job).push({ card, spec });
+        });
+
+        // Compute counts per job across all cards (unfiltered for sidebar badges)
+        const allJobCounts = new Map();
+        Object.keys(JOB_CATEGORIES).forEach(key => allJobCounts.set(key, { total: 0, have: 0 }));
+        allCards.forEach(card => {
+            const spec = getPlayerSpec(card.player_name, card);
+            if (!allJobCounts.has(spec.job)) allJobCounts.set(spec.job, { total: 0, have: 0 });
+            const item = allJobCounts.get(spec.job);
+            item.total++;
+            if (card.quantity > 0) item.have++;
+        });
+
+        let html = `
+        <div class="mc-catalog-wrapper" id="mcCatalogWrapper">
+            <div class="mc-top-accent"></div>
+            <div class="mc-header-bar">
+                <div class="mc-breadcrumbs">
+                    Product Index <span>›</span> Collectibles <span>›</span> <strong>By Job Specifications & Roles</strong>
+                </div>
+                <div class="mc-view-toggles">
+                    <button type="button" class="mc-mode-toggle ${mode === 'visual' ? 'active' : ''}" data-mc-mode="visual" title="McMaster Visual Grid with Player Cards & Roles">🖼️ Visual Catalog</button>
+                    <button type="button" class="mc-mode-toggle ${mode === 'table' ? 'active' : ''}" data-mc-mode="table" title="McMaster Engineering Specification Table with Timelines & Specs">📊 Engineering Specs Table</button>
+                </div>
+            </div>
+
+            <div class="mc-catalog-body">
+                <!-- LEFT SIDEBAR: "Choose a Job / Role" -->
+                <aside class="mc-sidebar">
+                    <div>
+                        <div class="mc-sidebar-section-title">Choose a Job / Role</div>
+                        <ul class="mc-sidebar-list">
+                            <li>
+                                <button type="button" class="mc-sidebar-btn ${selectedJob === 'all' ? 'active' : ''}" data-job="all">
+                                    <span>🏒 All Jobs & Roles</span>
+                                    <span class="mc-sidebar-badge">${haveTotal}/${totalCards}</span>
+                                </button>
+                            </li>`;
+
+        for (const [key, cat] of Object.entries(JOB_CATEGORIES)) {
+            const counts = allJobCounts.get(key) || { total: 0, have: 0 };
+            const isActive = selectedJob === key;
+            html += `
+                            <li>
+                                <button type="button" class="mc-sidebar-btn ${isActive ? 'active' : ''}" data-job="${key}" title="${esc(cat.longDesc)}">
+                                    <span>${cat.icon} ${esc(cat.title.split('&')[0].trim())}</span>
+                                    <span class="mc-sidebar-badge">${counts.have}/${counts.total}</span>
+                                </button>
+                            </li>`;
+        }
+
+        html += `
+                        </ul>
+                    </div>
+
+                    <div>
+                        <div class="mc-sidebar-section-title">Collection Filter</div>
+                        <div class="mc-filter-box">
+                            <button type="button" class="mc-sidebar-btn ${state.filter === 'all' ? 'active' : ''}" data-filter-set="all">
+                                <span>📋 All Cards</span>
+                                <span class="mc-sidebar-badge">${totalCards}</span>
+                            </button>
+                            <button type="button" class="mc-sidebar-btn ${state.filter === 'missing' ? 'active' : ''}" data-filter-set="missing">
+                                <span>🔻 In Need / Missing</span>
+                                <span class="mc-sidebar-badge">${Math.max(0, totalCards - haveTotal)}</span>
+                            </button>
+                            <button type="button" class="mc-sidebar-btn ${state.filter === 'doubles' ? 'active' : ''}" data-filter-set="doubles">
+                                <span>⇄ Trade Doubles</span>
+                                <span class="mc-sidebar-badge">${allCards.filter(c => c.quantity >= 2).length}</span>
+                            </button>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- RIGHT MAIN PANEL -->
+                <main class="mc-main-panel">
+                    <div class="mc-summary-banner">
+                        <div>
+                            <div class="mc-summary-title">${selectedJob === 'all' ? 'All Roles & Job Specifications' : (JOB_CATEGORIES[selectedJob]?.title || 'Job Specifications')}</div>
+                            <div class="mc-summary-stats">${haveTotal}/${totalCards} Collected (${overallPct}%) · Showing ${visibleCards.length} matching cards in catalog</div>
+                        </div>
+                    </div>`;
+
+        if (mode === 'visual') {
+            // Visual Catalog Mode (Screenshot 0 & 1)
+            let renderedGroups = 0;
+            for (const [jobKey, cat] of Object.entries(JOB_CATEGORIES)) {
+                if (selectedJob !== 'all' && selectedJob !== jobKey) continue;
+                const items = jobMap.get(jobKey) || [];
+                if (items.length === 0 && (state.filter !== 'all' || hasActiveParamFilters())) continue;
+
+                const catHave = items.filter(i => i.card.quantity > 0).length;
+                renderedGroups++;
+
+                html += `
+                    <section class="mc-job-group" id="mc-job-${jobKey}">
+                        <h2 class="mc-section-h2">
+                            <span>${cat.icon} ${esc(cat.title)}</span>
+                            <span class="mc-section-counts">${catHave}/${items.length} Owned</span>
+                        </h2>
+                        <div class="mc-section-desc">${esc(cat.longDesc)}</div>
+                        <div class="mc-card-grid">`;
+
+                for (const item of items) {
+                    const card = item.card;
+                    const spec = item.spec;
+                    const isCollected = card.quantity >= 1;
+                    const isDoubles = card.quantity >= 2;
+                    const cls = isDoubles ? 'doubles' : isCollected ? 'collected' : 'missing';
+                    const statusText = isDoubles ? `×${card.quantity} Stock` : isCollected ? '✓ In Binder' : 'Need';
+                    const partNum = `CK-26-${String(card.id).padStart(3, '0')}`;
+
+                    html += `
+                        <div class="card mc-card ${cls}" data-id="${card.id}" data-player="${esc(card.player_name)}" title="Click to view McMaster specs & details">
+                            <div class="mc-thumb">
+                                <div class="mc-thumb-head">
+                                    <span class="mc-num-badge">#${esc(card.card_number || card.id)}</span>
+                                    <span class="mc-pos-badge">${esc(spec.pos)}</span>
+                                </div>
+                                <div class="mc-thumb-body">
+                                    <div class="mc-jersey-icon">${spec.pos === 'G' ? '🥅' : spec.pos === 'D' ? '🛡️' : '🏒'}</div>
+                                </div>
+                                <div class="mc-thumb-foot">
+                                    <span class="mc-status-pill">${statusText}</span>
+                                </div>
+                            </div>
+                            <div class="mc-card-caption">
+                                <div class="mc-player-name">${esc(card.player_name)}</div>
+                                <div class="mc-player-role">${esc(spec.team)} · ${esc(spec.role)}</div>
+                                <div class="mc-player-timeline">${esc(spec.timeline)} · Age ${spec.age}</div>
+                            </div>
+                        </div>`;
+                }
+
+                html += `</div></section>`;
+            }
+
+            if (renderedGroups === 0) {
+                html += `<div class="notice">No cards match the active job and collection filter.</div>`;
+            }
+        } else {
+            // Engineering Specs Table Mode (Screenshot 2 & 3)
+            html += `
+                <div class="mc-spec-table-wrap">
+                    <table class="mc-spec-table">
+                        <thead>
+                            <tr>
+                                <th>Card</th>
+                                <th>Part Number</th>
+                                <th>Player Name</th>
+                                <th>Job Role</th>
+                                <th>Pos</th>
+                                <th>Team</th>
+                                <th>Shoots</th>
+                                <th>Age</th>
+                                <th>Draft / Timeline</th>
+                                <th>Subset / Series</th>
+                                <th>Inventory Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+            let tableRows = 0;
+            for (const [jobKey, cat] of Object.entries(JOB_CATEGORIES)) {
+                if (selectedJob !== 'all' && selectedJob !== jobKey) continue;
+                const items = jobMap.get(jobKey) || [];
+
+                for (const item of items) {
+                    tableRows++;
+                    const card = item.card;
+                    const spec = item.spec;
+                    const partNum = `CK-26-${String(card.id).padStart(3, '0')}`;
+                    const isCollected = card.quantity >= 1;
+                    const isDoubles = card.quantity >= 2;
+                    const statusPill = isDoubles
+                        ? `<span class="mc-status-pill doubles" style="color:#92400e; background:#fef08a;">×${card.quantity} Doubles</span>`
+                        : isCollected
+                        ? `<span class="mc-status-pill collected" style="color:#13683a; background:#bbf7d0;">✓ In Binder</span>`
+                        : `<span class="mc-status-pill missing" style="color:#64748b; background:#e2e8f0;">🔻 Needed</span>`;
+
+                    const actionLabel = isDoubles ? '+ Add Double' : isCollected ? '+ Add Double' : 'Add to Binder';
+
+                    html += `
+                        <tr class="mc-spec-row" data-id="${card.id}">
+                            <td style="text-align:center; width:36px;">
+                                <span style="font-size:1.1rem;">${spec.pos === 'G' ? '🥅' : spec.pos === 'D' ? '🛡️' : '🏒'}</span>
+                            </td>
+                            <td>
+                                <span class="mc-part-num" data-action="spec-detail" data-id="${card.id}">${partNum}</span>
+                            </td>
+                            <td>
+                                <strong style="color:#0f172a; cursor:pointer;" data-action="spec-detail" data-id="${card.id}">${esc(card.player_name)}</strong>
+                            </td>
+                            <td><span style="color:#13683a; font-weight:700;">${esc(spec.role)}</span></td>
+                            <td><span class="mc-pos-badge">${esc(spec.pos)}</span></td>
+                            <td><strong>${esc(spec.team)}</strong></td>
+                            <td>${esc(spec.shoots)}</td>
+                            <td>${spec.age}</td>
+                            <td><span style="color:#64748b; font-size:0.75rem;">${esc(spec.draft)} (${esc(spec.timeline)})</span></td>
+                            <td>${esc(card.set_name)} #${esc(card.card_number)}</td>
+                            <td>${statusPill}</td>
+                            <td>
+                                <button type="button" class="mc-table-btn" data-action="toggle-qty" data-id="${card.id}">${actionLabel}</button>
+                            </td>
+                        </tr>`;
+                }
+            }
+
+            if (tableRows === 0) {
+                html += `<tr><td colspan="12" style="text-align:center; padding:20px; color:#64748b;">No specifications match this filter.</td></tr>`;
+            }
+
+            html += `</tbody></table></div>`;
+        }
+
+        html += `
+                </main>
+            </div>
+        </div>`;
+
+        return html;
+    }
+
+    function attachJobCatalogEvents() {
+        const wrapper = document.getElementById('mcCatalogWrapper');
+        if (!wrapper) return;
+
+        // View mode toggles: visual vs table
+        wrapper.querySelectorAll('.mc-mode-toggle').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const newMode = btn.dataset.mcMode;
+                state.jobMode = newMode;
+                try { localStorage.setItem('cards_job_mode', newMode); } catch (e) {}
+                render();
+            });
+        });
+
+        // Job category navigation in sidebar
+        wrapper.querySelectorAll('.mc-sidebar-btn[data-job]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                state.selectedJob = btn.dataset.job;
+                render();
+            });
+        });
+
+        // Filter shortcuts in sidebar
+        wrapper.querySelectorAll('.mc-sidebar-btn[data-filter-set]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const filter = btn.dataset.filterSet;
+                state.filter = filter;
+                document.querySelectorAll('#filters button').forEach(b => {
+                    b.classList.toggle('active', b.dataset.filter === filter);
+                });
+                render();
+            });
+        });
+
+        // Part number click / detail click
+        wrapper.querySelectorAll('[data-action="spec-detail"]').forEach(el => {
+            el.addEventListener('click', e => {
+                e.stopPropagation();
+                const id = Number(el.dataset.id);
+                const card = state.cards.find(c => c.id === id);
+                if (card) openMcDetailDrawer(card);
+            });
+        });
+
+        // Table action buttons
+        wrapper.querySelectorAll('[data-action="toggle-qty"]').forEach(btn => {
+            btn.addEventListener('click', async e => {
+                e.stopPropagation();
+                if (!canEdit()) {
+                    toast("Switch viewing mode to your own collection to edit binder quantities.");
+                    return;
+                }
+                const id = Number(btn.dataset.id);
+                const card = state.cards.find(c => c.id === id);
+                if (!card) return;
+                const nextQty = (card.quantity || 0) + 1;
+                await setCardQuantity(id, nextQty);
+            });
+        });
+    }
+
+    let activeMcDetailCardId = null;
+    async function openMcDetailDrawer(card) {
+        if (!card) return;
+        activeMcDetailCardId = card.id;
+        const spec = getPlayerSpec(card.player_name, card);
+        const partNum = `CK-26-${String(card.id).padStart(3, '0')}`;
+        const isCollected = card.quantity >= 1;
+        const isDoubles = card.quantity >= 2;
+
+        let existing = document.getElementById('mcDetailDrawer');
+        if (!existing) {
+            existing = document.createElement('div');
+            existing.id = 'mcDetailDrawer';
+            existing.className = 'mc-detail-drawer';
+            document.body.appendChild(existing);
+        }
+
+        existing.innerHTML = `
+            <div class="mc-drawer-yellow-stripe"></div>
+            <div class="mc-drawer-content">
+                <div class="mc-drawer-head">
+                    <div>
+                        <div style="font-size:0.7rem; font-weight:800; color:#13683a; font-family:monospace;">${partNum} • CARD #${esc(card.card_number || card.id)}</div>
+                        <h3 style="font-size:1.05rem; font-weight:800; margin:2px 0 0 0; color:#0f172a;">${esc(card.player_name)}</h3>
+                        <div style="font-size:0.76rem; color:#475569; font-weight:600;">${esc(spec.role)} (${esc(JOB_CATEGORIES[spec.job]?.title || spec.job)})</div>
+                    </div>
+                    <button type="button" class="mc-drawer-close" id="mcDrawerCloseBtn" title="Close Specification Sheet">×</button>
+                </div>
+
+                <div class="mc-drawer-img-wrap" id="mcDrawerImgWrap">
+                    <div style="font-size:2.8rem; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.15));">${spec.pos === 'G' ? '🥅' : spec.pos === 'D' ? '🛡️' : '🏒'}</div>
+                </div>
+
+                <div class="mc-drawer-specs-grid">
+                    <div class="mc-drawer-spec-item"><strong>Position:</strong> ${esc(spec.pos)}</div>
+                    <div class="mc-drawer-spec-item"><strong>Team:</strong> ${esc(spec.team)}</div>
+                    <div class="mc-drawer-spec-item"><strong>Shoots:</strong> ${esc(spec.shoots)}</div>
+                    <div class="mc-drawer-spec-item"><strong>Age / Born:</strong> ${spec.age} (${spec.born || 'N/A'})</div>
+                    <div class="mc-drawer-spec-item"><strong>Draft:</strong> ${esc(spec.draft)}</div>
+                    <div class="mc-drawer-spec-item"><strong>Timeline:</strong> ${esc(spec.timeline)}</div>
+                    <div class="mc-drawer-spec-item" style="grid-column: span 2;"><strong>Subset Series:</strong> ${esc(card.set_name)}</div>
+                </div>
+
+                <div id="mcDrawerBioExtract" style="font-size:0.76rem; line-height:1.35; color:#334155; max-height:80px; overflow-y:auto; border-left:2px solid #13683a; padding-left:8px;">
+                    ${esc(spec.desc)}. Loading live Wikipedia technical biography...
+                </div>
+
+                <div class="mc-order-box">
+                    <div style="display:flex; align-items:center; justify-content:space-between;">
+                        <span style="font-size:0.75rem; font-weight:700; color:#64748b;">INVENTORY STATUS</span>
+                        <span style="font-size:0.75rem; font-weight:800; color:${isDoubles ? '#d97706' : isCollected ? '#13683a' : '#64748b'};">
+                            ${isDoubles ? `✓ In Stock (${card.quantity}x Doubles)` : isCollected ? '✓ In Stock (In Binder)' : '🔻 Needed for Binder'}
+                        </span>
+                    </div>
+
+                    <div style="display:flex; gap:8px;">
+                        <button type="button" class="mc-add-btn" id="mcDrawerAddBtn" style="flex:1;">
+                            ${isCollected ? '+ ADD DOUBLE TO BINDER' : 'ADD TO BINDER'}
+                        </button>
+                        ${isCollected ? `<button type="button" id="mcDrawerRemoveBtn" style="background:#fee2e2; border:1px solid #fca5a5; color:#b91c1c; border-radius:4px; font-size:0.74rem; font-weight:700; padding:6px 10px; cursor:pointer;">Remove</button>` : ''}
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
+                        <span style="font-size:0.68rem; color:#64748b;">Delivers to Binder instantly</span>
+                        <a href="https://en.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(card.player_name)}" target="_blank" rel="noopener" id="mcDrawerWikiLink" style="font-size:0.72rem; color:#13683a; font-weight:700; text-decoration:none;">Wikipedia Bio ↗</a>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Bind events
+        document.getElementById('mcDrawerCloseBtn')?.addEventListener('click', closeMcDetailDrawer);
+
+        document.getElementById('mcDrawerAddBtn')?.addEventListener('click', async () => {
+            if (!canEdit()) {
+                toast("Switch viewing mode to your own collection to edit binder quantities.");
+                return;
+            }
+            const nextQty = (card.quantity || 0) + 1;
+            await setCardQuantity(card.id, nextQty);
+            const updated = state.cards.find(c => c.id === card.id);
+            if (updated) openMcDetailDrawer(updated);
+        });
+
+        document.getElementById('mcDrawerRemoveBtn')?.addEventListener('click', async () => {
+            if (!canEdit()) return;
+            await setCardQuantity(card.id, 0);
+            const updated = state.cards.find(c => c.id === card.id);
+            if (updated) openMcDetailDrawer(updated);
+        });
+
+        // Fetch Wikipedia live thumbnail and bio
+        try {
+            const wikiData = await api('wiki_player', { name: card.player_name });
+            if (activeMcDetailCardId === card.id && wikiData) {
+                if (wikiData.thumbnail) {
+                    const imgWrap = document.getElementById('mcDrawerImgWrap');
+                    if (imgWrap) {
+                        imgWrap.innerHTML = `<img src="${esc(wikiData.thumbnail)}" alt="${esc(card.player_name)}" class="mc-drawer-img">`;
+                    }
+                }
+                if (wikiData.extract) {
+                    const bioEl = document.getElementById('mcDrawerBioExtract');
+                    if (bioEl) {
+                        bioEl.textContent = wikiData.extract;
+                    }
+                }
+                if (wikiData.wiki_url) {
+                    const wikiLink = document.getElementById('mcDrawerWikiLink');
+                    if (wikiLink) {
+                        wikiLink.href = wikiData.wiki_url;
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('Could not load Wikipedia profile for', card.player_name, e);
+        }
+    }
+
+    function closeMcDetailDrawer() {
+        const el = document.getElementById('mcDetailDrawer');
+        if (el) el.remove();
+        activeMcDetailCardId = null;
+    }
+
     function render() {
         const container = document.getElementById('cardsContainer');
         const sets = new Map();
@@ -5819,6 +7156,14 @@
                     <button type="button" onclick="openTradeMarket(${state.viewId})" style="background:#0f172a; color:#fff; font-size:0.8rem; font-weight:700; padding:5px 12px; border-radius:6px; cursor:pointer;">🤝 Trade with ${esc(viewedName())}</button>
                 </div>`;
             }
+        }
+
+        // Dedicated McMaster-Carr "By Job & Specifications" Catalog Lens
+        if (state.layout === 'job') {
+            html += renderJobCatalog(sets);
+            container.innerHTML = html;
+            attachJobCatalogEvents();
+            return;
         }
 
         const isPageLayout = state.layout === 'page';
@@ -5917,11 +7262,215 @@
         return html;
     }
 
+    // NHL Player Team & Public Photo Directory Mapping
+    const NHL_PLAYER_TEAMS = {
+        'Connor McDavid': { team: 'Edmonton Oilers', abbr: 'EDM' },
+        'Leon Draisaitl': { team: 'Edmonton Oilers', abbr: 'EDM' },
+        'Evan Bouchard': { team: 'Edmonton Oilers', abbr: 'EDM' },
+        'Zach Hyman': { team: 'Edmonton Oilers', abbr: 'EDM' },
+        'Stuart Skinner': { team: 'Edmonton Oilers', abbr: 'EDM' },
+        'Ryan Nugent-Hopkins': { team: 'Edmonton Oilers', abbr: 'EDM' },
+        'Auston Matthews': { team: 'Toronto Maple Leafs', abbr: 'TOR' },
+        'Mitch Marner': { team: 'Toronto Maple Leafs', abbr: 'TOR' },
+        'William Nylander': { team: 'Toronto Maple Leafs', abbr: 'TOR' },
+        'John Tavares': { team: 'Toronto Maple Leafs', abbr: 'TOR' },
+        'Joseph Woll': { team: 'Toronto Maple Leafs', abbr: 'TOR' },
+        'Anthony Stolarz': { team: 'Toronto Maple Leafs', abbr: 'TOR' },
+        'Tim Horton': { team: 'Toronto Maple Leafs (Legend)', abbr: 'TOR' },
+        'Quinn Hughes': { team: 'Vancouver Canucks', abbr: 'VAN' },
+        'Elias Pettersson': { team: 'Vancouver Canucks', abbr: 'VAN' },
+        'Brock Boeser': { team: 'Vancouver Canucks', abbr: 'VAN' },
+        'J.T. Miller': { team: 'Vancouver Canucks', abbr: 'VAN' },
+        'Filip Hronek': { team: 'Vancouver Canucks', abbr: 'VAN' },
+        'Thatcher Demko': { team: 'Vancouver Canucks', abbr: 'VAN' },
+        'Jake DeBrusk': { team: 'Vancouver Canucks', abbr: 'VAN' },
+        'Jake Debrusk': { team: 'Vancouver Canucks', abbr: 'VAN' },
+        'Nick Suzuki': { team: 'Montreal Canadiens', abbr: 'MTL' },
+        'Cole Caufield': { team: 'Montreal Canadiens', abbr: 'MTL' },
+        'Juraj Slafkovsky': { team: 'Montreal Canadiens', abbr: 'MTL' },
+        'Juraj Slavkovsky': { team: 'Montreal Canadiens', abbr: 'MTL' },
+        'Lane Hutson': { team: 'Montreal Canadiens', abbr: 'MTL' },
+        'Ivan Demidov': { team: 'Montreal Canadiens', abbr: 'MTL' },
+        'Samuel Montembeault': { team: 'Montreal Canadiens', abbr: 'MTL' },
+        'Brady Tkachuk': { team: 'Ottawa Senators', abbr: 'OTT' },
+        'Tim Stützle': { team: 'Ottawa Senators', abbr: 'OTT' },
+        'Tim Stutzle': { team: 'Ottawa Senators', abbr: 'OTT' },
+        'Claude Giroux': { team: 'Ottawa Senators', abbr: 'OTT' },
+        'Drake Batherson': { team: 'Ottawa Senators', abbr: 'OTT' },
+        'Jake Sanderson': { team: 'Ottawa Senators', abbr: 'OTT' },
+        'Linus Ullmark': { team: 'Ottawa Senators', abbr: 'OTT' },
+        'Dustin Wolf': { team: 'Calgary Flames', abbr: 'CGY' },
+        'Jonathan Huberdeau': { team: 'Calgary Flames', abbr: 'CGY' },
+        'Rasmus Andersson': { team: 'Calgary Flames', abbr: 'CGY' },
+        'Nazem Kadri': { team: 'Calgary Flames', abbr: 'CGY' },
+        'MacKenzie Weegar': { team: 'Calgary Flames', abbr: 'CGY' },
+        'Connor Hellebuyck': { team: 'Winnipeg Jets', abbr: 'WPG' },
+        'Kyle Connor': { team: 'Winnipeg Jets', abbr: 'WPG' },
+        'Mark Scheifele': { team: 'Winnipeg Jets', abbr: 'WPG' },
+        'Josh Morrissey': { team: 'Winnipeg Jets', abbr: 'WPG' },
+        'Nikolaj Ehlers': { team: 'Winnipeg Jets', abbr: 'WPG' },
+        'Dylan Samberg': { team: 'Winnipeg Jets', abbr: 'WPG' },
+        'Gabe Vilardi': { team: 'Winnipeg Jets', abbr: 'WPG' },
+        'Gabe Villardi': { team: 'Winnipeg Jets', abbr: 'WPG' },
+        'David Pastrnak': { team: 'Boston Bruins', abbr: 'BOS' },
+        'Brad Marchand': { team: 'Boston Bruins', abbr: 'BOS' },
+        'Jeremy Swayman': { team: 'Boston Bruins', abbr: 'BOS' },
+        'Charlie McAvoy': { team: 'Boston Bruins', abbr: 'BOS' },
+        'Elias Lindholm': { team: 'Boston Bruins', abbr: 'BOS' },
+        'Nikita Kucherov': { team: 'Tampa Bay Lightning', abbr: 'TBL' },
+        'Andrei Vasilevskiy': { team: 'Tampa Bay Lightning', abbr: 'TBL' },
+        'Brayden Point': { team: 'Tampa Bay Lightning', abbr: 'TBL' },
+        'Jake Guentzel': { team: 'Tampa Bay Lightning', abbr: 'TBL' },
+        'Brandon Hagel': { team: 'Tampa Bay Lightning', abbr: 'TBL' },
+        'Anthony Cirelli': { team: 'Tampa Bay Lightning', abbr: 'TBL' },
+        'Victor Hedman': { team: 'Tampa Bay Lightning', abbr: 'TBL' },
+        'Aleksander Barkov': { team: 'Florida Panthers', abbr: 'FLA' },
+        'Matthew Tkachuk': { team: 'Florida Panthers', abbr: 'FLA' },
+        'Sam Reinhart': { team: 'Florida Panthers', abbr: 'FLA' },
+        'Carter Verhaeghe': { team: 'Florida Panthers', abbr: 'FLA' },
+        'Anton Lundell': { team: 'Florida Panthers', abbr: 'FLA' },
+        'Sergei Bobrovsky': { team: 'Florida Panthers', abbr: 'FLA' },
+        'Aaron Ekblad': { team: 'Florida Panthers', abbr: 'FLA' },
+        'Sam Bennett': { team: 'Florida Panthers', abbr: 'FLA' },
+        'Igor Shesterkin': { team: 'NY Rangers', abbr: 'NYR' },
+        'Artemi Panarin': { team: 'NY Rangers', abbr: 'NYR' },
+        'Adam Fox': { team: 'NY Rangers', abbr: 'NYR' },
+        'Mika Zibanejad': { team: 'NY Rangers', abbr: 'NYR' },
+        'Alexis Lafrenière': { team: 'NY Rangers', abbr: 'NYR' },
+        'Chris Kreider': { team: 'NY Rangers', abbr: 'NYR' },
+        'Nathan MacKinnon': { team: 'Colorado Avalanche', abbr: 'COL' },
+        'Cale Makar': { team: 'Colorado Avalanche', abbr: 'COL' },
+        'Mikko Rantanen': { team: 'Colorado Avalanche', abbr: 'COL' },
+        'Gabriel Landeskog': { team: 'Colorado Avalanche', abbr: 'COL' },
+        'Jack Eichel': { team: 'Vegas Golden Knights', abbr: 'VGK' },
+        'Mark Stone': { team: 'Vegas Golden Knights', abbr: 'VGK' },
+        'Shea Theodore': { team: 'Vegas Golden Knights', abbr: 'VGK' },
+        'Adin Hill': { team: 'Vegas Golden Knights', abbr: 'VGK' },
+        'Tomas Hertl': { team: 'Vegas Golden Knights', abbr: 'VGK' },
+        'Jason Robertson': { team: 'Dallas Stars', abbr: 'DAL' },
+        'Miro Heiskanen': { team: 'Dallas Stars', abbr: 'DAL' },
+        'Jake Oettinger': { team: 'Dallas Stars', abbr: 'DAL' },
+        'Wyatt Johnston': { team: 'Dallas Stars', abbr: 'DAL' },
+        'Roope Hintz': { team: 'Dallas Stars', abbr: 'DAL' },
+        'Logan Stankoven': { team: 'Dallas Stars', abbr: 'DAL' },
+        'Connor Bedard': { team: 'Chicago Blackhawks', abbr: 'CHI' },
+        'Tyler Bertuzzi': { team: 'Chicago Blackhawks', abbr: 'CHI' },
+        'Frank Nazar': { team: 'Chicago Blackhawks', abbr: 'CHI' },
+        'Teuvo Teravainen': { team: 'Chicago Blackhawks', abbr: 'CHI' },
+        'Sidney Crosby': { team: 'Pittsburgh Penguins', abbr: 'PIT' },
+        'Evgeni Malkin': { team: 'Pittsburgh Penguins', abbr: 'PIT' },
+        'Erik Karlsson': { team: 'Pittsburgh Penguins', abbr: 'PIT' },
+        'Kris Letang': { team: 'Pittsburgh Penguins', abbr: 'PIT' },
+        'Alex Ovechkin': { team: 'Washington Capitals', abbr: 'WSH' },
+        'Dylan Strome': { team: 'Washington Capitals', abbr: 'WSH' },
+        'Aleksei Protas': { team: 'Washington Capitals', abbr: 'WSH' },
+        'John Carlson': { team: 'Washington Capitals', abbr: 'WSH' },
+        'Pierre-Luc Dubois': { team: 'Washington Capitals', abbr: 'WSH' },
+        'Tom Wilson': { team: 'Washington Capitals', abbr: 'WSH' },
+        'Dylan Larkin': { team: 'Detroit Red Wings', abbr: 'DET' },
+        'Lucas Raymond': { team: 'Detroit Red Wings', abbr: 'DET' },
+        'Lukas Raymond': { team: 'Detroit Red Wings', abbr: 'DET' },
+        'Moritz Seider': { team: 'Detroit Red Wings', abbr: 'DET' },
+        'Alex DeBrincat': { team: 'Detroit Red Wings', abbr: 'DET' },
+        'Patrick Kane': { team: 'Detroit Red Wings', abbr: 'DET' },
+        'Tage Thompson': { team: 'Buffalo Sabres', abbr: 'BUF' },
+        'Rasmus Dahlin': { team: 'Buffalo Sabres', abbr: 'BUF' },
+        'Alex Tuch': { team: 'Buffalo Sabres', abbr: 'BUF' },
+        'Dylan Cozens': { team: 'Buffalo Sabres', abbr: 'BUF' },
+        'JJ Peterka': { team: 'Buffalo Sabres', abbr: 'BUF' },
+        'J.J. Peterka': { team: 'Buffalo Sabres', abbr: 'BUF' },
+        'Travis Konecny': { team: 'Philadelphia Flyers', abbr: 'PHI' },
+        'Matvei Michkov': { team: 'Philadelphia Flyers', abbr: 'PHI' },
+        'Owen Tippett': { team: 'Philadelphia Flyers', abbr: 'PHI' },
+        'Sebastian Aho': { team: 'Carolina Hurricanes', abbr: 'CAR' },
+        'Seth Jarvis': { team: 'Carolina Hurricanes', abbr: 'CAR' },
+        'Andrei Svechnikov': { team: 'Carolina Hurricanes', abbr: 'CAR' },
+        'Martin Necas': { team: 'Carolina Hurricanes', abbr: 'CAR' },
+        'Jaccob Slavin': { team: 'Carolina Hurricanes', abbr: 'CAR' },
+        'Jacob Slavin': { team: 'Carolina Hurricanes', abbr: 'CAR' },
+        'Brent Burns': { team: 'Carolina Hurricanes', abbr: 'CAR' },
+        'Jack Hughes': { team: 'NJ Devils', abbr: 'NJD' },
+        'Jesper Bratt': { team: 'NJ Devils', abbr: 'NJD' },
+        'Nico Hischier': { team: 'NJ Devils', abbr: 'NJD' },
+        'Timo Meier': { team: 'NJ Devils', abbr: 'NJD' },
+        'Dougie Hamilton': { team: 'NJ Devils', abbr: 'NJD' },
+        'Jacob Markstrom': { team: 'NJ Devils', abbr: 'NJD' },
+        'Ilya Sorokin': { team: 'NY Islanders', abbr: 'NYI' },
+        'Mathew Barzal': { team: 'NY Islanders', abbr: 'NYI' },
+        'Bo Horvat': { team: 'NY Islanders', abbr: 'NYI' },
+        'Noah Dobson': { team: 'NY Islanders', abbr: 'NYI' },
+        'Brock Nelson': { team: 'NY Islanders', abbr: 'NYI' },
+        'Anders Lee': { team: 'NY Islanders', abbr: 'NYI' },
+        'Kirill Kaprizov': { team: 'Minnesota Wild', abbr: 'MIN' },
+        'Matt Boldy': { team: 'Minnesota Wild', abbr: 'MIN' },
+        'Brock Faber': { team: 'Minnesota Wild', abbr: 'MIN' },
+        'Joel Eriksson Ek': { team: 'Minnesota Wild', abbr: 'MIN' },
+        'Filip Gustavsson': { team: 'Minnesota Wild', abbr: 'MIN' },
+        'Marc-Andre Fleury': { team: 'Minnesota Wild', abbr: 'MIN' },
+        'Filip Forsberg': { team: 'Nashville Predators', abbr: 'NSH' },
+        'Roman Josi': { team: 'Nashville Predators', abbr: 'NSH' },
+        'Juuse Saros': { team: 'Nashville Predators', abbr: 'NSH' },
+        'Steven Stamkos': { team: 'Nashville Predators', abbr: 'NSH' },
+        'Jonathan Marchessault': { team: 'Nashville Predators', abbr: 'NSH' },
+        'Jon Marchessault': { team: 'Nashville Predators', abbr: 'NSH' },
+        'Jordan Kyrou': { team: 'St. Louis Blues', abbr: 'STL' },
+        'Robert Thomas': { team: 'St. Louis Blues', abbr: 'STL' },
+        'Jordan Binnington': { team: 'St. Louis Blues', abbr: 'STL' },
+        'Brayden Schenn': { team: 'St. Louis Blues', abbr: 'STL' },
+        'Anze Kopitar': { team: 'LA Kings', abbr: 'LAK' },
+        'Drew Doughty': { team: 'LA Kings', abbr: 'LAK' },
+        'Kevin Fiala': { team: 'LA Kings', abbr: 'LAK' },
+        'Adrian Kempe': { team: 'LA Kings', abbr: 'LAK' },
+        'Quinton Byfield': { team: 'LA Kings', abbr: 'LAK' },
+        'Darcy Kuemper': { team: 'LA Kings', abbr: 'LAK' },
+        'Leo Carlsson': { team: 'Anaheim Ducks', abbr: 'ANA' },
+        'Leo Carlson': { team: 'Anaheim Ducks', abbr: 'ANA' },
+        'Cutter Gauthier': { team: 'Anaheim Ducks', abbr: 'ANA' },
+        'Mason McTavish': { team: 'Anaheim Ducks', abbr: 'ANA' },
+        'Trevor Zegras': { team: 'Anaheim Ducks', abbr: 'ANA' },
+        'Troy Terry': { team: 'Anaheim Ducks', abbr: 'ANA' },
+        'Beckett Senecke': { team: 'Anaheim Ducks', abbr: 'ANA' },
+        'John Gibson': { team: 'Anaheim Ducks', abbr: 'ANA' },
+        'Macklin Celebrini': { team: 'San Jose Sharks', abbr: 'SJS' },
+        'Will Smith': { team: 'San Jose Sharks', abbr: 'SJS' },
+        'William Eklund': { team: 'San Jose Sharks', abbr: 'SJS' },
+        'Matty Beniers': { team: 'Seattle Kraken', abbr: 'SEA' },
+        'Jared McCann': { team: 'Seattle Kraken', abbr: 'SEA' },
+        'Joey Daccord': { team: 'Seattle Kraken', abbr: 'SEA' },
+        'Brandon Montour': { team: 'Seattle Kraken', abbr: 'SEA' },
+        'Shane Wright': { team: 'Seattle Kraken', abbr: 'SEA' },
+        'Clayton Keller': { team: 'Utah HC', abbr: 'UTA' },
+        'Dylan Guenther': { team: 'Utah HC', abbr: 'UTA' },
+        'Logan Cooley': { team: 'Utah HC', abbr: 'UTA' },
+        'Mikhail Sergachev': { team: 'Utah HC', abbr: 'UTA' },
+        'Adam Fantilli': { team: 'Columbus Blue Jackets', abbr: 'CBJ' },
+        'Zach Werenski': { team: 'Columbus Blue Jackets', abbr: 'CBJ' },
+        'Kent Johnson': { team: 'Columbus Blue Jackets', abbr: 'CBJ' }
+    };
+
+    function getPlayerTeamInfo(name) {
+        if (!name) return { team: 'NHL Pro', abbr: 'NHL' };
+        if (NHL_PLAYER_TEAMS[name]) return NHL_PLAYER_TEAMS[name];
+        if (name.includes('/')) {
+            const first = name.split('/')[0].trim();
+            if (NHL_PLAYER_TEAMS[first]) return NHL_PLAYER_TEAMS[first];
+        }
+        return { team: 'NHL Pro', abbr: 'NHL' };
+    }
+
+    window.openWikipediaModalById = function(cardId) {
+        const card = state.cards?.find(c => c.id === cardId);
+        if (card) {
+            openWikipediaModal(card);
+        }
+    };
+
     function renderPageCard(card, pos) {
         const isTeam = isTeamView();
         const isCollected = card.quantity >= 1;
         const isDoubles = card.quantity >= 2;
         const cls = isDoubles ? 'doubles' : isCollected ? 'collected' : 'missing';
+        const teamInfo = getPlayerTeamInfo(card.player_name);
 
         const teamTraders = card.team_doubles_by ?? [];
         const otherTraders = card.doubles_by ?? [];
@@ -5930,11 +7479,12 @@
 
         let tooltipParts = [card.player_name];
         if (card.card_number) tooltipParts.push(`Card #${card.card_number}`);
+        tooltipParts.push(`NHL: ${teamInfo.team} (${teamInfo.abbr})`);
         if (card.last_checked) tooltipParts.push(`Checked: ${card.last_checked}`);
         if (holders.length > 0) tooltipParts.push(`Teammates with copies: ${holders.join(', ')}`);
         if (teamTraders.length > 0) tooltipParts.push(`Teammate doubles: ${teamTraders.join(', ')}`);
         else if (otherTraders.length > 0) tooltipParts.push(`Doubles: ${otherTraders.join(', ')}`);
-        tooltipParts.push('💡 Push & hold for Wikipedia bio');
+        tooltipParts.push('💡 Click 🌐 or push & hold for Wikipedia bio & photo');
 
         let badgeText = '';
         let badgeClass = 'card-status-badge';
@@ -5961,9 +7511,12 @@
         return `<div class="card page-card ${cls}" data-id="${card.id}" data-player="${esc(card.player_name)}" title="${esc(tooltipParts.join('\n'))}">
             <div class="card-head">
                 <span class="card-num-tag">#${esc(card.card_number)}</span>
+                <span class="page-card-team-pill" title="NHL Team: ${esc(teamInfo.team)}">${esc(teamInfo.abbr)}</span>
+                <button type="button" class="page-card-wiki-btn" title="Lookup ${esc(card.player_name)} Wikipedia bio & Wikimedia photo" onclick="event.stopPropagation(); openWikipediaModalById(${card.id});">🌐</button>
             </div>
             <div class="card-body">
                 <div class="card-player-title">${esc(card.player_name)}</div>
+                <div class="card-player-team">${esc(teamInfo.team)}</div>
             </div>
             <div class="card-foot">
                 <span class="${badgeClass}">${badgeText}</span>
@@ -5976,6 +7529,7 @@
         const isTeam = isTeamView();
         const cls = card.quantity >= 2 ? 'doubles' : card.quantity >= 1 ? 'collected' : 'missing';
         const qty = card.quantity >= 2 ? `${card.quantity}x` : card.quantity == 1 ? '✓' : '';
+        const teamInfo = getPlayerTeamInfo(card.player_name);
 
         const teamTraders = card.team_doubles_by ?? [];
         const otherTraders = card.doubles_by ?? [];
@@ -5983,15 +7537,19 @@
         const holders = card.holders ?? [];
 
         let tooltipParts = [card.player_name];
+        if (card.card_number) tooltipParts.push(`Card #${card.card_number}`);
+        tooltipParts.push(`NHL: ${teamInfo.team} (${teamInfo.abbr})`);
         if (card.last_checked) tooltipParts.push(`Checked: ${card.last_checked}`);
         if (holders.length > 0) tooltipParts.push(`Teammates with copies: ${holders.join(', ')}`);
         if (teamTraders.length > 0) tooltipParts.push(`Teammate doubles: ${teamTraders.join(', ')}`);
         else if (otherTraders.length > 0) tooltipParts.push(`Doubles: ${otherTraders.join(', ')}`);
-        tooltipParts.push('💡 Push & hold for Wikipedia bio');
+        tooltipParts.push('💡 Click 🌐 or push & hold for Wikipedia bio & photo');
 
         let html = `<div class="card ${cls}" data-id="${card.id}" data-player="${esc(card.player_name)}" title="${esc(tooltipParts.join('\n'))}">
             <span class="num">${esc(card.card_number)}</span>
-            <span class="name">${esc(card.player_name)}</span>`;
+            <span class="name">${esc(card.player_name)}</span>
+            <span class="card-nhl-team" title="NHL Team: ${esc(teamInfo.team)}">${esc(teamInfo.abbr)}</span>
+            <button type="button" class="card-wiki-lookup-btn" title="Lookup ${esc(card.player_name)} Wikipedia bio & Wikimedia photo" onclick="event.stopPropagation(); openWikipediaModalById(${card.id});">🌐</button>`;
 
         if (isOwn()) {
             if (teamTraders.length > 0) {
@@ -6208,14 +7766,20 @@
         const subtitleEl = document.getElementById('wikiPlayerSubtitle');
         const contentEl = document.getElementById('wikiContent');
         const fullLink = document.getElementById('wikiFullLink');
+        const commonsLink = document.getElementById('wikiCommonsLink');
+        const teamInfo = getPlayerTeamInfo(card.player_name);
 
         titleEl.textContent = card.player_name;
-        subtitleEl.textContent = card.card_number ? `Card #${card.card_number} • ${card.set_name || 'Tim Hortons'}` : 'Wikipedia NHL Bio';
+        subtitleEl.textContent = `${teamInfo.team} • ${card.card_number ? 'Card #' + card.card_number + ' • ' : ''}${card.set_name || 'Tim Hortons'}`;
         fullLink.href = `https://en.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(card.player_name)}`;
+        if (commonsLink) {
+            commonsLink.href = `https://commons.wikimedia.org/w/index.php?search=${encodeURIComponent(card.player_name)}`;
+        }
+
         contentEl.innerHTML = `
             <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 16px; gap:12px; color:var(--muted);">
                 <div style="font-size:2.4rem;">🏒</div>
-                <div>Loading Wikipedia biography for <strong>${esc(card.player_name)}</strong>...</div>
+                <div>Loading Wikipedia biography & public photos for <strong>${esc(card.player_name)}</strong> (${esc(teamInfo.team)})...</div>
             </div>
         `;
 
@@ -6224,15 +7788,19 @@
         try {
             const data = await api('wiki_player', { name: card.player_name });
             if (data && data.wiki_url) fullLink.href = data.wiki_url;
+            if (data && data.commons_url && commonsLink) commonsLink.href = data.commons_url;
 
             let imgHtml = '';
             if (data && data.thumbnail) {
-                imgHtml = `<img src="${esc(data.thumbnail)}" alt="${esc(data.title || card.player_name)}" class="wiki-player-img" loading="lazy">`;
+                imgHtml = `<a href="${esc(data.thumbnail)}" target="_blank" rel="noopener noreferrer" title="View original image on Wikimedia Commons public repository">
+                    <img src="${esc(data.thumbnail)}" alt="${esc(data.title || card.player_name)}" class="wiki-player-img" loading="lazy">
+                </a>`;
             } else {
                 imgHtml = `<div class="wiki-player-img" style="display:flex; align-items:center; justify-content:center; font-size:2.2rem; color:#94a3b8;">🏒</div>`;
             }
 
-            const desc = (data && data.description) ? `<div class="wiki-player-desc">${esc(data.description)}</div>` : '';
+            const teamBadge = `<div style="display:inline-block; font-size:0.75rem; font-weight:800; color:#0284c7; background:rgba(2,132,199,0.12); padding:2px 8px; border-radius:4px; margin-bottom:6px;">🏒 ${esc(teamInfo.team)} (${esc(teamInfo.abbr)})</div>`;
+            const desc = (data && data.description) ? `<div class="wiki-player-desc">${teamBadge}<div>${esc(data.description)}</div></div>` : teamBadge;
             const extract = (data && data.extract) ? `<div class="wiki-extract">${esc(data.extract)}</div>` : `<div class="wiki-extract" style="color:var(--muted);">No biography extract available on Wikipedia.</div>`;
 
             contentEl.innerHTML = `
@@ -6347,6 +7915,11 @@
         const card = state.cards.find(c => c.id === cardId);
         if (!card) return;
 
+        if (state.layout === 'job') {
+            openMcDetailDrawer(card);
+            return;
+        }
+
         if (!canEdit()) {
             if (isTeamView()) {
                 toast("Switch Viewing to 'My collection' to edit your cards");
@@ -6437,6 +8010,47 @@
         }
     });
 
+    /* ==========================================================
+       STICKY TOPBAR & PARAMETRIC FILTER SCROLL CONTROLLER
+       ========================================================== */
+    function updateStickyOffsets() {
+        const topbar = document.querySelector('header.topbar');
+        const filterSec = document.getElementById('inventoryFilterSection');
+        const topbarH = topbar ? Math.round(topbar.getBoundingClientRect().height) : 53;
+        document.documentElement.style.setProperty('--topbar-height', `${topbarH}px`);
+
+        if (filterSec) {
+            const filterH = Math.round(filterSec.getBoundingClientRect().height) || 48;
+            document.documentElement.style.setProperty('--ifs-height', `${filterH}px`);
+            const rect = filterSec.getBoundingClientRect();
+            if (rect.top <= topbarH + 4) {
+                filterSec.classList.add('is-stuck');
+            } else {
+                filterSec.classList.remove('is-stuck');
+            }
+        }
+    }
+
+    function scrollToElementWithStickyOffset(el) {
+        if (!el) return;
+        updateStickyOffsets();
+        const topbar = document.querySelector('header.topbar');
+        const filterSec = document.getElementById('inventoryFilterSection');
+        const topbarH = topbar ? Math.round(topbar.getBoundingClientRect().height) : 53;
+        const filterH = (filterSec && filterSec.offsetParent !== null) ? Math.round(filterSec.getBoundingClientRect().height) : 0;
+        const totalOffset = topbarH + filterH + 14;
+
+        const elRect = el.getBoundingClientRect();
+        const targetY = window.pageYOffset + elRect.top - totalOffset;
+        window.scrollTo({
+            top: Math.max(0, targetY),
+            behavior: 'smooth'
+        });
+    }
+
+    window.addEventListener('scroll', updateStickyOffsets, { passive: true });
+    window.addEventListener('resize', updateStickyOffsets, { passive: true });
+
     // Series Quick Links & Sub-List Quick Jump click handler
     const seriesNavPanel = document.getElementById('seriesNavPanel');
     if (seriesNavPanel) {
@@ -6450,7 +8064,7 @@
                 if (setDetails) {
                     setDetails.open = true;
                     state.collapsed.delete(setName);
-                    setDetails.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    scrollToElementWithStickyOffset(setDetails);
                 }
                 const sets = new Map();
                 for (const card of state.cards) {
@@ -6475,7 +8089,7 @@
                     || document.getElementById('group-' + cleanId + '-' + (sheetNum - 1))
                     || setDetails;
                 if (targetEl) {
-                    targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    scrollToElementWithStickyOffset(targetEl);
                     targetEl.classList.add('jump-highlight');
                     setTimeout(() => targetEl.classList.remove('jump-highlight'), 1600);
                 }
@@ -6767,7 +8381,7 @@
                 const setName = el.getAttribute('data-set');
                 if (setName) state.collapsed.delete(setName);
             }
-            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            scrollToElementWithStickyOffset(el);
             el.classList.add('jump-highlight');
             setTimeout(() => el.classList.remove('jump-highlight'), 1800);
         }
@@ -6799,6 +8413,7 @@
     if (mobileSubsetsBtn && mobileSubsetsBar) {
         mobileSubsetsBtn.addEventListener('click', () => {
             mobileSubsetsBar.hidden = !mobileSubsetsBar.hidden;
+            updateStickyOffsets();
         });
     }
 
@@ -7525,7 +9140,7 @@
                     if (setDetails) {
                         setDetails.open = true;
                         state.collapsed.delete(setName);
-                        setDetails.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        scrollToElementWithStickyOffset(setDetails);
                     }
                 });
             });
@@ -7947,11 +9562,12 @@
         toast(`📥 Exported ${matchingCards.length} cards to CSV table!`);
     }
 
+    let paramFilterDebounce = null;
     function initParamInventoryFilter() {
         const wrapper = document.getElementById('ifsColumnsWrapper');
         if (!wrapper) return;
 
-        // Delegated checkbox change handler
+        // Delegated checkbox change handler - multi-select with live grouped re-render
         wrapper.addEventListener('change', e => {
             const cb = e.target.closest('input[type="checkbox"]');
             if (!cb) return;
@@ -7977,6 +9593,12 @@
             if (topCount) topCount.textContent = totalMatched.toLocaleString();
             if (bottomCount) bottomCount.textContent = totalMatched.toLocaleString();
             if (showingText && state.cards) showingText.innerHTML = `Showing <strong>${totalMatched}</strong> of ${state.cards.length} Cards`;
+
+            // Live re-render results grouped below as user selects multiple filters
+            clearTimeout(paramFilterDebounce);
+            paramFilterDebounce = setTimeout(() => {
+                render();
+            }, 60);
         });
 
         // Search inputs within each column
@@ -8003,10 +9625,16 @@
                 const bottomCount = document.getElementById('ifsBottomResultsCount');
                 if (topCount) topCount.textContent = totalMatched.toLocaleString();
                 if (bottomCount) bottomCount.textContent = totalMatched.toLocaleString();
+
+                clearTimeout(paramFilterDebounce);
+                paramFilterDebounce = setTimeout(() => {
+                    render();
+                }, 220);
             });
             searchInput.addEventListener('keydown', e => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
+                    clearTimeout(paramFilterDebounce);
                     render();
                 }
             });

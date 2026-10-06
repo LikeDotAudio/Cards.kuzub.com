@@ -65,6 +65,12 @@ if (!$hasSeries) {
     $pdo->exec("UPDATE cards SET series = '2026-27' WHERE series = ''");
 }
 
+$hasYear = $pdo->query("SHOW COLUMNS FROM cards LIKE 'year'")->fetch();
+if (!$hasYear) {
+    $pdo->exec("ALTER TABLE cards ADD COLUMN year VARCHAR(20) NOT NULL DEFAULT '2026-27'");
+    $pdo->exec("UPDATE cards SET year = series WHERE series IN ('2026-27', '2025-26')");
+}
+
 $hasTeamName = $pdo->query("SHOW COLUMNS FROM users LIKE 'team_name'")->fetch();
 if (!$hasTeamName) {
     $pdo->exec("ALTER TABLE users ADD COLUMN team_name VARCHAR(50) NOT NULL DEFAULT ''");
@@ -808,14 +814,14 @@ if ($action === 'admin_delete_user' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 // GET CARDS for a collector, or for an entire team (combined).
 // A team can ONLY see their teammates.
 if ($action === 'get_cards') {
-    $series = trim($_GET['series'] ?? '2026-27');
+    $series = trim($_GET['year'] ?? ($_GET['series'] ?? '2026-27'));
     if ($series !== '2025-26' && $series !== '2026-27') {
         $series = '2026-27';
     }
 
     if ($series === '2025-26') {
-        $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM cards WHERE series = ?");
-        $stmtCount->execute(['2025-26']);
+        $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM cards WHERE series = ? OR year = ?");
+        $stmtCount->execute(['2025-26', '2025-26']);
         $count2025 = (int) $stmtCount->fetchColumn();
         if ($count2025 < 234) {
             $file2025 = __DIR__ . '/checklist_2025_26.php';
@@ -826,8 +832,8 @@ if ($action === 'get_cards') {
         }
         seedBronzo2025Collection($pdo);
     } else {
-        $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM cards WHERE series = ?");
-        $stmtCount->execute(['2026-27']);
+        $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM cards WHERE series = ? OR year = ?");
+        $stmtCount->execute(['2026-27', '2026-27']);
         $count2026 = (int) $stmtCount->fetchColumn();
         $cl2026 = require __DIR__ . '/checklist.php';
         if ($count2026 != count($cl2026)) {
@@ -852,8 +858,8 @@ if ($action === 'get_cards') {
         $memberIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
         if (empty($memberIds)) {
-            $stmtCards = $pdo->prepare("SELECT id, set_name, card_number, player_name, 0 AS quantity, NULL AS last_checked, 0 AS my_quantity, '' AS doubles_by, '' AS holders, 0 AS sitewide_holders, 0 AS sitewide_doubles FROM cards WHERE series = ? ORDER BY sort_order, id ASC");
-            $stmtCards->execute([$series]);
+            $stmtCards = $pdo->prepare("SELECT id, set_name, card_number, player_name, 'Upper Deck Tim Hortons' AS series, COALESCE(NULLIF(year, ''), series, '2026-27') AS year, 0 AS quantity, NULL AS last_checked, 0 AS my_quantity, '' AS doubles_by, '' AS holders, 0 AS sitewide_holders, 0 AS sitewide_doubles FROM cards WHERE series = ? OR year = ? ORDER BY sort_order, id ASC");
+            $stmtCards->execute([$series, $series]);
             $cards = $stmtCards->fetchAll();
             foreach ($cards as &$card) {
                 $card['doubles_by'] = [];
@@ -870,6 +876,8 @@ if ($action === 'get_cards') {
         $stmt = $pdo->prepare("
             SELECT
                 c.id, c.set_name, c.card_number, c.player_name,
+                'Upper Deck Tim Hortons' AS series,
+                COALESCE(NULLIF(c.year, ''), c.series, '2026-27') AS year,
                 COALESCE(MAX(CASE WHEN col.quantity > 0 THEN 1 ELSE 0 END), 0) AS quantity,
                 COALESCE(SUM(col.quantity), 0) AS team_copies,
                 MAX(col.last_checked) AS last_checked,
@@ -891,11 +899,11 @@ if ($action === 'get_cards') {
             FROM cards c
             LEFT JOIN collections col ON col.card_id = c.id AND col.user_id IN ($inList)
             LEFT JOIN collections viewer ON viewer.card_id = c.id AND viewer.user_id = ?
-            WHERE c.series = ?
-            GROUP BY c.id, c.set_name, c.card_number, c.player_name, c.sort_order
+            WHERE c.series = ? OR c.year = ?
+            GROUP BY c.id, c.set_name, c.card_number, c.player_name, c.series, c.year, c.sort_order
             ORDER BY c.sort_order, c.id ASC
         ");
-        $stmt->execute([$teamName, $teamName, $me, $series]);
+        $stmt->execute([$teamName, $teamName, $me, $series, $series]);
         $cards = $stmt->fetchAll();
         foreach ($cards as &$card) {
             $card['doubles_by'] = empty($card['doubles_by']) ? [] : explode("\n", $card['doubles_by']);
@@ -926,6 +934,8 @@ if ($action === 'get_cards') {
     $stmt = $pdo->prepare("
         SELECT
             c.id, c.set_name, c.card_number, c.player_name,
+            'Upper Deck Tim Hortons' AS series,
+            COALESCE(NULLIF(c.year, ''), c.series, '2026-27') AS year,
             COALESCE(mine.quantity, 0) AS quantity,
             mine.last_checked,
             COALESCE(viewer.quantity, 0) AS my_quantity,
@@ -955,10 +965,10 @@ if ($action === 'get_cards') {
         FROM cards c
         LEFT JOIN collections mine ON mine.card_id = c.id AND mine.user_id = ?
         LEFT JOIN collections viewer ON viewer.card_id = c.id AND viewer.user_id = ?
-        WHERE c.series = ?
+        WHERE c.series = ? OR c.year = ?
         ORDER BY c.sort_order, c.id ASC
     ");
-    $stmt->execute([$userId, $myTeam, $myTeam, $userId, $myTeam, $myTeam, $userId, $me, $series]);
+    $stmt->execute([$userId, $myTeam, $myTeam, $userId, $myTeam, $myTeam, $userId, $me, $series, $series]);
     $cards = $stmt->fetchAll();
     foreach ($cards as &$card) {
         $card['doubles_by'] = empty($card['doubles_by']) ? [] : explode("\n", $card['doubles_by']);
@@ -1143,6 +1153,7 @@ if ($action === 'wiki_player') {
         'extract' => $data['extract'] ?? '',
         'thumbnail' => $data['thumbnail']['source'] ?? null,
         'wiki_url' => $data['content_urls']['desktop']['page'] ?? ('https://en.wikipedia.org/wiki/' . rawurlencode(str_replace(' ', '_', $data['title'] ?? $name))),
+        'commons_url' => 'https://commons.wikimedia.org/w/index.php?search=' . rawurlencode($name),
     ]);
     exit;
 }
@@ -1151,10 +1162,10 @@ fail('Unknown action');
 
 // SYNC CHECKLIST for specific series
 function syncSeriesCards($pdo, $checklist, $series = '2026-27') {
-    $findNumbered = $pdo->prepare("SELECT id FROM cards WHERE series = ? AND set_name = ? AND card_number = ?");
-    $findUnnumbered = $pdo->prepare("SELECT id FROM cards WHERE series = ? AND set_name = ? AND card_number = '' AND player_name = ?");
-    $update = $pdo->prepare("UPDATE cards SET player_name = ?, sort_order = ? WHERE id = ?");
-    $insert = $pdo->prepare("INSERT INTO cards (series, set_name, card_number, player_name, sort_order) VALUES (?, ?, ?, ?, ?)");
+    $findNumbered = $pdo->prepare("SELECT id FROM cards WHERE (series = ? OR year = ?) AND set_name = ? AND card_number = ?");
+    $findUnnumbered = $pdo->prepare("SELECT id FROM cards WHERE (series = ? OR year = ?) AND set_name = ? AND card_number = '' AND player_name = ?");
+    $update = $pdo->prepare("UPDATE cards SET player_name = ?, sort_order = ?, year = COALESCE(NULLIF(year, ''), ?) WHERE id = ?");
+    $insert = $pdo->prepare("INSERT INTO cards (series, year, set_name, card_number, player_name, sort_order) VALUES (?, ?, ?, ?, ?, ?)");
 
     $pdo->beginTransaction();
     foreach ($checklist as $i => $row) {
@@ -1163,16 +1174,16 @@ function syncSeriesCards($pdo, $checklist, $series = '2026-27') {
         $player = $row[2];
         $order = $i + 1;
         if ($number !== '') {
-            $findNumbered->execute([$series, $set, $number]);
+            $findNumbered->execute([$series, $series, $set, $number]);
             $id = $findNumbered->fetchColumn();
         } else {
-            $findUnnumbered->execute([$series, $set, $player]);
+            $findUnnumbered->execute([$series, $series, $set, $player]);
             $id = $findUnnumbered->fetchColumn();
         }
         if ($id) {
-            $update->execute([$player, $order, $id]);
+            $update->execute([$player, $order, $series, $id]);
         } else {
-            $insert->execute([$series, $set, $number, $player, $order]);
+            $insert->execute([$series, $series, $set, $number, $player, $order]);
         }
     }
     $pdo->commit();
