@@ -9383,16 +9383,32 @@
             `).join('');
         }
 
-        // 3. Checklist Year / Series
+        // Card Series
         const seriesListEl = document.getElementById('ifsColSeriesList');
         if (seriesListEl) {
             const seriesItems = [
-                { id: '2026-27', label: '2026-27 UD Tim Hortons', count: state.series === '2026-27' ? cards.length : 135 },
-                { id: '2025-26', label: '2025-26 Tim Hortons', count: state.series === '2025-26' ? cards.length : 234 }
+                { id: 'Upper Deck Tim Hortons', label: 'Upper Deck Tim Hortons', count: cards.length }
             ];
             seriesListEl.innerHTML = seriesItems.map(it => `
                 <label class="ifs-col-item ${paramState.series.has(it.id) ? 'is-selected' : ''}">
-                    <input type="checkbox" data-facet="series" value="${it.id}" ${paramState.series.has(it.id) ? 'checked' : ''}>
+                    <input type="checkbox" data-facet="series" value="${esc(it.id)}" ${paramState.series.has(it.id) ? 'checked' : ''}>
+                    <span class="ifs-item-text">${esc(it.label)}</span>
+                    <span class="ifs-item-count">(${it.count})</span>
+                </label>
+            `).join('');
+        }
+
+        // Checklist Year
+        const yearListEl = document.getElementById('ifsColYearList');
+        if (yearListEl) {
+            const curYear = state.series || '2026-27';
+            const yearItems = [
+                { id: '2026-27', label: '2026-27', count: curYear === '2026-27' ? cards.length : 276 },
+                { id: '2025-26', label: '2025-26', count: curYear === '2025-26' ? cards.length : 234 }
+            ];
+            yearListEl.innerHTML = yearItems.map(it => `
+                <label class="ifs-col-item ${paramState.year.has(it.id) ? 'is-selected' : ''}">
+                    <input type="checkbox" data-facet="year" value="${it.id}" ${paramState.year.has(it.id) ? 'checked' : ''}>
                     <span class="ifs-item-text">${esc(it.label)}</span>
                     <span class="ifs-item-count">(${it.count})</span>
                 </label>
@@ -9532,7 +9548,7 @@
             return;
         }
 
-        const headers = ["Card Number", "Player Name", "Subset", "Series", "My Quantity", "Status", "Site-Wide Holders", "Site-Wide Doubles", "Teammate Doubles"];
+        const headers = ["Card Number", "Player Name", "Subset", "Series", "Year", "My Quantity", "Status", "Site-Wide Holders", "Site-Wide Doubles", "Teammate Doubles"];
         const rows = [headers.map(h => `"${h.replace(/"/g, '""')}"`).join(',')];
 
         for (const c of matchingCards) {
@@ -9542,7 +9558,8 @@
                 c.card_number || "",
                 c.player_name || "",
                 c.set_name || "",
-                c.series || state.series,
+                c.series || "Upper Deck Tim Hortons",
+                c.year || state.series || "2026-27",
                 c.quantity,
                 status,
                 c.sitewide_holders || 0,
@@ -9581,6 +9598,12 @@
             if (cb.checked) {
                 set.add(val);
                 cb.closest('.ifs-col-item')?.classList.add('is-selected');
+                if (facet === 'year' && (val === '2025-26' || val === '2026-27') && val !== state.series) {
+                    paramState.year.clear();
+                    paramState.year.add(val);
+                    switchSeries(val);
+                    return;
+                }
             } else {
                 set.delete(val);
                 cb.closest('.ifs-col-item')?.classList.remove('is-selected');
@@ -9657,8 +9680,9 @@
             resetBtn.addEventListener('click', () => {
                 paramState.searchWithin = '';
                 paramState.status.clear();
-                paramState.subsets.clear();
                 paramState.series.clear();
+                paramState.year.clear();
+                paramState.subsets.clear();
                 paramState.ranges.clear();
                 paramState.scarcity.clear();
                 paramState.quantity.clear();
@@ -9687,6 +9711,7 @@
                 wrapper.classList.add('mode-stacked');
                 modeStacked.classList.add('active');
                 modeScrolling.classList.remove('active');
+                updateStickyOffsets();
             });
             modeScrolling.addEventListener('click', () => {
                 paramState.mode = 'scrolling';
@@ -9694,6 +9719,7 @@
                 wrapper.classList.add('mode-scrolling');
                 modeScrolling.classList.add('active');
                 modeStacked.classList.remove('active');
+                updateStickyOffsets();
             });
         }
 
@@ -9705,6 +9731,7 @@
                 paramState.collapsed = !paramState.collapsed;
                 bodyEl.style.display = paramState.collapsed ? 'none' : 'block';
                 collapseBtn.textContent = paramState.collapsed ? '▼ Show Filters' : '▲ Hide Filters';
+                updateStickyOffsets();
             });
         }
 
