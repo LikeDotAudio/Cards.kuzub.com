@@ -4108,8 +4108,9 @@
     }
 
     function jumpRotatingStat(idx) {
-        if (!state.rotatingStatCards) return;
-        state.rotatingStatIdx = idx % state.rotatingStatCards.length;
+        if (!state.rotatingStatCards || state.rotatingStatCards.length === 0) return;
+        const len = state.rotatingStatCards.length;
+        state.rotatingStatIdx = ((idx % len) + len) % len;
         displayCurrentRotatingStat();
         restartRotatingStatsTimer();
     }
@@ -4382,11 +4383,11 @@
         let badgeText = '';
         let badgeClass = 'card-status-badge';
         if (isDoubles) {
-            badgeText = `${card.quantity}x`;
+            badgeText = `${card.quantity}x (Trade)`;
         } else if (isCollected) {
             badgeText = '✓ Owned';
         } else {
-            badgeText = 'Missing';
+            badgeText = '🔻 NEEDED';
             badgeClass += ' missing';
         }
 
@@ -4397,8 +4398,8 @@
             } else if (otherTraders.length > 0) {
                 tradePill = `<span class="trade" title="Doubles: ${esc(otherTraders.join(', '))}">⇄ ${otherTraders.length}</span>`;
             }
-        } else if (!isTeam && state.userId && card.quantity >= 2 && card.my_quantity == 0) {
-            tradePill = `<span class="need">NEED</span>`;
+        } else if (!isTeam && card.quantity >= 2 && ((state.userId && card.my_quantity == 0) || (isGuestMode() && (card.quantity || 0) == 0))) {
+            tradePill = `<span class="need" style="color:#10b981; border-color:#10b981;">🔻 NEED</span>`;
         }
 
         return `<div class="card page-card ${cls}" data-id="${card.id}" data-player="${esc(card.player_name)}" title="${esc(tooltipParts.join('\n'))}">
@@ -4442,8 +4443,8 @@
             } else if (otherTraders.length > 0) {
                 html += `<span class="trade" title="Doubles: ${esc(otherTraders.join(', '))}">⇄ ${otherTraders.length}</span>`;
             }
-        } else if (!isTeam && state.userId && card.quantity >= 2 && card.my_quantity == 0) {
-            html += `<span class="need">NEED</span>`;
+        } else if (!isTeam && card.quantity >= 2 && ((state.userId && card.my_quantity == 0) || (isGuestMode() && (card.quantity || 0) == 0))) {
+            html += `<span class="need" style="color:#10b981; border-color:#10b981;">🔻 NEED</span>`;
         }
 
         html += `<span class="qty">${qty}</span>`;
@@ -4463,7 +4464,26 @@
 
     async function setCardQuantity(cardId, quantity) {
         if (!state.userId) {
-            showLoginGate();
+            // Guest mode: store in local storage map and update state live
+            if (state.viewId !== 'guest') {
+                state.viewId = 'guest';
+                const vs = document.getElementById('viewSelect');
+                if (vs) vs.value = 'guest';
+            }
+            const guestMap = getGuestCardsMap();
+            if (quantity > 0) {
+                guestMap[cardId] = quantity;
+            } else {
+                delete guestMap[cardId];
+            }
+            saveGuestCardsMap(guestMap);
+            const card = state.cards.find(c => c.id === cardId);
+            if (card) {
+                card.quantity = quantity;
+                card.my_quantity = quantity;
+            }
+            render();
+            toast(`Updated #${card?.card_number || cardId} to ${quantity}x (Guest Sandbox)`);
             return;
         }
         if (!canEdit()) {
@@ -4747,13 +4767,11 @@
         const card = state.cards.find(c => c.id === cardId);
         if (!card) return;
 
-        if (!state.userId) {
-            showLoginGate();
-            return;
-        }
         if (!canEdit()) {
             if (isTeamView()) {
                 toast("Switch Viewing to 'My collection' to edit your cards");
+            } else if (!state.userId) {
+                toast(`Viewing ${viewedName()}'s cards. Switch Viewing to 'Guest Trader' to add/subtract in your sandbox!`);
             } else {
                 toast(`This is ${viewedName()}'s collection — switch Viewing to 'My collection' to edit`);
             }
@@ -5116,6 +5134,365 @@
             eftViewport.scrollBy({ left: 260, behavior: 'smooth' });
         });
     }
+
+    // Subsets Quick Jump helper
+    window.jumpToSet = function(cleanId) {
+        const el = document.getElementById('set-' + cleanId);
+        if (el) {
+            if (!el.open) {
+                el.open = true;
+                const setName = el.getAttribute('data-set');
+                if (setName) state.collapsed.delete(setName);
+            }
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            el.classList.add('jump-highlight');
+            setTimeout(() => el.classList.remove('jump-highlight'), 1800);
+        }
+        const msb = document.getElementById('mobileSubsetsBar');
+        if (msb) msb.hidden = true;
+    };
+
+    function setupMobileSubsetsBar(sets) {
+        const chipsEl = document.getElementById('mobileSubsetsChips');
+        if (!chipsEl) return;
+        if (!sets || sets.size === 0) {
+            chipsEl.innerHTML = '<span style="color:#64748b; font-size:0.75rem;">No subsets available</span>';
+            return;
+        }
+        let html = '';
+        for (const [setName, cards] of sets) {
+            const have = cards.filter(c => c.quantity > 0).length;
+            const cleanId = cleanSetId(setName);
+            html += `<button type="button" class="msb-chip" onclick="jumpToSet('${cleanId}')">
+                <span>${esc(setName)}</span>
+                <span class="msb-badge">${have}/${cards.length}</span>
+            </button>`;
+        }
+        chipsEl.innerHTML = html;
+    }
+
+    const mobileSubsetsBtn = document.getElementById('mobileSubsetsBtn');
+    const mobileSubsetsBar = document.getElementById('mobileSubsetsBar');
+    if (mobileSubsetsBtn && mobileSubsetsBar) {
+        mobileSubsetsBtn.addEventListener('click', () => {
+            mobileSubsetsBar.hidden = !mobileSubsetsBar.hidden;
+        });
+    }
+
+    // L-Bar Customization
+    function applyLbarPrefs() {
+        let prefs = { series: true, subsets: true, team: true, stats: true };
+        try {
+            const saved = localStorage.getItem('cards_lbar_prefs');
+            if (saved) prefs = Object.assign(prefs, JSON.parse(saved));
+        } catch (e) {}
+
+        const seriesEl = document.querySelector('.sidebar-section:first-child');
+        if (seriesEl) seriesEl.style.display = prefs.series ? '' : 'none';
+
+        const subsetsEl = document.getElementById('seriesNavPanel');
+        if (subsetsEl) subsetsEl.style.display = prefs.subsets ? '' : 'none';
+
+        const teamEl = document.getElementById('teamHubSection');
+        if (teamEl) {
+            if (!prefs.team) teamEl.style.display = 'none';
+            else if (state.currentUser?.team_name) teamEl.style.display = '';
+        }
+
+        const statsEl = document.getElementById('sideRotatingStatsWidget');
+        if (statsEl) statsEl.style.display = prefs.stats ? '' : 'none';
+
+        const cbSeries = document.getElementById('toggleWidgetSeries');
+        const cbSubsets = document.getElementById('toggleWidgetSubsets');
+        const cbTeam = document.getElementById('toggleWidgetTeam');
+        const cbStats = document.getElementById('toggleWidgetStats');
+        if (cbSeries) cbSeries.checked = prefs.series !== false;
+        if (cbSubsets) cbSubsets.checked = prefs.subsets !== false;
+        if (cbTeam) cbTeam.checked = prefs.team !== false;
+        if (cbStats) cbStats.checked = prefs.stats !== false;
+    }
+
+    function setupLbarCustomization() {
+        const dialog = document.getElementById('lbarCustomizeDialog');
+        const btnOpen = document.getElementById('btnCustomizeWidgets');
+        const btnClose = document.getElementById('closeLbarCustomizeBtn');
+        const btnSave = document.getElementById('saveLbarCustomizeBtn');
+        const btnReset = document.getElementById('resetLbarCustomizeBtn');
+
+        if (btnOpen && dialog) {
+            btnOpen.addEventListener('click', () => {
+                applyLbarPrefs();
+                dialog.showModal();
+            });
+        }
+        if (btnClose && dialog) {
+            btnClose.addEventListener('click', () => dialog.close());
+        }
+        if (btnReset) {
+            btnReset.addEventListener('click', () => {
+                const defaults = { series: true, subsets: true, team: true, stats: true };
+                try { localStorage.setItem('cards_lbar_prefs', JSON.stringify(defaults)); } catch (e) {}
+                applyLbarPrefs();
+                toast('L-bar widgets reset to default');
+            });
+        }
+        if (btnSave && dialog) {
+            btnSave.addEventListener('click', () => {
+                const prefs = {
+                    series: document.getElementById('toggleWidgetSeries')?.checked ?? true,
+                    subsets: document.getElementById('toggleWidgetSubsets')?.checked ?? true,
+                    team: document.getElementById('toggleWidgetTeam')?.checked ?? true,
+                    stats: document.getElementById('toggleWidgetStats')?.checked ?? true,
+                };
+                try { localStorage.setItem('cards_lbar_prefs', JSON.stringify(prefs)); } catch (e) {}
+                applyLbarPrefs();
+                dialog.close();
+                toast('L-bar preferences saved');
+            });
+        }
+    }
+
+    // Trade Market & Rigging Exchange
+    let currentPartnerCards = [];
+
+    window.openTradeMarket = async function(partnerId = null) {
+        const dialog = document.getElementById('tradeMarketDialog');
+        if (!dialog) return;
+
+        const partnerSelect = document.getElementById('tmdPartnerSelect');
+        if (!partnerSelect) return;
+
+        const currentMyId = state.userId;
+        const partners = (state.users || []).filter(u => u.id !== currentMyId);
+
+        if (partners.length === 0) {
+            toast('No other collectors found to trade with yet.');
+            return;
+        }
+
+        partnerSelect.innerHTML = partners.map(u => {
+            const teamPart = u.team_name ? ` (Team ${esc(u.team_name)})` : '';
+            return `<option value="${u.id}">${esc(u.collector_name)}${teamPart}</option>`;
+        }).join('');
+
+        if (partnerId && partners.some(u => u.id === Number(partnerId))) {
+            partnerSelect.value = String(partnerId);
+        } else if (state.viewId && partners.some(u => u.id === Number(state.viewId))) {
+            partnerSelect.value = String(state.viewId);
+        } else {
+            const bronzo = partners.find(u => (u.collector_name || '').toLowerCase() === 'bronzo') || partners[0];
+            partnerSelect.value = String(bronzo.id);
+        }
+
+        await loadMarketPartnerData(Number(partnerSelect.value));
+        dialog.showModal();
+    };
+
+    async function loadMarketPartnerData(partnerId) {
+        const myDoublesList = document.getElementById('tmdMyDoublesList');
+        const targetNeedsList = document.getElementById('tmdTargetNeedsList');
+
+        if (!myDoublesList || !targetNeedsList) return;
+
+        myDoublesList.innerHTML = '<div style="padding:12px; color:#64748b; font-size:0.8rem;">Loading your trade inventory...</div>';
+        targetNeedsList.innerHTML = '<div style="padding:12px; color:#64748b; font-size:0.8rem;">Loading partner cards...</div>';
+
+        try {
+            const partnerCards = await api(`cards&user_id=${partnerId}&series=${encodeURIComponent(state.series || '2026-27')}`);
+            currentPartnerCards = partnerCards || [];
+        } catch (e) {
+            console.error('Error fetching partner cards:', e);
+            currentPartnerCards = [];
+        }
+
+        const partner = (state.users || []).find(u => u.id === partnerId);
+        const partnerName = partner ? partner.collector_name : 'Partner';
+
+        const myCards = state.cards || [];
+        const myDoubles = myCards.filter(c => c.quantity >= 2);
+
+        const partnerDoublesINeed = currentPartnerCards.filter(pc => {
+            if (pc.quantity < 2) return false;
+            const myCard = myCards.find(c => c.id === pc.id);
+            return !myCard || myCard.quantity === 0;
+        });
+
+        const partnerNeedsFromMe = myDoubles.filter(mc => {
+            const pc = currentPartnerCards.find(c => c.id === mc.id);
+            return !pc || pc.quantity === 0;
+        });
+
+        if (myDoubles.length === 0) {
+            myDoublesList.innerHTML = `<div style="padding:16px; text-align:center; color:#64748b; font-size:0.82rem;">
+                No doubles currently in your inventory.<br>
+                <span style="font-size:0.75rem; color:#94a3b8;">${isGuestMode() ? 'Tip: Click cards in the checklist to add them to your sandbox!' : 'Add doubles by clicking cards!'}</span>
+            </div>`;
+        } else {
+            myDoublesList.innerHTML = myDoubles.map(c => {
+                const doesPartnerNeed = partnerNeedsFromMe.some(pnm => pnm.id === c.id);
+                return `
+                <label class="tmd-card-item ${doesPartnerNeed ? 'is-mutual-match' : ''}">
+                    <input type="checkbox" class="tmd-my-card-cb" value="${c.id}" ${doesPartnerNeed ? 'checked' : ''}>
+                    <div class="tmd-card-info">
+                        <div class="tmd-card-num">#${esc(c.card_number)} • ${esc(c.set_name)}</div>
+                        <div class="tmd-card-name">${esc(c.player_name)}</div>
+                    </div>
+                    <div class="tmd-card-tag tmd-tag-double">⭐️ ${c.quantity}x ${doesPartnerNeed ? '🔥 Partner Needs!' : ''}</div>
+                </label>`;
+            }).join('');
+        }
+
+        if (partnerDoublesINeed.length === 0) {
+            targetNeedsList.innerHTML = `<div style="padding:16px; text-align:center; color:#64748b; font-size:0.82rem;">
+                ${esc(partnerName)} doesn't have any doubles you're currently missing.<br>
+                <span style="font-size:0.75rem; color:#94a3b8;">Try selecting another trading partner!</span>
+            </div>`;
+        } else {
+            targetNeedsList.innerHTML = partnerDoublesINeed.map(c => {
+                return `
+                <label class="tmd-card-item">
+                    <input type="checkbox" class="tmd-target-card-cb" value="${c.id}" checked>
+                    <div class="tmd-card-info">
+                        <div class="tmd-card-num">#${esc(c.card_number)} • ${esc(c.set_name)}</div>
+                        <div class="tmd-card-name">${esc(c.player_name)}</div>
+                    </div>
+                    <div class="tmd-card-tag tmd-tag-needed">🔻 NEEDED (${c.quantity}x avl)</div>
+                </label>`;
+            }).join('');
+        }
+
+        updateMarketSummary();
+    }
+
+    function updateMarketSummary() {
+        const summaryEl = document.getElementById('tmdMatchSummary');
+        if (!summaryEl) return;
+
+        const partnerSelect = document.getElementById('tmdPartnerSelect');
+        const partnerId = Number(partnerSelect?.value);
+        const partner = (state.users || []).find(u => u.id === partnerId);
+        const partnerName = partner ? partner.collector_name : 'Partner';
+
+        const mySelected = document.querySelectorAll('.tmd-my-card-cb:checked').length;
+        const targetSelected = document.querySelectorAll('.tmd-target-card-cb:checked').length;
+
+        if (mySelected === 0 && targetSelected === 0) {
+            summaryEl.innerHTML = `<span>Select doubles to trade with <strong>${esc(partnerName)}</strong>.</span>`;
+        } else {
+            const fairness = mySelected === targetSelected ? '⚖️ 100% Even Swap!' : (mySelected > targetSelected ? '⭐️ Favorable to partner' : '🔥 Favorable to you');
+            summaryEl.innerHTML = `<strong>Trade Proposition:</strong> You give <strong>${mySelected}</strong> card(s) ➔ receive <strong>${targetSelected}</strong> card(s) from <strong>${esc(partnerName)}</strong>. <span style="font-weight:700; color:#0369a1;">${fairness}</span>`;
+        }
+    }
+
+    async function rigTheCardMarket() {
+        const partnerSelect = document.getElementById('tmdPartnerSelect');
+        const partnerId = Number(partnerSelect?.value);
+        const partner = (state.users || []).find(u => u.id === partnerId);
+        const partnerName = partner ? partner.collector_name : 'Partner';
+
+        const mySelectedIds = Array.from(document.querySelectorAll('.tmd-my-card-cb:checked')).map(cb => Number(cb.value));
+        const targetSelectedIds = Array.from(document.querySelectorAll('.tmd-target-card-cb:checked')).map(cb => Number(cb.value));
+
+        if (mySelectedIds.length === 0 && targetSelectedIds.length === 0) {
+            toast('Select at least one card to trade or swap!');
+            return;
+        }
+
+        // Give cards: Decrement user's doubles
+        for (const cardId of mySelectedIds) {
+            const card = state.cards.find(c => c.id === cardId);
+            if (card && card.quantity > 0) {
+                const newQty = card.quantity - 1;
+                if (isGuestMode()) {
+                    const guestMap = getGuestCardsMap();
+                    guestMap[cardId] = newQty;
+                    saveGuestCardsMap(guestMap);
+                    card.quantity = newQty;
+                } else {
+                    card.quantity = newQty;
+                    api('set_quantity', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ card_id: cardId, quantity: newQty })
+                    }).catch(() => {});
+                }
+            }
+        }
+
+        // Receive cards: Increment needed cards
+        for (const cardId of targetSelectedIds) {
+            const card = state.cards.find(c => c.id === cardId);
+            if (card) {
+                const newQty = (card.quantity || 0) + 1;
+                if (isGuestMode()) {
+                    const guestMap = getGuestCardsMap();
+                    guestMap[cardId] = newQty;
+                    saveGuestCardsMap(guestMap);
+                    card.quantity = newQty;
+                } else {
+                    card.quantity = newQty;
+                    api('set_quantity', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ card_id: cardId, quantity: newQty })
+                    }).catch(() => {});
+                }
+            }
+        }
+
+        const dialog = document.getElementById('tradeMarketDialog');
+        if (dialog) dialog.close();
+
+        render();
+        updateVUMeterAndHighlights();
+
+        toast(`🎉 Card Market Rigged! Swapped ${targetSelectedIds.length} card(s) with ${partnerName}! Added to your binder!`);
+    }
+
+    // Bind Market Dialog events
+    const tmdPartnerSelect = document.getElementById('tmdPartnerSelect');
+    if (tmdPartnerSelect) {
+        tmdPartnerSelect.addEventListener('change', () => {
+            loadMarketPartnerData(Number(tmdPartnerSelect.value));
+        });
+    }
+
+    const tmdDialogEl = document.getElementById('tradeMarketDialog');
+    if (tmdDialogEl) {
+        tmdDialogEl.addEventListener('change', e => {
+            if (e.target.matches('.tmd-my-card-cb, .tmd-target-card-cb')) {
+                updateMarketSummary();
+            }
+        });
+        document.getElementById('closeTradeMarketBtn')?.addEventListener('click', () => tmdDialogEl.close());
+        document.getElementById('cancelTradeMarketBtn')?.addEventListener('click', () => tmdDialogEl.close());
+        document.getElementById('btnRigMarket')?.addEventListener('click', rigTheCardMarket);
+        document.getElementById('btnLockTrade')?.addEventListener('click', () => {
+            tmdDialogEl.close();
+            if (isGuestMode()) {
+                document.getElementById('newCollectorTopbarBtn')?.click();
+            } else {
+                toast('Trade locked into your permanent collection!');
+            }
+        });
+    }
+
+    // Speed & Control button listeners
+    const srwSpeedBtn = document.getElementById('srwSpeedBtn');
+    const eftSpeedBtn = document.getElementById('eftSpeedBtn');
+    if (srwSpeedBtn) srwSpeedBtn.addEventListener('click', cycleBroadcastSpeed);
+    if (eftSpeedBtn) eftSpeedBtn.addEventListener('click', cycleBroadcastSpeed);
+
+    const srwPrevCardBtn = document.getElementById('srwPrevCardBtn');
+    const srwNextCardBtn = document.getElementById('srwNextCardBtn');
+    if (srwPrevCardBtn) srwPrevCardBtn.addEventListener('click', () => jumpRotatingStat(state.rotatingStatIdx - 1));
+    if (srwNextCardBtn) srwNextCardBtn.addEventListener('click', () => jumpRotatingStat(state.rotatingStatIdx + 1));
+
+    document.getElementById('topbarTradeMarketBtn')?.addEventListener('click', () => openTradeMarket());
+    document.getElementById('rbOpenMarketBtn')?.addEventListener('click', () => openTradeMarket());
+
+    setupLbarCustomization();
+    applyLbarPrefs();
 
     // Initial check
     checkAuthAndInit();
