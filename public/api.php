@@ -90,7 +90,7 @@ if (!$hasIsAdmin) {
     $pdo->exec("ALTER TABLE users ADD COLUMN is_admin TINYINT(1) NOT NULL DEFAULT 0");
 }
 $pdo->exec("UPDATE users SET is_admin = 1 WHERE UPPER(collector_name) = 'ANTHONY'");
-$pdo->exec("UPDATE users SET collector_name = 'DoofenshmirtzEvilInc' WHERE collector_name IN ('Josh', 'doofenshmirtz evil inc', 'Doofenshmirtz Evil Inc')");
+$pdo->exec("UPDATE users SET collector_name = 'DoofenshmirtzEvilInc' WHERE LOWER(collector_name) IN ('josh', 'doofenshmirtz evil inc', 'doofenshmirtzevilinc') OR LOWER(REPLACE(collector_name, ' ', '')) = 'doofenshmirtzevilinc'");
 
 $hasEmail = $pdo->query("SHOW COLUMNS FROM users LIKE 'email'")->fetch();
 if (!$hasEmail) {
@@ -927,6 +927,9 @@ if ($action === 'set_card_quantity' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         fail('Sign in first', 401);
     }
     $userId = (int) $user['id'];
+    if (!empty($user['is_admin']) && !empty($input['target_user_id'])) {
+        $userId = (int) $input['target_user_id'];
+    }
     $cardId = (int) ($input['card_id'] ?? 0);
     $quantity = isset($input['quantity']) ? (int) $input['quantity'] : -1;
 
@@ -958,6 +961,9 @@ if ($action === 'toggle_card' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         fail('Sign in first', 401);
     }
     $userId = (int) $user['id'];
+    if (!empty($user['is_admin']) && !empty($input['target_user_id'])) {
+        $userId = (int) $input['target_user_id'];
+    }
     $cardId = (int) ($input['card_id'] ?? 0);
 
     if (!$cardId) {
@@ -996,6 +1002,9 @@ if ($action === 'adjust_card' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         fail('Sign in first', 401);
     }
     $userId = (int) $user['id'];
+    if (!empty($user['is_admin']) && !empty($input['target_user_id'])) {
+        $userId = (int) $input['target_user_id'];
+    }
     $cardId = (int) ($input['card_id'] ?? 0);
     $delta = (int) ($input['delta'] ?? 0);
 

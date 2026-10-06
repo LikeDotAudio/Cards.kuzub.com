@@ -585,6 +585,73 @@
             color: #64748b;
             text-transform: uppercase;
         }
+        .right-bar-collection-stats {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px 12px;
+            gap: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+        }
+        .right-bar-collection-stats .right-bar-section-title {
+            font-size: 0.74rem;
+            font-weight: 800;
+            color: #334155;
+            letter-spacing: 0.02em;
+            text-transform: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .right-bar-collection-stats .collector-sentence-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 100%;
+        }
+        .right-bar-collection-stats .sentence-stats-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+            width: 100%;
+        }
+        .right-bar-collection-stats .stat-sentence-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            border: 1px solid var(--border-color);
+            background: #f8fafc;
+            color: #334155;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .right-bar-collection-stats .stat-sentence-pill:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+            transform: translateY(-1px);
+        }
+        .right-bar-collection-stats .stat-sentence-pill.active {
+            background: #0f172a;
+            color: #ffffff;
+            border-color: #0f172a;
+        }
+        .right-bar-collection-stats .stat-sentence-pill.active .stat-num,
+        .right-bar-collection-stats .stat-sentence-pill.active .stat-word {
+            color: #ffffff !important;
+        }
+        .right-bar-collection-stats .stat-sentence-pill.have .stat-num { color: #15803d; font-weight: 800; }
+        .right-bar-collection-stats .stat-sentence-pill.need {
+            border-color: #fecaca;
+            background: #fef2f2;
+        }
+        .right-bar-collection-stats .stat-sentence-pill.need .stat-num { color: #dc2626; font-weight: 800; }
+        .right-bar-collection-stats .stat-sentence-pill.doubles .stat-num { color: #d97706; font-weight: 800; }
+        .right-bar-collection-stats .stat-sentence-pill.team .stat-num { color: #0284c7; font-weight: 800; }
         .right-bar-layout-switcher {
             display: flex;
             width: 100%;
@@ -802,15 +869,19 @@
            ELECTION DESK & SPORTS BROADCAST FOOTER TICKER
            ("this ticker should be a footer. when the user seese these or hovers they should cycle... walk though the collection like a live animated news cast thingking like an election")
            ========================================================== */
+        /* ==========================================================
+           ELECTION DESK & SPORTS BROADCAST FOOTER TICKER
+           ("2x in size 1/10th the speed")
+           ========================================================== */
         .election-footer-ticker {
             position: fixed;
             bottom: 0;
             left: var(--left-bar-width);
             right: var(--right-bar-width);
-            height: 38px;
+            height: 64px;
             background: linear-gradient(90deg, #070b14 0%, #0d1527 50%, #070b14 100%);
-            border-top: 2px solid #1e3a8a;
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.45);
+            border-top: 3px solid #2563eb;
+            box-shadow: 0 -6px 28px rgba(0, 0, 0, 0.55);
             display: flex;
             align-items: center;
             z-index: 35;
@@ -827,13 +898,13 @@
         .eft-desk-badge {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 10px;
             background: #dc2626;
             color: #ffffff;
-            font-size: 0.62rem;
+            font-size: 0.95rem;
             font-weight: 900;
             letter-spacing: 0.1em;
-            padding: 0 10px;
+            padding: 0 16px;
             height: 100%;
             flex-shrink: 0;
             text-transform: uppercase;
@@ -841,8 +912,8 @@
             border-right: 1px solid rgba(255, 255, 255, 0.15);
         }
         .eft-live-dot {
-            width: 7px;
-            height: 7px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
             background: #ffffff;
             animation: hlPulse 1.2s infinite ease-in-out;
@@ -850,12 +921,12 @@
         .eft-call-chip {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
             background: #111827;
             color: #f1f5f9;
             height: 100%;
-            padding: 0 10px;
-            font-size: 0.65rem;
+            padding: 0 16px;
+            font-size: 0.92rem;
             font-weight: 800;
             border-right: 1px solid #1e293b;
             flex-shrink: 0;
@@ -882,10 +953,10 @@
         .eft-stream {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
             white-space: nowrap;
             will-change: transform;
-            animation: eftWalkThrough 60s linear infinite;
+            animation: eftWalkThrough 600s linear infinite;
         }
         .eft-stream:hover,
         .eft-stream.is-paused {
@@ -898,12 +969,12 @@
         .eft-item {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 3px 8px;
-            border-radius: 4px;
-            background: rgba(15, 23, 42, 0.85);
+            gap: 10px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.92);
             border: 1px solid #1e293b;
-            font-size: 0.68rem;
+            font-size: 0.92rem;
             color: #cbd5e1;
             flex-shrink: 0;
             cursor: pointer;
@@ -912,59 +983,60 @@
         .eft-item:hover {
             background: #1e293b;
             border-color: #38bdf8;
-            transform: translateY(-1px);
+            transform: translateY(-2px);
             color: #ffffff;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
         }
         .eft-item-num {
             font-weight: 900;
             color: #f8fafc;
             font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-            font-size: 0.72rem;
+            font-size: 1.15rem;
         }
         .eft-item-name {
             font-weight: 700;
             color: #e2e8f0;
+            font-size: 0.95rem;
         }
         .eft-item-set {
-            font-size: 0.6rem;
+            font-size: 0.8rem;
             color: #94a3b8;
             text-transform: uppercase;
         }
         .eft-pill {
             display: inline-block;
-            font-size: 0.58rem;
+            font-size: 0.82rem;
             font-weight: 900;
             letter-spacing: 0.05em;
-            padding: 1px 5px;
-            border-radius: 3px;
+            padding: 3px 9px;
+            border-radius: 4px;
             text-transform: uppercase;
         }
         .eft-pill-owned {
-            background: rgba(16, 185, 129, 0.2);
+            background: rgba(16, 185, 129, 0.22);
             border: 1px solid #10b981;
             color: #34d399;
         }
         .eft-pill-trade {
-            background: rgba(245, 158, 11, 0.25);
+            background: rgba(245, 158, 11, 0.28);
             border: 1px solid #f59e0b;
             color: #fbbf24;
         }
         .eft-pill-needed {
-            background: rgba(239, 68, 68, 0.2);
-            border: 1px solid rgba(239, 68, 68, 0.7);
+            background: rgba(239, 68, 68, 0.22);
+            border: 1px solid rgba(239, 68, 68, 0.85);
             color: #f87171;
         }
         .eft-callout {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 3px 10px;
-            border-radius: 4px;
-            background: linear-gradient(90deg, rgba(30, 58, 138, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+            gap: 10px;
+            padding: 8px 18px;
+            border-radius: 8px;
+            background: linear-gradient(90deg, rgba(30, 58, 138, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
             border: 1px solid #2563eb;
             color: #93c5fd;
-            font-size: 0.65rem;
+            font-size: 0.92rem;
             font-weight: 800;
             flex-shrink: 0;
             letter-spacing: 0.04em;
@@ -972,17 +1044,17 @@
         .eft-callout-badge {
             background: #2563eb;
             color: #ffffff;
-            font-size: 0.56rem;
+            font-size: 0.76rem;
             font-weight: 900;
-            padding: 1px 4px;
-            border-radius: 2px;
+            padding: 2px 7px;
+            border-radius: 3px;
             text-transform: uppercase;
         }
         .eft-actions {
             display: inline-flex;
             align-items: center;
-            gap: 2px;
-            padding: 0 6px;
+            gap: 4px;
+            padding: 0 10px;
             height: 100%;
             background: #0b1120;
             border-left: 1px solid #1e293b;
@@ -992,10 +1064,10 @@
             background: transparent;
             border: none;
             color: #94a3b8;
-            font-size: 0.75rem;
+            font-size: 1.15rem;
             cursor: pointer;
-            padding: 3px 6px;
-            border-radius: 3px;
+            padding: 6px 10px;
+            border-radius: 4px;
             line-height: 1;
         }
         .eft-btn:hover {
@@ -1205,7 +1277,7 @@
             max-width: 1600px;
             width: 100%;
             margin: 0 auto;
-            padding: 14px 16px 58px;
+            padding: 14px 16px 88px;
         }
 
         /* Collector Dashboard Unit: Sentence Stats + Pro Audio VU Meter (no visual void) */
@@ -2245,7 +2317,7 @@
             .mobile-menu-btn { display: inline-flex; align-items: center; justify-content: center; }
             .mobile-right-btn { display: inline-flex; margin-left: auto; }
             header.topbar { padding: 6px 10px; }
-            main { padding: 8px 10px 58px; }
+            main { padding: 8px 10px 88px; }
             .collector-dashboard-unit {
                 padding: 8px 10px;
                 gap: 10px;
@@ -2361,53 +2433,6 @@
         </header>
 
         <main id="main">
-            <!-- COLLECTOR DASHBOARD UNIT: Sentence Stats + Pro Audio VU Meter ("right with the thing it's about, no visual void") -->
-            <div class="collector-dashboard-unit" id="collectorDashboardUnit">
-                <div class="collector-sentence-wrap">
-                    <span class="sentence-user-lead" id="sentenceUserText">Viewing <strong>Bronzo</strong>'s collection:</span>
-                    <div class="sentence-stats-group" id="collectionHighlightDeck">
-                        <button type="button" class="stat-sentence-pill deck-card have active" id="statHaveBtn" data-filter="all" title="Click to view all collected cards">
-                            <span class="stat-num" id="deckHaveVal">0</span>
-                            <span class="stat-emoji">✅</span>
-                            <span class="stat-word">have</span>
-                        </button>
-                        <span class="stat-sep">·</span>
-                        <button type="button" class="stat-sentence-pill deck-card need" id="statNeedBtn" data-filter="missing" title="Click to view missing cards needed">
-                            <span class="stat-num" id="deckNeedVal">0</span>
-                            <span class="stat-emoji">❓</span>
-                            <span class="stat-word">needed</span>
-                        </button>
-                        <span class="stat-sep">·</span>
-                        <button type="button" class="stat-sentence-pill deck-card doubles" id="statTradeBtn" data-filter="doubles" title="Click to view doubles for trade">
-                            <span class="stat-num" id="deckDoublesVal">0</span>
-                            <span class="stat-emoji">🔁</span>
-                            <span class="stat-word">trade</span>
-                        </button>
-                        <span class="stat-sep" id="statTeamSep" hidden>·</span>
-                        <button type="button" class="stat-sentence-pill deck-card team" id="deckTeamCard" hidden data-filter="team_needs" title="Click to view team cards / coverage">
-                            <span class="stat-emoji">👥</span>
-                            <span class="stat-word">Team:</span>
-                            <span class="stat-num" id="deckTeamVal">0</span>
-                        </button>
-                    </div>
-                    <div id="deckSubsWrap" hidden>
-                        <span id="deckHaveSub"></span>
-                        <span id="deckNeedSub"></span>
-                        <span id="deckDoublesSub"></span>
-                        <span id="deckTeamSub"></span>
-                    </div>
-                </div>
-
-                <!-- Hidden holders for legacy VU readouts so all JS bindings remain valid -->
-                <div id="vuLegacyHousing" hidden>
-                    <div id="vuMeterHousing"><div id="vuMeterFill"></div><div id="vuChannelLabel"></div></div>
-                    <div id="vuStatHave"><span id="vuStatHaveNum">0</span><span id="vuStatHavePct">0%</span></div>
-                    <div id="vuStatNeed"><span id="vuStatNeedNum">0</span></div>
-                    <div id="vuStatDoubles"><span id="vuStatDoublesNum">0</span></div>
-                    <div id="vuStatTeam"><span id="vuStatTeamNum">0</span><span id="vuStatTeamPct">0%</span></div>
-                </div>
-            </div>
-
             <!-- DYNAMIC CARDS CONTAINER -->
             <div id="cardsContainer"></div>
         </main>
@@ -2460,6 +2485,50 @@
                 </div>
             </div>
             <button type="button" class="btn-topbar-signin" id="topbarSignInBtn" hidden>Sign In / Register</button>
+        </div>
+
+        <!-- MY COLLECTION STATS ("between account and view layout") -->
+        <div class="right-bar-section right-bar-collection-stats" id="collectorDashboardUnit">
+            <div class="right-bar-section-title" id="sentenceUserText">👤 My collection:</div>
+            <div class="collector-sentence-wrap">
+                <div class="sentence-stats-group" id="collectionHighlightDeck">
+                    <button type="button" class="stat-sentence-pill deck-card have active" id="statHaveBtn" data-filter="all" title="Click to view all collected cards">
+                        <span class="stat-num" id="deckHaveVal">0</span>
+                        <span class="stat-emoji">✅</span>
+                        <span class="stat-word">have</span>
+                    </button>
+                    <button type="button" class="stat-sentence-pill deck-card need" id="statNeedBtn" data-filter="missing" title="Click to view missing cards needed">
+                        <span class="stat-num" id="deckNeedVal">0</span>
+                        <span class="stat-emoji">❓</span>
+                        <span class="stat-word">needed</span>
+                    </button>
+                    <button type="button" class="stat-sentence-pill deck-card doubles" id="statTradeBtn" data-filter="doubles" title="Click to view doubles for trade">
+                        <span class="stat-num" id="deckDoublesVal">0</span>
+                        <span class="stat-emoji">🔁</span>
+                        <span class="stat-word">trade</span>
+                    </button>
+                    <button type="button" class="stat-sentence-pill deck-card team" id="deckTeamCard" hidden data-filter="team_needs" title="Click to view team cards / coverage">
+                        <span class="stat-emoji">👥</span>
+                        <span class="stat-word">Team:</span>
+                        <span class="stat-num" id="deckTeamVal">0</span>
+                    </button>
+                </div>
+                <div id="deckSubsWrap" hidden>
+                    <span id="deckHaveSub"></span>
+                    <span id="deckNeedSub"></span>
+                    <span id="deckDoublesSub"></span>
+                    <span id="deckTeamSub"></span>
+                </div>
+            </div>
+
+            <!-- Hidden holders for legacy VU readouts so all JS bindings remain valid -->
+            <div id="vuLegacyHousing" hidden>
+                <div id="vuMeterHousing"><div id="vuMeterFill"></div><div id="vuChannelLabel"></div></div>
+                <div id="vuStatHave"><span id="vuStatHaveNum">0</span><span id="vuStatHavePct">0%</span></div>
+                <div id="vuStatNeed"><span id="vuStatNeedNum">0</span></div>
+                <div id="vuStatDoubles"><span id="vuStatDoublesNum">0</span></div>
+                <div id="vuStatTeam"><span id="vuStatTeamNum">0</span><span id="vuStatTeamPct">0%</span></div>
+            </div>
         </div>
 
         <!-- TOGGLE PAGE VIEW / LIST VIEW ("on the right bar, toggle page view / list view") -->
@@ -3284,8 +3353,8 @@
             // Duplicate array for seamless infinite ticker loop
             eftStream.innerHTML = items.join('') + items.join('');
 
-            // Pace the walk-through smoothly (approx 1.4s per item)
-            const durationSec = Math.max(40, Math.min(220, items.length * 1.4));
+            // Pace the walk-through at 1/10th the speed (calm, slow broadcast crawl ~14s per item)
+            const durationSec = Math.max(350, Math.min(2400, items.length * 14));
             eftStream.style.animationDuration = `${durationSec}s`;
         }
     }

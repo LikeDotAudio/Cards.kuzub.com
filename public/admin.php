@@ -821,10 +821,11 @@ if (empty($_COOKIE['cards_session'])) {
                         <td>
                             ${u.team_name ? `<span class="team-pill">Team ${esc(u.team_name)}</span>` : '<span style="color:#94a3b8; font-size:0.8rem;">—</span>'}
                         </td>
-                        <td><strong>${u.cards_collected ?? 0}</strong></td>
-                        <td><span style="color:#f57f17; font-weight:700;">${u.doubles_count ?? 0}</span></td>
+                        <td><a href="collection.php?view=${u.id}&admin_tinker=1" style="color:var(--text-dark); text-decoration:underline; font-weight:700;" title="Tinker with ${esc(u.collector_name)}'s collection"><strong>${u.cards_collected ?? 0}</strong></a></td>
+                        <td><a href="collection.php?view=${u.id}&admin_tinker=1" style="color:#f57f17; font-weight:700; text-decoration:underline;" title="Tinker with ${esc(u.collector_name)}'s doubles">${u.doubles_count ?? 0}</a></td>
                         <td>
                             <div class="actions-cell">
+                                <a href="collection.php?view=${u.id}&admin_tinker=1" class="btn-link sm" style="background:#0284c7; color:#fff; border-color:#0284c7; font-weight:700;" title="Go in and tinker with ${esc(u.collector_name)}'s collection as Admin">🃏 Tinker</a>
                                 <button type="button" class="sm" onclick="openEditUser(${u.id})" title="Edit person, password, email">✏️ Edit</button>
                                 <button type="button" class="sm" onclick="openChangePassword(${u.id})" title="Change password">🔑 Password</button>
                                 ${(!isAnthony && !isSelf) ? `<button type="button" class="sm danger" onclick="openDeleteUser(${u.id})" title="Remove person">🗑️ Delete</button>` : ''}
