@@ -4929,25 +4929,198 @@
         loadTeamSummary();
     }
 
+    /* ==========================================================
+       DIGIKEY-STYLE PARAMETRIC INVENTORY FILTER CONTROLLER
+       ========================================================== */
+    const paramState = {
+        searchWithin: '',
+        mode: 'scrolling', // 'scrolling' | 'stacked'
+        collapsed: false,
+        status: new Set(),
+        subsets: new Set(),
+        series: new Set(),
+        ranges: new Set(),
+        scarcity: new Set(),
+        quantity: new Set(),
+        players: new Set(),
+        partners: new Set(),
+        sortBy: 'featured'
+    };
+
+    function hasActiveParamFilters() {
+        return Boolean(
+            paramState.searchWithin ||
+            paramState.status.size > 0 ||
+            paramState.subsets.size > 0 ||
+            paramState.series.size > 0 ||
+            paramState.ranges.size > 0 ||
+            paramState.scarcity.size > 0 ||
+            paramState.quantity.size > 0 ||
+            paramState.players.size > 0 ||
+            paramState.partners.size > 0
+        );
+    }
+
+    function matchesParamFilters(card) {
+        if (!card) return false;
+
+        // Search Within
+        if (paramState.searchWithin) {
+            const q = paramState.searchWithin.toLowerCase();
+            const num = String(card.card_number || '').toLowerCase();
+            const player = String(card.player_name || '').toLowerCase();
+            const set = String(card.set_name || '').toLowerCase();
+            if (!num.includes(q) && !player.includes(q) && !set.includes(q)) {
+                return false;
+            }
+        }
+
+        // Common Attributes / Status
+        if (paramState.status.size > 0) {
+            let matchesAnyStatus = false;
+            if (paramState.status.has('owned') && card.quantity > 0) matchesAnyStatus = true;
+            if (paramState.status.has('missing') && card.quantity === 0) matchesAnyStatus = true;
+            if (paramState.status.has('doubles') && card.quantity >= 2) matchesAnyStatus = true;
+            if (paramState.status.has('triples') && card.quantity >= 3) matchesAnyStatus = true;
+            if (paramState.status.has('team_doubles')) {
+                const hasDbls = (card.doubles_by && card.doubles_by.length > 0) || (card.team_doubles_by && card.team_doubles_by.length > 0);
+                if (hasDbls) matchesAnyStatus = true;
+            }
+            if (paramState.status.has('team_needs') && card.team_has === 0) matchesAnyStatus = true;
+            if (!matchesAnyStatus) return false;
+        }
+
+        // Subsets
+        if (paramState.subsets.size > 0) {
+            if (!paramState.subsets.has(card.set_name)) return false;
+        }
+
+        // Series / Season
+        if (paramState.series.size > 0) {
+            const cardSeries = card.series || state.series || '2026-27';
+            if (!paramState.series.has(cardSeries)) return false;
+        }
+
+        // Number Ranges
+        if (paramState.ranges.size > 0) {
+            const num = parseInt(card.card_number, 10);
+            const isBase = (card.set_name || '').toLowerCase().includes('base');
+            let matchRange = false;
+            if (!isNaN(num) && isBase) {
+                if (paramState.ranges.has('1-25') && num >= 1 && num <= 25) matchRange = true;
+                if (paramState.ranges.has('26-50') && num >= 26 && num <= 50) matchRange = true;
+                if (paramState.ranges.has('51-75') && num >= 51 && num <= 75) matchRange = true;
+                if (paramState.ranges.has('76-100') && num >= 76 && num <= 100) matchRange = true;
+            } else {
+                if (paramState.ranges.has('inserts')) matchRange = true;
+            }
+            if (!matchRange) return false;
+        }
+
+        // Scarcity / Popularity
+        if (paramState.scarcity.size > 0) {
+            const maxHolders = Math.max(1, ...state.cards.map(c => c.sitewide_holders || 0));
+            const ratio = (card.sitewide_holders || 0) / maxHolders;
+            let matchScarcity = false;
+            if (paramState.scarcity.has('hot') && ratio >= 0.7) matchScarcity = true;
+            if (paramState.scarcity.has('mid') && ratio >= 0.3 && ratio < 0.7) matchScarcity = true;
+            if (paramState.scarcity.has('rare') && ratio < 0.3) matchScarcity = true;
+            if (paramState.scarcity.has('zero_doubles') && (card.sitewide_doubles || 0) === 0) matchScarcity = true;
+            if (!matchScarcity) return false;
+        }
+
+        // Quantity Held
+        if (paramState.quantity.size > 0) {
+            let matchQty = false;
+            if (paramState.quantity.has('0') && card.quantity === 0) matchQty = true;
+            if (paramState.quantity.has('1') && card.quantity === 1) matchQty = true;
+            if (paramState.quantity.has('2') && card.quantity === 2) matchQty = true;
+            if (paramState.quantity.has('3+') && card.quantity >= 3) matchQty = true;
+            if (!matchQty) return false;
+        }
+
+        // Player Name
+        if (paramState.players.size > 0) {
+            if (!paramState.players.has(card.player_name)) return false;
+        }
+
+        // Partner Doubles
+        if (paramState.partners.size > 0) {
+            const allHolders = [...(card.doubles_by || []), ...(card.team_doubles_by || [])];
+            const matchPartner = Array.from(paramState.partners).some(p => allHolders.some(h => h.includes(p)));
+            if (!matchPartner) return false;
+        }
+
+        return true;
+    }
+
+    function sortCards(cardList) {
+        const list = [...cardList];
+        switch (paramState.sortBy) {
+            case 'num_asc':
+                return list.sort((a, b) => {
+                    const na = parseInt(a.card_number, 10);
+                    const nb = parseInt(b.card_number, 10);
+                    if (isNaN(na) && isNaN(nb)) return String(a.card_number).localeCompare(String(b.card_number));
+                    if (isNaN(na)) return 1;
+                    if (isNaN(nb)) return -1;
+                    return na - nb;
+                });
+            case 'num_desc':
+                return list.sort((a, b) => {
+                    const na = parseInt(a.card_number, 10);
+                    const nb = parseInt(b.card_number, 10);
+                    if (isNaN(na) && isNaN(nb)) return String(b.card_number).localeCompare(String(a.card_number));
+                    if (isNaN(na)) return 1;
+                    if (isNaN(nb)) return -1;
+                    return nb - na;
+                });
+            case 'player_asc':
+                return list.sort((a, b) => (a.player_name || '').localeCompare(b.player_name || ''));
+            case 'player_desc':
+                return list.sort((a, b) => (b.player_name || '').localeCompare(a.player_name || ''));
+            case 'set_asc':
+                return list.sort((a, b) => (a.set_name || '').localeCompare(b.set_name || ''));
+            case 'qty_desc':
+                return list.sort((a, b) => (b.quantity - a.quantity) || (a.id - b.id));
+            case 'hot_desc':
+                return list.sort((a, b) => (b.sitewide_holders || 0) - (a.sitewide_holders || 0));
+            case 'rare_desc':
+                return list.sort((a, b) => (a.sitewide_holders || 0) - (b.sitewide_holders || 0));
+            default:
+                return list;
+        }
+    }
+
     function matchesFilter(card) {
+        // Base topbar filter check
         switch (state.filter) {
             case 'missing':
-                return card.quantity == 0;
+                if (card.quantity != 0) return false;
+                break;
             case 'doubles':
-                return card.quantity >= 2;
+                if (card.quantity < 2) return false;
+                break;
             case 'trade':
                 if (isOwn()) {
-                    return card.quantity >= 2 || (card.quantity == 0 && (card.doubles_by.length > 0 || (card.team_doubles_by && card.team_doubles_by.length > 0)));
+                    if (!(card.quantity >= 2 || (card.quantity == 0 && (card.doubles_by.length > 0 || (card.team_doubles_by && card.team_doubles_by.length > 0))))) return false;
                 } else if (isTeamView()) {
-                    return card.doubles_by.length > 0;
+                    if (card.doubles_by.length === 0) return false;
                 } else {
-                    return card.quantity >= 2 && (!state.userId || card.my_quantity == 0);
+                    if (!(card.quantity >= 2 && (!state.userId || card.my_quantity == 0))) return false;
                 }
+                break;
             case 'team_needs':
-                return (card.team_has === 0 || (isTeamView() && card.quantity == 0));
-            default:
-                return true;
+                if (!(card.team_has === 0 || (isTeamView() && card.quantity == 0))) return false;
+                break;
         }
+
+        // Parametric Inventory Filters (DigiKey-style)
+        if (!matchesParamFilters(card)) {
+            return false;
+        }
+
+        return true;
     }
 
     function cleanSetId(s) {
@@ -5597,6 +5770,7 @@
         updateVUMeterAndHighlights();
         renderSeriesNav(sets);
         setupMobileSubsetsBar(sets);
+        populateParamInventoryFilter();
         container.classList.toggle('readonly', !canEdit());
 
         let html = '';
@@ -5650,8 +5824,9 @@
         const isPageLayout = state.layout === 'page';
 
         for (const [setName, cards] of sets) {
-            const visible = cards.filter(matchesFilter);
-            if (!visible.length && state.filter !== 'all') continue;
+            const sortedCards = sortCards(cards);
+            const visible = sortedCards.filter(matchesFilter);
+            if (!visible.length && (state.filter !== 'all' || hasActiveParamFilters())) continue;
 
             const have = cards.filter(c => c.quantity > 0).length;
             const setPct = Math.round(have / cards.length * 100);
@@ -5661,11 +5836,11 @@
             let gridContent = '';
             if (isPageLayout) {
                 // 3x3 Binder Page Sheets: 9 cards per sheet (Pos 1 to 9)
-                const totalPages = Math.ceil(cards.length / 9) || 1;
+                const totalPages = Math.ceil(sortedCards.length / 9) || 1;
                 const pages = [];
 
                 for (let pIdx = 0; pIdx < totalPages; pIdx++) {
-                    const slice = cards.slice(pIdx * 9, (pIdx + 1) * 9);
+                    const slice = sortedCards.slice(pIdx * 9, (pIdx + 1) * 9);
                     const pagePockets = [];
                     let hasMatching = false;
                     for (let pos = 1; pos <= 9; pos++) {
@@ -5678,7 +5853,7 @@
                             pagePockets.push({ pos, card: null, isMatch: false });
                         }
                     }
-                    if (state.filter === 'all' || hasMatching) {
+                    if ((state.filter === 'all' && !hasActiveParamFilters()) || hasMatching) {
                         pages.push({ pageNum: pIdx + 1, pockets: pagePockets });
                     }
                 }
@@ -5687,7 +5862,7 @@
             } else {
                 // List Mode: column groups
                 const groups = [];
-                cards.forEach((card, i) => {
+                sortedCards.forEach((card, i) => {
                     if (!matchesFilter(card)) return;
                     (groups[Math.floor(i / 9)] ??= []).push(card);
                 });
@@ -7520,6 +7695,410 @@
         canvas.addEventListener('touchmove', onMove, { passive: true });
         canvas.addEventListener('touchend', onClick);
     }
+
+    /* ==========================================================
+       DIGIKEY-STYLE PARAMETRIC INVENTORY FILTER METHODS
+       ========================================================== */
+    function populateParamInventoryFilter() {
+        if (!state.cards || state.cards.length === 0) return;
+
+        const cards = state.cards;
+        const total = cards.length;
+        const totalMatched = cards.filter(matchesFilter).length;
+
+        // Update counts
+        const topCount = document.getElementById('ifsTopResultsCount');
+        const bottomCount = document.getElementById('ifsBottomResultsCount');
+        const showingText = document.getElementById('ifsShowingText');
+        const seriesTitle = document.getElementById('ifsBreadcrumbSeries');
+
+        if (topCount) topCount.textContent = totalMatched.toLocaleString();
+        if (bottomCount) bottomCount.textContent = totalMatched.toLocaleString();
+        if (showingText) showingText.innerHTML = `Showing <strong>${totalMatched}</strong> of ${total} Cards`;
+        if (seriesTitle) seriesTitle.textContent = state.series === '2025-26' ? '2025-26 Tim Hortons' : '2026-27 UD Tim Hortons';
+
+        // 1. Common Attributes
+        const statusListEl = document.getElementById('ifsColStatusList');
+        if (statusListEl) {
+            const ownedCnt = cards.filter(c => c.quantity > 0).length;
+            const missingCnt = cards.filter(c => c.quantity === 0).length;
+            const doublesCnt = cards.filter(c => c.quantity >= 2).length;
+            const triplesCnt = cards.filter(c => c.quantity >= 3).length;
+            const teamDoublesCnt = cards.filter(c => (c.doubles_by && c.doubles_by.length > 0) || (c.team_doubles_by && c.team_doubles_by.length > 0)).length;
+            const teamNeedsCnt = cards.filter(c => c.team_has === 0).length;
+
+            const items = [
+                { id: 'owned', label: '🟩 In Collection / Owned', count: ownedCnt },
+                { id: 'missing', label: '🔻 Needed / Missing', count: missingCnt },
+                { id: 'doubles', label: '🟥 Doubles (2x In Trade)', count: doublesCnt },
+                { id: 'triples', label: '📦 Triples+ (3x+ Stash)', count: triplesCnt },
+                { id: 'team_doubles', label: '👥 Teammate Has Doubles', count: teamDoublesCnt },
+                { id: 'team_needs', label: '⚠️ Team Needs (0 in Team)', count: teamNeedsCnt }
+            ];
+
+            statusListEl.innerHTML = items.map(it => `
+                <label class="ifs-col-item ${paramState.status.has(it.id) ? 'is-selected' : ''}">
+                    <input type="checkbox" data-facet="status" value="${it.id}" ${paramState.status.has(it.id) ? 'checked' : ''}>
+                    <span class="ifs-item-text">${esc(it.label)}</span>
+                    <span class="ifs-item-count">(${it.count})</span>
+                </label>
+            `).join('');
+        }
+
+        // 2. Subsets
+        const subsetsListEl = document.getElementById('ifsColSubsetsList');
+        if (subsetsListEl) {
+            const subsetsMap = new Map();
+            cards.forEach(c => {
+                subsetsMap.set(c.set_name, (subsetsMap.get(c.set_name) || 0) + 1);
+            });
+            const sortedSubsets = Array.from(subsetsMap.entries()).sort((a, b) => {
+                if (a[0].toLowerCase().includes('base')) return -1;
+                if (b[0].toLowerCase().includes('base')) return 1;
+                return a[0].localeCompare(b[0]);
+            });
+
+            subsetsListEl.innerHTML = sortedSubsets.map(([name, cnt]) => `
+                <label class="ifs-col-item ${paramState.subsets.has(name) ? 'is-selected' : ''}">
+                    <input type="checkbox" data-facet="subsets" value="${esc(name)}" ${paramState.subsets.has(name) ? 'checked' : ''}>
+                    <span class="ifs-item-text">${esc(name)}</span>
+                    <span class="ifs-item-count">(${cnt})</span>
+                </label>
+            `).join('');
+        }
+
+        // 3. Checklist Year / Series
+        const seriesListEl = document.getElementById('ifsColSeriesList');
+        if (seriesListEl) {
+            const seriesItems = [
+                { id: '2026-27', label: '2026-27 UD Tim Hortons', count: state.series === '2026-27' ? cards.length : 135 },
+                { id: '2025-26', label: '2025-26 Tim Hortons', count: state.series === '2025-26' ? cards.length : 234 }
+            ];
+            seriesListEl.innerHTML = seriesItems.map(it => `
+                <label class="ifs-col-item ${paramState.series.has(it.id) ? 'is-selected' : ''}">
+                    <input type="checkbox" data-facet="series" value="${it.id}" ${paramState.series.has(it.id) ? 'checked' : ''}>
+                    <span class="ifs-item-text">${esc(it.label)}</span>
+                    <span class="ifs-item-count">(${it.count})</span>
+                </label>
+            `).join('');
+        }
+
+        // 4. Card Number Range
+        const rangesListEl = document.getElementById('ifsColRangesList');
+        if (rangesListEl) {
+            const r1 = cards.filter(c => { const n = parseInt(c.card_number, 10); return (c.set_name || '').toLowerCase().includes('base') && n >= 1 && n <= 25; }).length;
+            const r2 = cards.filter(c => { const n = parseInt(c.card_number, 10); return (c.set_name || '').toLowerCase().includes('base') && n >= 26 && n <= 50; }).length;
+            const r3 = cards.filter(c => { const n = parseInt(c.card_number, 10); return (c.set_name || '').toLowerCase().includes('base') && n >= 51 && n <= 75; }).length;
+            const r4 = cards.filter(c => { const n = parseInt(c.card_number, 10); return (c.set_name || '').toLowerCase().includes('base') && n >= 76 && n <= 100; }).length;
+            const rInserts = cards.filter(c => !(c.set_name || '').toLowerCase().includes('base')).length;
+
+            const rangeItems = [
+                { id: '1-25', label: 'Cards #1 - #25', count: r1 },
+                { id: '26-50', label: 'Cards #26 - #50', count: r2 },
+                { id: '51-75', label: 'Cards #51 - #75', count: r3 },
+                { id: '76-100', label: 'Cards #76 - #100', count: r4 },
+                { id: 'inserts', label: 'Inserts & Special', count: rInserts }
+            ];
+
+            rangesListEl.innerHTML = rangeItems.map(it => `
+                <label class="ifs-col-item ${paramState.ranges.has(it.id) ? 'is-selected' : ''}">
+                    <input type="checkbox" data-facet="ranges" value="${it.id}" ${paramState.ranges.has(it.id) ? 'checked' : ''}>
+                    <span class="ifs-item-text">${esc(it.label)}</span>
+                    <span class="ifs-item-count">(${it.count})</span>
+                </label>
+            `).join('');
+        }
+
+        // 5. Scarcity / Popularity
+        const scarcityListEl = document.getElementById('ifsColScarcityList');
+        if (scarcityListEl) {
+            const maxHolders = Math.max(1, ...cards.map(c => c.sitewide_holders || 0));
+            const hotCnt = cards.filter(c => (c.sitewide_holders || 0) / maxHolders >= 0.7).length;
+            const midCnt = cards.filter(c => { const r = (c.sitewide_holders || 0) / maxHolders; return r >= 0.3 && r < 0.7; }).length;
+            const rareCnt = cards.filter(c => (c.sitewide_holders || 0) / maxHolders < 0.3).length;
+            const zeroDbls = cards.filter(c => (c.sitewide_doubles || 0) === 0).length;
+
+            const scarcityItems = [
+                { id: 'hot', label: '🔥 Hot / High Circulation', count: hotCnt },
+                { id: 'mid', label: '⚡ Moderate Circulation', count: midCnt },
+                { id: 'rare', label: '❄️ Rare Site-Wide', count: rareCnt },
+                { id: 'zero_doubles', label: '💎 Zero Site Doubles', count: zeroDbls }
+            ];
+
+            scarcityListEl.innerHTML = scarcityItems.map(it => `
+                <label class="ifs-col-item ${paramState.scarcity.has(it.id) ? 'is-selected' : ''}">
+                    <input type="checkbox" data-facet="scarcity" value="${it.id}" ${paramState.scarcity.has(it.id) ? 'checked' : ''}>
+                    <span class="ifs-item-text">${esc(it.label)}</span>
+                    <span class="ifs-item-count">(${it.count})</span>
+                </label>
+            `).join('');
+        }
+
+        // 6. Quantity in Deck
+        const quantityListEl = document.getElementById('ifsColQuantityList');
+        if (quantityListEl) {
+            const q0 = cards.filter(c => c.quantity === 0).length;
+            const q1 = cards.filter(c => c.quantity === 1).length;
+            const q2 = cards.filter(c => c.quantity === 2).length;
+            const q3 = cards.filter(c => c.quantity >= 3).length;
+
+            const qItems = [
+                { id: '0', label: '0 Copies (Missing)', count: q0 },
+                { id: '1', label: '1 Copy (Single)', count: q1 },
+                { id: '2', label: '2 Copies (Double)', count: q2 },
+                { id: '3+', label: '3+ Copies (Hoard)', count: q3 }
+            ];
+
+            quantityListEl.innerHTML = qItems.map(it => `
+                <label class="ifs-col-item ${paramState.quantity.has(it.id) ? 'is-selected' : ''}">
+                    <input type="checkbox" data-facet="quantity" value="${it.id}" ${paramState.quantity.has(it.id) ? 'checked' : ''}>
+                    <span class="ifs-item-text">${esc(it.label)}</span>
+                    <span class="ifs-item-count">(${it.count})</span>
+                </label>
+            `).join('');
+        }
+
+        // 7. Player Name
+        const playersListEl = document.getElementById('ifsColPlayersList');
+        if (playersListEl) {
+            const playersMap = new Map();
+            cards.forEach(c => {
+                if (c.player_name) {
+                    playersMap.set(c.player_name, (playersMap.get(c.player_name) || 0) + 1);
+                }
+            });
+            const sortedPlayers = Array.from(playersMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+
+            playersListEl.innerHTML = sortedPlayers.map(([pname, cnt]) => `
+                <label class="ifs-col-item ${paramState.players.has(pname) ? 'is-selected' : ''}">
+                    <input type="checkbox" data-facet="players" value="${esc(pname)}" ${paramState.players.has(pname) ? 'checked' : ''}>
+                    <span class="ifs-item-text">${esc(pname)}</span>
+                    <span class="ifs-item-count">(${cnt})</span>
+                </label>
+            `).join('');
+        }
+
+        // 8. Trading Partner Doubles
+        const partnersListEl = document.getElementById('ifsColPartnersList');
+        if (partnersListEl) {
+            const partnersMap = new Map();
+            cards.forEach(c => {
+                const combined = [...(c.doubles_by || []), ...(c.team_doubles_by || [])];
+                combined.forEach(rawStr => {
+                    const match = rawStr.match(/^([^\s(×]+)/);
+                    if (match) {
+                        const pName = match[1].trim();
+                        partnersMap.set(pName, (partnersMap.get(pName) || 0) + 1);
+                    }
+                });
+            });
+
+            if (partnersMap.size === 0) {
+                partnersListEl.innerHTML = `<div style="padding:8px; font-size:0.75rem; color:#64748b; font-style:italic;">No partner doubles in current checklist.</div>`;
+            } else {
+                const sortedPartners = Array.from(partnersMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+                partnersListEl.innerHTML = sortedPartners.map(([pName, cnt]) => `
+                    <label class="ifs-col-item ${paramState.partners.has(pName) ? 'is-selected' : ''}">
+                        <input type="checkbox" data-facet="partners" value="${esc(pName)}" ${paramState.partners.has(pName) ? 'checked' : ''}>
+                        <span class="ifs-item-text">🤝 ${esc(pName)}</span>
+                        <span class="ifs-item-count">(${cnt})</span>
+                    </label>
+                `).join('');
+            }
+        }
+    }
+
+    function downloadFilteredTableCSV() {
+        if (!state.cards || state.cards.length === 0) return;
+        const matchingCards = sortCards(state.cards.filter(matchesFilter));
+        if (matchingCards.length === 0) {
+            toast('No cards match the current filter to export.');
+            return;
+        }
+
+        const headers = ["Card Number", "Player Name", "Subset", "Series", "My Quantity", "Status", "Site-Wide Holders", "Site-Wide Doubles", "Teammate Doubles"];
+        const rows = [headers.map(h => `"${h.replace(/"/g, '""')}"`).join(',')];
+
+        for (const c of matchingCards) {
+            const status = c.quantity === 0 ? "Missing" : (c.quantity === 1 ? "Owned (Single)" : `Double (${c.quantity} copies)`);
+            const teamDoubles = (c.team_doubles_by || []).join('; ');
+            const row = [
+                c.card_number || "",
+                c.player_name || "",
+                c.set_name || "",
+                c.series || state.series,
+                c.quantity,
+                status,
+                c.sitewide_holders || 0,
+                c.sitewide_doubles || 0,
+                teamDoubles
+            ];
+            rows.push(row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(','));
+        }
+
+        const csvContent = "data:text/csv;charset=utf-8," + encodeURIComponent(rows.join('\r\n'));
+        const link = document.createElement("a");
+        link.setAttribute("href", csvContent);
+        link.setAttribute("download", `HockeyCards_Inventory_${state.series || '2026-27'}_${new Date().toISOString().slice(0, 10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        toast(`📥 Exported ${matchingCards.length} cards to CSV table!`);
+    }
+
+    function initParamInventoryFilter() {
+        const wrapper = document.getElementById('ifsColumnsWrapper');
+        if (!wrapper) return;
+
+        // Delegated checkbox change handler
+        wrapper.addEventListener('change', e => {
+            const cb = e.target.closest('input[type="checkbox"]');
+            if (!cb) return;
+
+            const facet = cb.dataset.facet;
+            const val = cb.value;
+            const set = paramState[facet];
+            if (!set) return;
+
+            if (cb.checked) {
+                set.add(val);
+                cb.closest('.ifs-col-item')?.classList.add('is-selected');
+            } else {
+                set.delete(val);
+                cb.closest('.ifs-col-item')?.classList.remove('is-selected');
+            }
+
+            // Update live result counts immediately
+            const totalMatched = state.cards ? state.cards.filter(matchesFilter).length : 0;
+            const topCount = document.getElementById('ifsTopResultsCount');
+            const bottomCount = document.getElementById('ifsBottomResultsCount');
+            const showingText = document.getElementById('ifsShowingText');
+            if (topCount) topCount.textContent = totalMatched.toLocaleString();
+            if (bottomCount) bottomCount.textContent = totalMatched.toLocaleString();
+            if (showingText && state.cards) showingText.innerHTML = `Showing <strong>${totalMatched}</strong> of ${state.cards.length} Cards`;
+        });
+
+        // Search inputs within each column
+        document.querySelectorAll('.ifs-col-search-input').forEach(input => {
+            input.addEventListener('input', () => {
+                const targetId = input.dataset.target;
+                const targetList = document.getElementById(targetId);
+                if (!targetList) return;
+                const q = input.value.trim().toLowerCase();
+                targetList.querySelectorAll('.ifs-col-item').forEach(item => {
+                    const text = (item.textContent || '').toLowerCase();
+                    item.style.display = (!q || text.includes(q)) ? 'flex' : 'none';
+                });
+            });
+        });
+
+        // Top Search Within input
+        const searchInput = document.getElementById('ifsSearchWithin');
+        if (searchInput) {
+            searchInput.addEventListener('input', () => {
+                paramState.searchWithin = searchInput.value.trim();
+                const totalMatched = state.cards ? state.cards.filter(matchesFilter).length : 0;
+                const topCount = document.getElementById('ifsTopResultsCount');
+                const bottomCount = document.getElementById('ifsBottomResultsCount');
+                if (topCount) topCount.textContent = totalMatched.toLocaleString();
+                if (bottomCount) bottomCount.textContent = totalMatched.toLocaleString();
+            });
+            searchInput.addEventListener('keydown', e => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    render();
+                }
+            });
+        }
+
+        // Apply All button
+        const applyBtn = document.getElementById('ifsApplyBtn');
+        if (applyBtn) {
+            applyBtn.addEventListener('click', () => {
+                render();
+                const totalMatched = state.cards ? state.cards.filter(matchesFilter).length : 0;
+                toast(`🔍 Parametric filter applied: ${totalMatched} matching card(s) found!`);
+            });
+        }
+
+        // Reset Filters button
+        const resetBtn = document.getElementById('ifsResetBtn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                paramState.searchWithin = '';
+                paramState.status.clear();
+                paramState.subsets.clear();
+                paramState.series.clear();
+                paramState.ranges.clear();
+                paramState.scarcity.clear();
+                paramState.quantity.clear();
+                paramState.players.clear();
+                paramState.partners.clear();
+                paramState.sortBy = 'featured';
+
+                if (searchInput) searchInput.value = '';
+                const sortSel = document.getElementById('ifsSortBy');
+                if (sortSel) sortSel.value = 'featured';
+
+                document.querySelectorAll('.ifs-col-search-input').forEach(si => si.value = '');
+
+                render();
+                toast('↺ All inventory filters cleared.');
+            });
+        }
+
+        // Mode Toggles (Scrolling vs Stacked)
+        const modeStacked = document.getElementById('ifsModeStacked');
+        const modeScrolling = document.getElementById('ifsModeScrolling');
+        if (modeStacked && modeScrolling) {
+            modeStacked.addEventListener('click', () => {
+                paramState.mode = 'stacked';
+                wrapper.classList.remove('mode-scrolling');
+                wrapper.classList.add('mode-stacked');
+                modeStacked.classList.add('active');
+                modeScrolling.classList.remove('active');
+            });
+            modeScrolling.addEventListener('click', () => {
+                paramState.mode = 'scrolling';
+                wrapper.classList.remove('mode-stacked');
+                wrapper.classList.add('mode-scrolling');
+                modeScrolling.classList.add('active');
+                modeStacked.classList.remove('active');
+            });
+        }
+
+        // Minimize / Collapse button
+        const collapseBtn = document.getElementById('ifsCollapseBtn');
+        const bodyEl = document.getElementById('ifsBody');
+        if (collapseBtn && bodyEl) {
+            collapseBtn.addEventListener('click', () => {
+                paramState.collapsed = !paramState.collapsed;
+                bodyEl.style.display = paramState.collapsed ? 'none' : 'block';
+                collapseBtn.textContent = paramState.collapsed ? '▼ Show Filters' : '▲ Hide Filters';
+            });
+        }
+
+        // Sort By dropdown
+        const sortBySelect = document.getElementById('ifsSortBy');
+        if (sortBySelect) {
+            sortBySelect.addEventListener('change', () => {
+                paramState.sortBy = sortBySelect.value;
+                render();
+            });
+        }
+
+        // Download Table CSV button
+        const downloadBtn = document.getElementById('ifsDownloadTableBtn');
+        if (downloadBtn) {
+            downloadBtn.addEventListener('click', () => {
+                downloadFilteredTableCSV();
+            });
+        }
+    }
+
+    // Initialize Parametric Inventory Filter
+    initParamInventoryFilter();
 
     // Initialize HUD Overlay
     initStatsHud();
