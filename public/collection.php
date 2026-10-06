@@ -4469,6 +4469,7 @@
         }
 
         restartRotatingStatsTimer();
+        restartCallMetricsTimer();
         toast(`Broadcast & stats speed updated to ${speed}x`);
     }
 
@@ -5498,6 +5499,13 @@
                 const cardId = Number(item.dataset.id);
                 jumpToCard(cardId);
             }
+        });
+    }
+
+    const eftCallChip = document.getElementById('eftCallChip');
+    if (eftCallChip) {
+        eftCallChip.addEventListener('click', () => {
+            cycleCallMetric();
         });
     }
 
