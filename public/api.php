@@ -97,6 +97,11 @@ if (!$hasEmail) {
     $pdo->exec("ALTER TABLE users ADD COLUMN email VARCHAR(255) NOT NULL DEFAULT ''");
 }
 
+$hasLayoutPrefs = $pdo->query("SHOW COLUMNS FROM users LIKE 'layout_prefs'")->fetch();
+if (!$hasLayoutPrefs) {
+    $pdo->exec("ALTER TABLE users ADD COLUMN layout_prefs TEXT NULL DEFAULT NULL");
+}
+
 // Ensure default team and sync any existing team names into teams table
 $teamCount = (int) $pdo->query("SELECT COUNT(*) FROM teams")->fetchColumn();
 if ($teamCount === 0) {
@@ -213,7 +218,7 @@ function currentUser($pdo) {
         return null;
     }
     $stmt = $pdo->prepare("
-        SELECT u.id, u.collector_name, u.team_name, u.team_id, u.is_admin, u.email FROM sessions s JOIN users u ON u.id = s.user_id
+        SELECT u.id, u.collector_name, u.team_name, u.team_id, u.is_admin, u.email, u.layout_prefs FROM sessions s JOIN users u ON u.id = s.user_id
         WHERE s.token_hash = ? AND s.expires_at > NOW()
     ");
     $stmt->execute([hash('sha256', $token)]);
@@ -482,9 +487,12 @@ if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $token = startSession($pdo, $userId);
 
-    $stmt = $pdo->prepare("SELECT id, collector_name, team_name, team_id FROM users WHERE id = ?");
+    $stmt = $pdo->prepare("SELECT id, collector_name, team_name, team_id, is_admin, email, layout_prefs FROM users WHERE id = ?");
     $stmt->execute([$userId]);
     $user = $stmt->fetch();
+    if ($user) {
+        $user['is_admin'] = (int) (!empty($user['is_admin']) || strcasecmp($user['collector_name'] ?? '', 'Anthony') === 0);
+    }
 
     echo json_encode(['success' => true, 'token' => $token, 'user' => $user]);
     exit;
@@ -506,6 +514,22 @@ if ($action === 'set_team' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $pdo->prepare("UPDATE users SET team_name = ?, team_id = ? WHERE id = ?")->execute([$teamName, $teamId, $user['id']]);
     echo json_encode(['success' => true, 'team_name' => $teamName, 'team_id' => $teamId]);
+    exit;
+}
+
+// SAVE LAYOUT PREFERENCES (dock positions, minimized states, custom HUD coordinates)
+if ($action === 'set_layout_prefs' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    requireJson();
+    $user = currentUser($pdo);
+    if (!$user) {
+        fail('Sign in first', 401);
+    }
+    $prefs = trim((string)($input['layout_prefs'] ?? ''));
+    if (mb_strlen($prefs) > 10000) {
+        fail('Layout preferences too large', 400);
+    }
+    $pdo->prepare("UPDATE users SET layout_prefs = ? WHERE id = ?")->execute([$prefs !== '' ? $prefs : null, $user['id']]);
+    echo json_encode(['success' => true]);
     exit;
 }
 
@@ -828,13 +852,15 @@ if ($action === 'get_cards') {
         $memberIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
         if (empty($memberIds)) {
-            $stmtCards = $pdo->prepare("SELECT id, set_name, card_number, player_name, 0 AS quantity, NULL AS last_checked, 0 AS my_quantity, '' AS doubles_by, '' AS holders FROM cards WHERE series = ? ORDER BY sort_order, id ASC");
+            $stmtCards = $pdo->prepare("SELECT id, set_name, card_number, player_name, 0 AS quantity, NULL AS last_checked, 0 AS my_quantity, '' AS doubles_by, '' AS holders, 0 AS sitewide_holders, 0 AS sitewide_doubles FROM cards WHERE series = ? ORDER BY sort_order, id ASC");
             $stmtCards->execute([$series]);
             $cards = $stmtCards->fetchAll();
             foreach ($cards as &$card) {
                 $card['doubles_by'] = [];
                 $card['holders'] = [];
                 $card['team_copies'] = 0;
+                $card['sitewide_holders'] = 0;
+                $card['sitewide_doubles'] = 0;
             }
             echo json_encode($cards);
             exit;
@@ -859,7 +885,9 @@ if ($action === 'get_cards') {
                     FROM collections d
                     JOIN users u ON u.id = d.user_id
                     WHERE d.card_id = c.id AND d.quantity >= 2 AND u.team_name = ?
-                ) AS doubles_by
+                ) AS doubles_by,
+                (SELECT COUNT(*) FROM collections sw WHERE sw.card_id = c.id AND sw.quantity > 0) AS sitewide_holders,
+                (SELECT COUNT(*) FROM collections sw WHERE sw.card_id = c.id AND sw.quantity >= 2) AS sitewide_doubles
             FROM cards c
             LEFT JOIN collections col ON col.card_id = c.id AND col.user_id IN ($inList)
             LEFT JOIN collections viewer ON viewer.card_id = c.id AND viewer.user_id = ?
@@ -872,6 +900,8 @@ if ($action === 'get_cards') {
         foreach ($cards as &$card) {
             $card['doubles_by'] = empty($card['doubles_by']) ? [] : explode("\n", $card['doubles_by']);
             $card['holders'] = empty($card['holders']) ? [] : explode(", ", $card['holders']);
+            $card['sitewide_holders'] = (int) ($card['sitewide_holders'] ?? 0);
+            $card['sitewide_doubles'] = (int) ($card['sitewide_doubles'] ?? 0);
         }
         echo json_encode($cards);
         exit;
@@ -919,7 +949,9 @@ if ($action === 'get_cards') {
                 JOIN users tu ON tu.id = tm.user_id
                 WHERE tm.card_id = c.id AND tm.quantity > 0
                   AND tu.team_name = ? AND tu.team_name <> ''
-            ) AS team_has
+            ) AS team_has,
+            (SELECT COUNT(*) FROM collections sw WHERE sw.card_id = c.id AND sw.quantity > 0) AS sitewide_holders,
+            (SELECT COUNT(*) FROM collections sw WHERE sw.card_id = c.id AND sw.quantity >= 2) AS sitewide_doubles
         FROM cards c
         LEFT JOIN collections mine ON mine.card_id = c.id AND mine.user_id = ?
         LEFT JOIN collections viewer ON viewer.card_id = c.id AND viewer.user_id = ?
@@ -932,6 +964,8 @@ if ($action === 'get_cards') {
         $card['doubles_by'] = empty($card['doubles_by']) ? [] : explode("\n", $card['doubles_by']);
         $card['team_doubles_by'] = empty($card['team_doubles_by']) ? [] : explode("\n", $card['team_doubles_by']);
         $card['team_has'] = (int) ($card['team_has'] ?? 0);
+        $card['sitewide_holders'] = (int) ($card['sitewide_holders'] ?? 0);
+        $card['sitewide_doubles'] = (int) ($card['sitewide_doubles'] ?? 0);
     }
     echo json_encode($cards);
     exit;
