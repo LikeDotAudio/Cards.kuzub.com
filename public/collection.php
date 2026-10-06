@@ -809,6 +809,47 @@
             font-weight: 700;
             border-radius: 6px;
         }
+        /* Right Bar Market Card */
+        .right-bar-market-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .market-quick-card {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .mqc-badge {
+            font-size: 0.65rem;
+            font-weight: 900;
+            color: #0284c7;
+            letter-spacing: 0.05em;
+        }
+        .mqc-text {
+            font-size: 0.76rem;
+            color: #475569;
+            line-height: 1.35;
+        }
+        .btn-open-market {
+            background: #0f172a;
+            color: #fff;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .btn-open-market:hover {
+            background: #1e293b;
+        }
+
         /* ==========================================================
            SPORTS CHANNEL HIGHLIGHTS PACKAGE & NEWS FEED
            ("bottom right corner, sprinkled cards, green-red gradient, completeness, sports channel news feed")
@@ -824,7 +865,6 @@
             gap: 10px;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            margin-top: auto; /* Docks cleanly to the bottom right corner of the right bar */
         }
         .hl-broadcast-header {
             display: flex;
@@ -1150,19 +1190,23 @@
             text-transform: uppercase;
         }
         .eft-pill-owned {
+            background: rgba(56, 189, 248, 0.18);
+            border: 1px solid #38bdf8;
+            color: #38bdf8;
+        }
+        /* The have double of should be RED in the ticker (surplus trade inventory) */
+        .eft-pill-trade {
+            background: rgba(239, 68, 68, 0.25);
+            border: 1px solid #ef4444;
+            color: #f87171;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.2);
+        }
+        /* The ones we need should be GREEN in the ticker (market acquisition targets) */
+        .eft-pill-needed {
             background: rgba(16, 185, 129, 0.22);
             border: 1px solid #10b981;
             color: #34d399;
-        }
-        .eft-pill-trade {
-            background: rgba(245, 158, 11, 0.28);
-            border: 1px solid #f59e0b;
-            color: #fbbf24;
-        }
-        .eft-pill-needed {
-            background: rgba(239, 68, 68, 0.22);
-            border: 1px solid rgba(239, 68, 68, 0.85);
-            color: #f87171;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
         }
         .eft-callout {
             display: inline-flex;
@@ -1210,6 +1254,18 @@
         .eft-btn:hover {
             color: #ffffff;
             background: #1e293b;
+        }
+        .eft-speed-btn {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: #38bdf8;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            padding: 4px 8px;
+            border: 1px solid #1e293b;
+            border-radius: 4px;
+        }
+        .eft-speed-btn:hover {
+            border-color: #38bdf8;
         }
 
         /* Sticky top bar */
@@ -1734,11 +1790,26 @@
         }
 
         /* Card tiles: Grid layouts */
+        /* 2-Page Binder Spread: "two pages... put them upwards if there is room" */
         .grid.layout-page {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
-            gap: 20px;
+            gap: 18px;
             padding: 10px 12px 18px;
+            align-items: start;
+        }
+        @media (min-width: 680px) {
+            .grid.layout-page {
+                grid-template-columns: repeat(2, minmax(290px, 1fr));
+                align-items: start;
+            }
+        }
+        @media (min-width: 1400px) {
+            .grid.layout-page {
+                grid-template-columns: repeat(2, minmax(320px, 1fr));
+                max-width: 1100px;
+                align-items: start;
+            }
         }
         .grid.layout-list {
             column-width: 195px;
@@ -1762,6 +1833,7 @@
             gap: 10px;
             position: relative;
             background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            align-self: start;
         }
         .binder-page-header {
             display: flex;
@@ -2452,7 +2524,8 @@
             .sidebar-backdrop.open { display: block; }
             .close-sidebar-btn { display: block; }
             .mobile-menu-btn { display: inline-flex; align-items: center; justify-content: center; }
-            .mobile-right-btn { display: inline-flex; margin-left: auto; }
+            .mobile-subsets-btn { display: inline-flex !important; }
+            .mobile-right-btn { display: inline-flex; }
             header.topbar { padding: 6px 10px; }
             main { padding: 8px 10px 88px; }
             .collector-dashboard-unit {
@@ -2462,6 +2535,255 @@
             .collector-dashboard-unit .vu-meter-housing {
                 min-width: 100%;
             }
+        }
+
+        /* Topbar Controls & Mobile Enhancements */
+        .mobile-subsets-btn {
+            display: none;
+            align-items: center;
+            gap: 4px;
+            background: #eff6ff;
+            color: #0284c7;
+            border: 1px solid #bae6fd;
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .mobile-subsets-btn:hover {
+            background: #0284c7;
+            color: #fff;
+        }
+        .topbar-layout-switcher {
+            display: inline-flex;
+            background: #f1f5f9;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 2px;
+            gap: 2px;
+        }
+        .topbar-layout-switcher .layout-btn {
+            padding: 4px 8px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            border-radius: 4px;
+            border: none;
+            background: transparent;
+            color: #64748b;
+        }
+        .topbar-layout-switcher .layout-btn.active {
+            background: #fff;
+            color: #0f172a;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .topbar-right-cluster {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .trade-market-topbar-btn {
+            background: #0f172a;
+            color: #fff;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .trade-market-topbar-btn:hover {
+            background: #1e293b;
+        }
+        .mobile-subsets-bar {
+            width: 100%;
+            padding: 8px 10px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .msb-title {
+            font-size: 0.65rem;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            color: #0284c7;
+            text-transform: uppercase;
+        }
+        .msb-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        /* Trade Market Dialog */
+        .trade-market-dialog {
+            width: min(720px, 94vw);
+            border-radius: 14px;
+            padding: 0;
+            overflow: hidden;
+            border: 1px solid #1e293b;
+            background: #ffffff;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+        }
+        .tmd-header {
+            padding: 14px 18px;
+            background: #0f172a;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .tmd-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .tmd-icon {
+            font-size: 1.5rem;
+        }
+        .tmd-header h3 {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #f8fafc;
+        }
+        .tmd-subtitle {
+            margin: 2px 0 0;
+            font-size: 0.76rem;
+            color: #94a3b8;
+        }
+        .tmd-body {
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            max-height: 65vh;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+        .tmd-split {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 12px;
+            align-items: start;
+        }
+        @media (max-width: 640px) {
+            .tmd-split { grid-template-columns: 1fr; }
+        }
+        .tmd-col {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 200px;
+        }
+        .tmd-col-head {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .tmd-pill {
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            padding: 3px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .tmd-pill-trade {
+            background: rgba(239, 68, 68, 0.12);
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+        }
+        .tmd-pill-need {
+            background: rgba(16, 185, 129, 0.12);
+            color: #059669;
+            border: 1px solid #86efac;
+        }
+        .tmd-partner-select {
+            width: 100%;
+            padding: 4px 8px;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+        .tmd-card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+        .tmd-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4px 8px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 0.78rem;
+        }
+        .tmd-exchange-icon {
+            align-self: center;
+            font-size: 1.5rem;
+            color: #0284c7;
+            font-weight: 900;
+        }
+        .tmd-match-summary {
+            padding: 10px 14px;
+            border-radius: 8px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e40af;
+            font-size: 0.84rem;
+            font-weight: 700;
+            text-align: center;
+        }
+        .tmd-footer {
+            padding: 12px 18px;
+            background: #fff;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .btn-rig-market {
+            background: #16a34a !important;
+            border-color: #16a34a !important;
+            color: #fff !important;
+            font-weight: 800;
+        }
+
+        /* L-bar Customize Dialog */
+        .lbar-customize-dialog {
+            width: min(420px, 92vw);
+            border-radius: 12px;
+            padding: 16px;
+        }
+        .lcd-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 6px;
+            font-size: 0.84rem;
+            font-weight: 600;
+            cursor: pointer;
         }
     </style>
 </head>
