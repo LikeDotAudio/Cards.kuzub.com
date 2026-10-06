@@ -24,7 +24,9 @@
             --team-accent: #0284c7;
             --team-light: #e0f2fe;
             --border-color: #e2e8f0;
-            --sidebar-width: 270px;
+            --left-bar-width: 250px;
+            --right-bar-width: 280px;
+            --sidebar-width: 250px;
             --vu-bg: #090d16;
             --vu-green: #22c55e;
             --vu-yellow: #fbbf24;
@@ -257,15 +259,21 @@
             min-height: 100vh;
         }
 
-        /* Sidebar */
-        aside.sidebar {
-            width: var(--sidebar-width);
+        /* Fixed Left Bar ("the left we call it the left bar - remain fixed all the time") */
+        aside.sidebar,
+        aside.left-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: var(--left-bar-width);
             flex-shrink: 0;
             background: #ffffff;
             border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             z-index: 30;
+            overflow-y: auto;
         }
         .sidebar-brand {
             padding: 16px 18px;
@@ -499,13 +507,135 @@
             min-width: 0;
             display: flex;
             flex-direction: column;
+            margin-left: var(--left-bar-width);
+            margin-right: var(--right-bar-width);
+            min-height: 100vh;
+            background: var(--bg);
+        }
+
+        /* Fixed Right Bar ("the right side bar... we call it the right bare - remain fixed all the time") */
+        aside.right-bar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: var(--right-bar-width);
+            background: #ffffff;
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            z-index: 30;
+            overflow-y: auto;
+            padding: 14px 14px 24px;
+            gap: 16px;
+            box-shadow: -1px 0 3px rgba(0, 0, 0, 0.02);
+        }
+        .right-bar-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .right-bar-badge {
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 2px 7px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+        .right-bar-account {
+            width: 100%;
+        }
+        .right-bar .account-pill {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 10px 12px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            margin-left: 0;
+        }
+        .account-pill-main {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+        .account-pill-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            padding-top: 6px;
+            border-top: 1px solid #e2e8f0;
+        }
+        .right-bar-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .right-bar-section-title {
+            font-size: 0.66rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+        .right-bar-layout-switcher {
+            display: flex;
+            width: 100%;
+            background: #f1f5f9;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 3px;
+            gap: 4px;
+            box-sizing: border-box;
+            margin-left: 0;
+        }
+        .right-bar-layout-switcher .layout-btn {
+            flex: 1;
+            text-align: center;
+            justify-content: center;
+            padding: 8px 10px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            border-radius: 6px;
+        }
+        .right-bar-help-card {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 0.74rem;
+            color: #475569;
+        }
+        .right-bar-tips {
+            margin: 6px 0 0 0;
+            padding-left: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            line-height: 1.35;
+        }
+        .right-bar-tips kbd {
+            background: #e2e8f0;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-family: inherit;
+            font-weight: 700;
+            color: #1e293b;
         }
 
         /* Sticky top bar */
         header.topbar {
             position: sticky;
             top: 0;
-            z-index: 10;
+            z-index: 20;
             background: #fff;
             border-bottom: 1px solid var(--border-color);
             padding: 8px 16px;
@@ -703,20 +833,24 @@
             max-width: 1600px;
             width: 100%;
             margin: 0 auto;
-            padding: 14px 16px 140px; /* Extra bottom padding for VU meter */
+            padding: 14px 16px 36px;
         }
 
-        /* Top Highlights Deck (Big numbers highlighting collection) */
-        /* Collector Stats Sentence Bar ("smaller = better more, fit in person's name as a sentence") */
-        .collector-sentence-bar {
+        /* Collector Dashboard Unit: Sentence Stats + Pro Audio VU Meter (no visual void) */
+        .collector-dashboard-unit {
             background: #ffffff;
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 8px 14px;
-            margin-bottom: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px 20px;
         }
-        .sentence-inner {
+        .collector-sentence-wrap {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
@@ -1134,30 +1268,22 @@
         .card-head {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-end;
             width: 100%;
             margin-bottom: 2px;
         }
-        .page-pos-tag {
-            font-size: 0.62rem;
-            font-weight: 800;
-            background: rgba(0, 0, 0, 0.07);
-            color: var(--muted);
-            padding: 1px 4px;
-            border-radius: 3px;
-            letter-spacing: 0.2px;
-        }
         .card-num-tag {
-            font-size: 0.75rem;
+            font-size: 0.85rem;
             font-weight: 800;
             color: #475569;
         }
         /* Prominent card series number on missing cards */
         .card.page-card.missing .card-head {
             align-items: flex-start;
+            justify-content: flex-end;
         }
         .card.page-card.missing .card-num-tag {
-            font-size: 1.35rem;
+            font-size: 1.45rem;
             font-weight: 900;
             color: #0f172a;
             line-height: 1;
@@ -1387,27 +1513,17 @@
         }
 
         /* ==========================================================
-           FOOTER VU METER
+           PRO-AUDIO VU METER (Integrated into Collector Dashboard)
            ========================================================== */
-        .vu-footer {
-            position: fixed;
-            bottom: 0;
-            left: var(--sidebar-width);
-            right: 0;
-            z-index: 40;
-            background: var(--vu-bg);
-            border-top: 2px solid #1e293b;
-            box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.4);
-            padding: 8px 16px;
-            color: #e2e8f0;
-            user-select: none;
-        }
-        .vu-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            gap: 16px;
+        .collector-dashboard-unit .vu-meter-housing {
+            flex: 1 1 280px;
+            max-width: 440px;
+            min-width: 200px;
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 6px 10px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
         }
 
         .vu-stats-group {
@@ -1719,32 +1835,40 @@
             background: rgba(0,0,0,0.4);
             z-index: 25;
         }
-        @media (max-width: 860px) {
-            aside.sidebar {
-                position: fixed;
-                top: 0;
-                left: 0;
-                bottom: 0;
+        @media (max-width: 1080px) {
+            .content-area {
+                margin-left: 0;
+                margin-right: 0;
+            }
+            aside.sidebar,
+            aside.left-bar {
                 transform: translateX(-100%);
                 transition: transform 0.22s ease-in-out;
-                box-shadow: 2px 0 20px rgba(0,0,0,0.15);
+                box-shadow: 2px 0 20px rgba(0, 0, 0, 0.15);
+                width: 280px;
             }
-            aside.sidebar.open { transform: translateX(0); }
+            aside.sidebar.open,
+            aside.left-bar.open { transform: translateX(0); }
+            aside.right-bar {
+                transform: translateX(100%);
+                transition: transform 0.22s ease-in-out;
+                box-shadow: -2px 0 20px rgba(0, 0, 0, 0.15);
+                width: 300px;
+            }
+            aside.right-bar.open { transform: translateX(0); }
             .sidebar-backdrop.open { display: block; }
             .close-sidebar-btn { display: block; }
-            .mobile-menu-btn { display: inline-block; }
+            .mobile-menu-btn { display: inline-flex; align-items: center; justify-content: center; }
+            .mobile-right-btn { display: inline-flex; margin-left: auto; }
             header.topbar { padding: 6px 10px; }
-            main { padding: 8px 10px 140px; }
-            .vu-footer {
-                left: 0;
-                padding: 6px 10px;
+            main { padding: 8px 10px 24px; }
+            .collector-dashboard-unit {
+                padding: 8px 10px;
+                gap: 10px;
             }
-            .vu-container { gap: 8px; }
-            .vu-stat-box {
-                padding: 3px 6px;
-                min-width: 52px;
+            .collector-dashboard-unit .vu-meter-housing {
+                min-width: 100%;
             }
-            .vu-stat-num { font-size: 1.05rem; }
         }
     </style>
 </head>
@@ -1754,8 +1878,8 @@
 <div class="app-layout" id="appLayout">
     <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar" id="sidebar">
+    <!-- LEFT BAR ("the left we call it the left bar - remain fixed all the time") -->
+    <aside class="sidebar left-bar" id="sidebar">
         <div class="sidebar-brand">
             <h2>🏒 Cards.kuzub.com</h2>
             <button class="close-sidebar-btn" id="closeSidebarBtn" aria-label="Close menu">✕</button>
@@ -1839,25 +1963,7 @@
                     <button data-filter="team_needs" id="teamNeedsFilterBtn" hidden title="Cards nobody on your team has collected yet">Team Needs</button>
                 </div>
 
-                <div class="layout-switcher" id="layoutSwitcher">
-                    <button type="button" class="layout-btn active" data-layout="page" title="3x3 Binder Page Sheet view">📄 3×3 Page</button>
-                    <button type="button" class="layout-btn" data-layout="list" title="Compact List view">☰ List</button>
-                </div>
-
-                <!-- TOP RIGHT ACCOUNT INFORMATION -->
-                <div class="topbar-account" id="topbarAccount">
-                    <div class="account-pill" id="accountPill" hidden>
-                        <span class="account-avatar">👤</span>
-                        <div class="account-meta">
-                            <span class="account-name" id="topbarUserName">Bronzo</span>
-                            <span class="account-team" id="topbarUserTeam" title="Click to view or edit team">No team</span>
-                        </div>
-                        <a href="admin.php" class="btn-topbar-admin" id="topbarAdminBtn" hidden title="Admin Dashboard">⚙️ Admin</a>
-                        <button type="button" class="btn-topbar-edit-team" id="topbarEditTeamBtn" title="Change Team">Team ⚙️</button>
-                        <button type="button" class="btn-topbar-signout" id="topbarSignOutBtn" onclick="handleSignOut(event)" title="Sign out of this collector account">Sign Out</button>
-                    </div>
-                    <button type="button" class="btn-topbar-signin" id="topbarSignInBtn" hidden>Sign In / Register</button>
-                </div>
+                <button class="mobile-menu-btn mobile-right-btn" id="openRightBarBtn" aria-label="Open collector options">👤</button>
             </div>
         </header>
 
@@ -1938,6 +2044,52 @@
             <div id="cardsContainer"></div>
         </main>
     </div>
+
+    <!-- RIGHT BAR ("the right side bar... we call it the right bare - remain fixed all the time") -->
+    <aside class="right-bar" id="rightBar" aria-label="Collector options and controls">
+        <div class="right-bar-top-row">
+            <span class="right-bar-badge">Collector Profile</span>
+            <button class="close-sidebar-btn" id="closeRightBarBtn" aria-label="Close right bar">✕</button>
+        </div>
+
+        <!-- RIGHT BAR AT TOP: User Profile Pill / Account Widget ("then right bar at top") -->
+        <div class="right-bar-account" id="topbarAccount">
+            <div class="account-pill" id="accountPill" hidden>
+                <div class="account-pill-main">
+                    <span class="account-avatar">👤</span>
+                    <div class="account-meta">
+                        <span class="account-name" id="topbarUserName">Bronzo</span>
+                        <span class="account-team" id="topbarUserTeam" title="Click to view or edit team">No team</span>
+                    </div>
+                </div>
+                <div class="account-pill-actions">
+                    <a href="admin.php" class="btn-topbar-admin" id="topbarAdminBtn" hidden title="Admin Dashboard">⚙️ Admin</a>
+                    <button type="button" class="btn-topbar-edit-team" id="topbarEditTeamBtn" title="Change Team">Team ⚙️</button>
+                    <button type="button" class="btn-topbar-signout" id="topbarSignOutBtn" onclick="handleSignOut(event)" title="Sign out of this collector account">Sign Out</button>
+                </div>
+            </div>
+            <button type="button" class="btn-topbar-signin" id="topbarSignInBtn" hidden>Sign In / Register</button>
+        </div>
+
+        <!-- TOGGLE PAGE VIEW / LIST VIEW ("on the right bar, toggle page view / list view") -->
+        <div class="right-bar-section">
+            <div class="right-bar-section-title">View Layout</div>
+            <div class="layout-switcher right-bar-layout-switcher" id="layoutSwitcher">
+                <button type="button" class="layout-btn active" data-layout="page" title="3x3 Binder Page Sheet view">📄 3×3 Page</button>
+                <button type="button" class="layout-btn" data-layout="list" title="Compact List view">☰ List</button>
+            </div>
+        </div>
+
+        <!-- QUICK SHORTCUTS & TIPS -->
+        <div class="right-bar-section right-bar-help-card">
+            <div class="right-bar-section-title">Quick Actions</div>
+            <ul class="right-bar-tips">
+                <li><kbd>Click card twice</kbd> to declare double/triple or remove</li>
+                <li><kbd>Push & hold</kbd> on any card for Wikipedia bio</li>
+                <li><kbd>⚡ Series Chips</kbd> jump directly to binder sheets</li>
+            </ul>
+        </div>
+    </aside>
 </div>
 
 <div class="toast" id="toast" hidden></div>
@@ -2684,8 +2836,8 @@
             if (pocket.card && (state.filter === 'all' || pocket.isMatch)) {
                 html += renderPageCard(pocket.card, pocket.pos);
             } else {
-                html += `<div class="card page-card empty-pocket" title="Empty pocket (Position ${pocket.pos})">
-                    <div class="page-pos-tag" style="opacity:0.6;">Pos ${pocket.pos}</div>
+                html += `<div class="card page-card empty-pocket" title="Empty pocket">
+                    <div class="card-head"></div>
                     <div style="font-size:0.72rem; color:#94a3b8; font-weight:700;">Empty</div>
                     <div></div>
                 </div>`;
@@ -2709,7 +2861,6 @@
 
         let tooltipParts = [card.player_name];
         if (card.card_number) tooltipParts.push(`Card #${card.card_number}`);
-        tooltipParts.push(`Pocket: Position ${pos} (3x3 Sheet)`);
         if (card.last_checked) tooltipParts.push(`Checked: ${card.last_checked}`);
         if (holders.length > 0) tooltipParts.push(`Teammates with copies: ${holders.join(', ')}`);
         if (teamTraders.length > 0) tooltipParts.push(`Teammate doubles: ${teamTraders.join(', ')}`);
@@ -2740,7 +2891,6 @@
 
         return `<div class="card page-card ${cls}" data-id="${card.id}" data-player="${esc(card.player_name)}" title="${esc(tooltipParts.join('\n'))}">
             <div class="card-head">
-                <span class="page-pos-tag">Pos ${pos}</span>
                 <span class="card-num-tag">#${esc(card.card_number)}</span>
             </div>
             <div class="card-body">
@@ -3334,20 +3484,32 @@
         }
     });
 
-    // Mobile sidebar toggle
+    // Mobile sidebar and right bar toggle
     const sidebar = document.getElementById('sidebar');
+    const rightBar = document.getElementById('rightBar');
     const backdrop = document.getElementById('sidebarBackdrop');
+
     function openSidebar() {
-        sidebar.classList.add('open');
-        backdrop.classList.add('open');
+        if (sidebar) sidebar.classList.add('open');
+        if (rightBar) rightBar.classList.remove('open');
+        if (backdrop) backdrop.classList.add('open');
+    }
+    function openRightBar() {
+        if (rightBar) rightBar.classList.add('open');
+        if (sidebar) sidebar.classList.remove('open');
+        if (backdrop) backdrop.classList.add('open');
     }
     function closeSidebar() {
-        sidebar.classList.remove('open');
-        backdrop.classList.remove('open');
+        if (sidebar) sidebar.classList.remove('open');
+        if (rightBar) rightBar.classList.remove('open');
+        if (backdrop) backdrop.classList.remove('open');
     }
-    document.getElementById('openSidebarBtn').addEventListener('click', openSidebar);
-    document.getElementById('closeSidebarBtn').addEventListener('click', closeSidebar);
-    backdrop.addEventListener('click', closeSidebar);
+
+    document.getElementById('openSidebarBtn')?.addEventListener('click', openSidebar);
+    document.getElementById('closeSidebarBtn')?.addEventListener('click', closeSidebar);
+    document.getElementById('openRightBarBtn')?.addEventListener('click', openRightBar);
+    document.getElementById('closeRightBarBtn')?.addEventListener('click', closeSidebar);
+    backdrop?.addEventListener('click', closeSidebar);
 
     // Initial check
     checkAuthAndInit();
