@@ -861,8 +861,9 @@ if ($action === 'get_cards') {
     }
 
     // Individual collector view (default to $me if signed in, or first available user)
+    $isGuestRequest = ($rawUserId === 'guest');
     $userId = (int) $rawUserId;
-    if (!$userId) {
+    if (!$userId && !$isGuestRequest) {
         $userId = $me ?: 1;
     }
 
