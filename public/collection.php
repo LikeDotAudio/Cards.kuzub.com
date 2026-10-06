@@ -2777,6 +2777,9 @@
             state.users = usersData;
             state.teams = teamsData;
 
+            const urlParams = new URLSearchParams(window.location.search);
+            const viewParam = urlParams.get('view') || urlParams.get('user');
+
             if (me) {
                 state.currentUser = me;
                 state.userId = me.id;
@@ -2787,6 +2790,17 @@
                 state.userId = null;
                 const bronzo = state.users.find(u => (u.collector_name || '').toLowerCase() === 'bronzo') || state.users[0];
                 state.viewId = bronzo ? bronzo.id : null;
+            }
+
+            if (viewParam) {
+                if (viewParam === 'team') {
+                    state.viewId = 'team';
+                } else {
+                    const targetId = Number(viewParam);
+                    if (targetId && state.users.some(u => u.id === targetId)) {
+                        state.viewId = targetId;
+                    }
+                }
             }
 
             populateTeamDropdowns();
@@ -3060,6 +3074,22 @@
         return state.viewId === 'team';
     }
 
+    function isAdminTinkering() {
+        return Boolean(state.currentUser?.is_admin && !isOwn() && !isTeamView() && typeof state.viewId === 'number');
+    }
+
+    function canEdit() {
+        return isOwn() || isAdminTinkering();
+    }
+
+    function switchToOwnCollection() {
+        if (!state.userId) return;
+        state.viewId = state.userId;
+        const viewSel = document.getElementById('viewSelect');
+        if (viewSel) viewSel.value = String(state.userId);
+        loadCards();
+    }
+
     function viewedName() {
         if (isTeamView()) return `Team ${state.currentUser?.team_name ?? ''}`;
         return state.users.find(u => u.id === state.viewId)?.collector_name ?? (state.currentUser?.collector_name || 'Bronzo');
@@ -3131,6 +3161,8 @@
                 userLeadEl.innerHTML = `👥 <strong>Team ${esc(state.currentUser?.team_name ?? '')}</strong> combined:`;
             } else if (isOwn()) {
                 userLeadEl.innerHTML = `👤 <strong>My collection</strong>:`;
+            } else if (isAdminTinkering()) {
+                userLeadEl.innerHTML = `🛠️ <strong>Tinkering: ${esc(viewedName())}</strong>:`;
             } else {
                 userLeadEl.innerHTML = `👤 Viewing <strong>${esc(viewedName())}</strong>'s collection:`;
             }
@@ -3420,7 +3452,7 @@
 
         updateVUMeterAndHighlights();
         renderSeriesNav(sets);
-        container.classList.toggle('readonly', !isOwn());
+        container.classList.toggle('readonly', !canEdit());
 
         let html = '';
         if (isTeamView()) {
@@ -3430,10 +3462,28 @@
             </div>`;
         } else if (!isOwn()) {
             const isGuest = !state.userId;
-            html += `<div class="notice">
-                Viewing <strong>${esc(viewedName())}</strong>'s collection (read-only).
-                ${isGuest ? 'Browse the complete 3×3 hockey card binder sheets openly! <a href="./" style="font-weight:700; color:#0284c7; text-decoration:underline;">Sign In</a> or click + Collector to track your own cards.' : (state.userId ? 'Cards marked <span class="need">NEED</span> are their doubles you\'re missing.' : '')}
-            </div>`;
+            if (isAdminTinkering()) {
+                html += `<div class="notice admin-tinker-banner" style="background:#eff6ff; border:2px solid #0284c7; border-radius:8px; padding:12px 16px; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                    <div>
+                        <div style="font-weight:900; color:#0369a1; font-size:1rem; display:flex; align-items:center; gap:6px;">
+                            <span>🛡️ ADMIN TINKER MODE:</span>
+                            <span style="color:#0f172a;">Editing ${esc(viewedName())}'s Collection</span>
+                        </div>
+                        <div style="font-size:0.84rem; color:#475569; margin-top:2px;">
+                            You have full admin privileges. Click any card to toggle, adjust doubles, or set quantities directly for this collector!
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <a href="admin.php" style="background:#0284c7; color:#fff; font-size:0.82rem; font-weight:700; padding:6px 12px; border-radius:6px; text-decoration:none;">⚙️ Admin Panel</a>
+                        <button type="button" onclick="switchToOwnCollection()" style="background:#fff; border:1px solid #cbd5e1; font-size:0.82rem; font-weight:700; padding:6px 12px; border-radius:6px; cursor:pointer;">👤 My Collection</button>
+                    </div>
+                </div>`;
+            } else {
+                html += `<div class="notice">
+                    Viewing <strong>${esc(viewedName())}</strong>'s collection (read-only).
+                    ${isGuest ? 'Browse the complete 3×3 hockey card binder sheets openly! <a href="./" style="font-weight:700; color:#0284c7; text-decoration:underline;">Sign In</a> or click + Collector to track your own cards.' : (state.userId ? 'Cards marked <span class="need">NEED</span> are their doubles you\'re missing.' : '')}
+                </div>`;
+            }
         }
 
         const isPageLayout = state.layout === 'page';
@@ -3637,7 +3687,7 @@
             showLoginGate();
             return;
         }
-        if (!isOwn()) {
+        if (!canEdit()) {
             if (isTeamView()) {
                 toast("Switch Viewing to 'My collection' to edit your cards");
             } else {
@@ -3646,8 +3696,12 @@
             return;
         }
         let data;
+        const body = { card_id: cardId, quantity: quantity };
+        if (isAdminTinkering()) {
+            body.target_user_id = state.viewId;
+        }
         try {
-            data = await api('set_card_quantity', {}, { card_id: cardId, quantity: quantity });
+            data = await api('set_card_quantity', {}, body);
         } catch (err) {
             toast(err.message);
             return;
@@ -3659,6 +3713,9 @@
         }
         render();
         loadTeamSummary();
+        if (isAdminTinkering()) {
+            toast(`Admin updated #${card?.card_number || ''} ${card?.player_name || 'Card'} to ${data.quantity}x for ${viewedName()}`);
+        }
     }
 
     function openCardOptions(card) {
@@ -3915,7 +3972,7 @@
             showLoginGate();
             return;
         }
-        if (!isOwn()) {
+        if (!canEdit()) {
             if (isTeamView()) {
                 toast("Switch Viewing to 'My collection' to edit your cards");
             } else {
