@@ -1185,20 +1185,40 @@
             color: #f1f5f9;
             height: 100%;
             padding: 0 16px;
-            font-size: 0.92rem;
+            font-size: 0.90rem;
             font-weight: 800;
             border-right: 1px solid #1e293b;
             flex-shrink: 0;
+            cursor: pointer;
+            transition: background 0.15s ease;
+            user-select: none;
+        }
+        .eft-call-chip:hover {
+            background: #1e293b;
+        }
+        .eft-call-chip:active {
+            transform: scale(0.98);
         }
         .eft-call-lbl {
             color: #38bdf8;
             letter-spacing: 0.08em;
             text-transform: uppercase;
+            font-size: 0.80rem;
+            transition: color 0.3s ease;
+            white-space: nowrap;
         }
         .eft-call-val {
             color: #10b981;
             font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
             font-weight: 900;
+            font-size: 0.88rem;
+            transition: color 0.3s ease, opacity 0.18s ease, transform 0.18s ease;
+            white-space: nowrap;
+        }
+        .eft-call-chip.flipping .eft-call-val,
+        .eft-call-chip.flipping .eft-call-lbl {
+            opacity: 0.25;
+            transform: translateY(-2px);
         }
         .eft-viewport {
             flex: 1;
@@ -3027,8 +3047,8 @@
                     <span class="eft-live-dot"></span>
                     <span class="eft-badge-title">SELECTION DESK</span>
                 </div>
-                <div class="eft-call-chip" id="eftCallChip" title="Set projection tally">
-                    <span class="eft-call-lbl">CALL:</span>
+                <div class="eft-call-chip" id="eftCallChip" title="Click to alternate graph metrics (Completeness, Spectrum, Subsets, Trade)">
+                    <span class="eft-call-lbl" id="eftCallLbl">CALL:</span>
                     <span class="eft-call-val" id="eftCallVal">0/0 SECURED</span>
                 </div>
                 <div class="eft-viewport" id="eftViewport">
@@ -4027,6 +4047,124 @@
         }
     }
 
+    // Alternating Call Metrics in Selection Desk Footer Ticker
+    // ("this call secured should alternate between all the graphs availible for the vurrent view --- the completeness.... the spectrum summary walk through high lights...")
+    let eftCallTimer = null;
+    function setupCallMetrics() {
+        const total = state.cards?.length || 0;
+        if (total === 0) {
+            state.callMetrics = [{ label: 'CALL:', value: '0/0 SECURED', badgeColor: '#38bdf8', valColor: '#10b981' }];
+            displayCurrentCallMetric();
+            return;
+        }
+
+        const have = state.cards.filter(c => c.quantity > 0).length;
+        const need = Math.max(0, total - have);
+        const doublesCount = state.cards.filter(c => c.quantity >= 2).length;
+        const pct = Math.round((have / total) * 100);
+
+        const metrics = [
+            // 1. Overall Completeness Graph Call
+            {
+                label: 'COMPLETION:',
+                value: `${have}/${total} SECURED (${pct}%)`,
+                badgeColor: '#38bdf8',
+                valColor: '#10b981'
+            },
+            // 2. Set Spectrum Walk-Through Summary
+            {
+                label: 'SPECTRUM:',
+                value: `${have} OWNED · ${need} NEEDED · ${doublesCount} TRADE`,
+                badgeColor: '#c084fc',
+                valColor: '#38bdf8'
+            }
+        ];
+
+        // 3. Subset Coverage Walk-Through Highlights
+        const setsMap = new Map();
+        for (const card of state.cards) {
+            if (!setsMap.has(card.set_name)) setsMap.set(card.set_name, []);
+            setsMap.get(card.set_name).push(card);
+        }
+
+        for (const [setName, setCards] of setsMap) {
+            const sHave = setCards.filter(c => c.quantity > 0).length;
+            const sTotal = setCards.length;
+            const sPct = sTotal > 0 ? Math.round((sHave / sTotal) * 100) : 0;
+            metrics.push({
+                label: `${setName.toUpperCase()}:`,
+                value: `${sHave}/${sTotal} SECURED (${sPct}%)`,
+                badgeColor: '#f59e0b',
+                valColor: sHave === sTotal ? '#22c55e' : (sPct >= 50 ? '#38bdf8' : '#e2e8f0')
+            });
+        }
+
+        // 4. Trade Deck / Market Highlights
+        if (doublesCount > 0 || need > 0) {
+            metrics.push({
+                label: 'TRADE DECK:',
+                value: `${doublesCount} DOUBLES (RED) ⇄ ${need} NEEDED (GREEN)`,
+                badgeColor: '#ef4444',
+                valColor: '#facc15'
+            });
+        }
+
+        // 5. Team Combined Call (if team view or user has team)
+        if (state.currentUser?.team_name) {
+            const teamHave = state.teamProgress?.total_collected || have;
+            const teamPct = state.teamProgress?.team_pct || pct;
+            metrics.push({
+                label: `TEAM ${state.currentUser.team_name.toUpperCase()}:`,
+                value: `${teamHave}/${total} SECURED (${teamPct}%)`,
+                badgeColor: '#06b6d4',
+                valColor: '#10b981'
+            });
+        }
+
+        state.callMetrics = metrics;
+        state.callMetricIdx = (state.callMetricIdx || 0) % metrics.length;
+        displayCurrentCallMetric();
+        restartCallMetricsTimer();
+    }
+
+    function displayCurrentCallMetric() {
+        const chip = document.getElementById('eftCallChip');
+        const lbl = document.getElementById('eftCallLbl');
+        const val = document.getElementById('eftCallVal');
+        if (!lbl || !val || !state.callMetrics || state.callMetrics.length === 0) return;
+
+        const current = state.callMetrics[state.callMetricIdx];
+        if (!current) return;
+
+        if (chip) {
+            chip.classList.add('flipping');
+            setTimeout(() => chip.classList.remove('flipping'), 180);
+        }
+
+        lbl.textContent = current.label;
+        lbl.style.color = current.badgeColor || '#38bdf8';
+        val.textContent = current.value;
+        val.style.color = current.valColor || '#10b981';
+    }
+
+    function cycleCallMetric() {
+        if (!state.callMetrics || state.callMetrics.length === 0) return;
+        state.callMetricIdx = (state.callMetricIdx + 1) % state.callMetrics.length;
+        displayCurrentCallMetric();
+        restartCallMetricsTimer();
+    }
+
+    function restartCallMetricsTimer() {
+        if (eftCallTimer) clearInterval(eftCallTimer);
+        const speed = state.broadcastSpeed || 1;
+        const intervalMs = Math.round(3400 / speed);
+        eftCallTimer = setInterval(() => {
+            if (!state.callMetrics || state.callMetrics.length <= 1) return;
+            state.callMetricIdx = (state.callMetricIdx + 1) % state.callMetrics.length;
+            displayCurrentCallMetric();
+        }, intervalMs);
+    }
+
     function renderSportsHighlights() {
         const total = state.cards.length;
         if (total === 0) return;
@@ -4129,11 +4267,8 @@
             subsetBarsEl.innerHTML = sHtml;
         }
 
-        // Selection Desk / Sports Broadcast Footer Ticker
-        const eftCallVal = document.getElementById('eftCallVal');
-        if (eftCallVal) {
-            eftCallVal.textContent = `${have}/${total} SECURED`;
-        }
+        // Selection Desk / Sports Broadcast Footer Ticker alternating call metrics
+        setupCallMetrics();
 
         const eftStream = document.getElementById('eftStream');
         if (eftStream && total > 0) {
