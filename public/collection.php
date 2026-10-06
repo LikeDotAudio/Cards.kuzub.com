@@ -7224,6 +7224,7 @@
         }
         if (!html) html = '<div class="notice">No cards match the selected filter.</div>';
         container.innerHTML = html;
+        updateStickyOffsets();
     }
 
     function renderBinderPage(pockets, pageNum, totalPages, setName) {
@@ -9727,6 +9728,7 @@
 
     // Initialize Parametric Inventory Filter
     initParamInventoryFilter();
+    updateStickyOffsets();
 
     // Initialize HUD Overlay
     initStatsHud();
