@@ -85,6 +85,17 @@ if (!$hasTeamId) {
     $pdo->exec("ALTER TABLE users ADD COLUMN team_id INT NULL DEFAULT NULL");
 }
 
+$hasIsAdmin = $pdo->query("SHOW COLUMNS FROM users LIKE 'is_admin'")->fetch();
+if (!$hasIsAdmin) {
+    $pdo->exec("ALTER TABLE users ADD COLUMN is_admin TINYINT(1) NOT NULL DEFAULT 0");
+}
+$pdo->exec("UPDATE users SET is_admin = 1 WHERE UPPER(collector_name) = 'ANTHONY'");
+
+$hasEmail = $pdo->query("SHOW COLUMNS FROM users LIKE 'email'")->fetch();
+if (!$hasEmail) {
+    $pdo->exec("ALTER TABLE users ADD COLUMN email VARCHAR(255) NOT NULL DEFAULT ''");
+}
+
 // Ensure default team and sync any existing team names into teams table
 $teamCount = (int) $pdo->query("SELECT COUNT(*) FROM teams")->fetchColumn();
 if ($teamCount === 0) {
@@ -201,11 +212,26 @@ function currentUser($pdo) {
         return null;
     }
     $stmt = $pdo->prepare("
-        SELECT u.id, u.collector_name, u.team_name, u.team_id FROM sessions s JOIN users u ON u.id = s.user_id
+        SELECT u.id, u.collector_name, u.team_name, u.team_id, u.is_admin, u.email FROM sessions s JOIN users u ON u.id = s.user_id
         WHERE s.token_hash = ? AND s.expires_at > NOW()
     ");
     $stmt->execute([hash('sha256', $token)]);
-    return $stmt->fetch() ?: null;
+    $user = $stmt->fetch() ?: null;
+    if ($user) {
+        $user['is_admin'] = (int) (!empty($user['is_admin']) || strcasecmp($user['collector_name'] ?? '', 'Anthony') === 0);
+    }
+    return $user;
+}
+
+function requireAdmin($pdo) {
+    $user = currentUser($pdo);
+    if (!$user) {
+        fail('Sign in first', 401);
+    }
+    if (empty($user['is_admin']) && strcasecmp($user['collector_name'] ?? '', 'Anthony') !== 0) {
+        fail('Admin access required for user Anthony', 403);
+    }
+    return $user;
 }
 
 // Cookie-authenticated writes must be JSON, which browsers won't send cross-site without CORS approval
@@ -538,6 +564,205 @@ if ($action === 'logout' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
+// =========================================================================
+// ADMIN ACTIONS (Restricted to user Anthony / is_admin = 1)
+// =========================================================================
+
+// ADMIN: GET ALL USERS WITH METRICS
+if ($action === 'admin_get_users') {
+    requireAdmin($pdo);
+    $stmt = $pdo->query("
+        SELECT u.id, u.collector_name, u.initials AS password, u.email, u.team_name, u.team_id,
+               u.is_admin, u.created_at,
+               (SELECT COUNT(*) FROM collections c WHERE c.user_id = u.id AND c.quantity > 0) AS cards_collected,
+               (SELECT COUNT(*) FROM collections c WHERE c.user_id = u.id AND c.quantity >= 2) AS doubles_count
+        FROM users u
+        ORDER BY (UPPER(u.collector_name) = 'ANTHONY') DESC, u.collector_name ASC
+    ");
+    $users = $stmt->fetchAll();
+    foreach ($users as &$u) {
+        $u['is_admin'] = (int) (!empty($u['is_admin']) || strcasecmp($u['collector_name'], 'Anthony') === 0);
+        $u['email'] = (string) ($u['email'] ?? '');
+    }
+    echo json_encode($users);
+    exit;
+}
+
+// ADMIN: GET DASHBOARD STATS
+if ($action === 'admin_get_stats') {
+    requireAdmin($pdo);
+    $userCount = (int) $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
+    $teamCount = (int) $pdo->query("SELECT COUNT(*) FROM teams")->fetchColumn();
+    $cardCount = (int) $pdo->query("SELECT COUNT(*) FROM collections WHERE quantity > 0")->fetchColumn();
+    $doublesCount = (int) $pdo->query("SELECT COUNT(*) FROM collections WHERE quantity >= 2")->fetchColumn();
+    echo json_encode([
+        'users' => $userCount,
+        'teams' => $teamCount,
+        'cards' => $cardCount,
+        'doubles' => $doublesCount,
+    ]);
+    exit;
+}
+
+// ADMIN: ADD PERSON
+if ($action === 'admin_add_user' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    requireJson();
+    requireAdmin($pdo);
+
+    $name = trim($input['collector_name'] ?? '');
+    $rawPass = trim($input['password'] ?? '');
+    $email = trim($input['email'] ?? '');
+    $teamInfo = resolveTeam($pdo, $input['team_id'] ?? null, $input['team_name'] ?? '');
+    $teamName = $teamInfo['name'];
+    $teamId = $teamInfo['id'];
+    $isAdmin = !empty($input['is_admin']) ? 1 : 0;
+
+    if ($name === '' || mb_strlen($name) > 50) {
+        fail('Name must be between 1 and 50 characters');
+    }
+    if ($rawPass === '' || mb_strlen($rawPass) > 20) {
+        fail('Password must be between 1 and 20 characters');
+    }
+    $initials = strtoupper($rawPass);
+
+    $check = $pdo->prepare("SELECT id FROM users WHERE collector_name = ?");
+    $check->execute([$name]);
+    if ($check->fetch()) {
+        fail('A collector with that name already exists');
+    }
+
+    $stmt = $pdo->prepare("
+        INSERT INTO users (collector_name, initials, email, team_name, team_id, is_admin)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ");
+    $stmt->execute([$name, $initials, $email, $teamName, $teamId, $isAdmin]);
+    $newId = (int) $pdo->lastInsertId();
+
+    echo json_encode(['success' => true, 'id' => $newId, 'collector_name' => $name]);
+    exit;
+}
+
+// ADMIN: UPDATE PERSON (NAME, PASSWORD, EMAIL, TEAM, ADMIN)
+if ($action === 'admin_update_user' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    requireJson();
+    requireAdmin($pdo);
+
+    $userId = (int) ($input['id'] ?? 0);
+    if (!$userId) fail('Invalid user ID');
+
+    $stmt = $pdo->prepare("SELECT id, collector_name, team_name, team_id, initials, email, is_admin FROM users WHERE id = ?");
+    $stmt->execute([$userId]);
+    $existing = $stmt->fetch();
+    if (!$existing) fail('User not found');
+
+    $name = isset($input['collector_name']) ? trim($input['collector_name']) : $existing['collector_name'];
+    if ($name === '' || mb_strlen($name) > 50) {
+        fail('Name must be between 1 and 50 characters');
+    }
+
+    if (strcasecmp($name, $existing['collector_name']) !== 0) {
+        $check = $pdo->prepare("SELECT id FROM users WHERE collector_name = ? AND id != ?");
+        $check->execute([$name, $userId]);
+        if ($check->fetch()) fail('A collector with that name already exists');
+    }
+
+    $teamInfo = resolveTeam($pdo, $input['team_id'] ?? null, $input['team_name'] ?? $existing['team_name']);
+    $teamName = $teamInfo['name'];
+    $teamId = $teamInfo['id'];
+
+    $fields = ["collector_name = ?", "team_name = ?", "team_id = ?"];
+    $params = [$name, $teamName, $teamId];
+
+    if (isset($input['email'])) {
+        $fields[] = "email = ?";
+        $params[] = trim($input['email']);
+    }
+
+    if (!empty($input['password'])) {
+        $rawPass = trim($input['password']);
+        if (mb_strlen($rawPass) > 20) fail('Password must be 20 characters or less');
+        $fields[] = "initials = ?";
+        $params[] = strtoupper($rawPass);
+    }
+
+    if (isset($input['is_admin'])) {
+        $isAdmin = !empty($input['is_admin']) ? 1 : 0;
+        if (strcasecmp($existing['collector_name'], 'Anthony') === 0) {
+            $isAdmin = 1; // Anthony is permanently admin
+        }
+        $fields[] = "is_admin = ?";
+        $params[] = $isAdmin;
+    }
+
+    $params[] = $userId;
+    $sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE id = ?";
+    $pdo->prepare($sql)->execute($params);
+
+    echo json_encode(['success' => true]);
+    exit;
+}
+
+// ADMIN: RESET OR UPDATE EMAIL DIRECTLY
+if ($action === 'admin_reset_email' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    requireJson();
+    requireAdmin($pdo);
+
+    $userId = (int) ($input['id'] ?? 0);
+    $email = trim($input['email'] ?? '');
+    if (!$userId) fail('Invalid user ID');
+
+    $pdo->prepare("UPDATE users SET email = ? WHERE id = ?")->execute([$email, $userId]);
+    echo json_encode(['success' => true, 'email' => $email]);
+    exit;
+}
+
+// ADMIN: CHANGE PASSWORD DIRECTLY
+if ($action === 'admin_change_password' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    requireJson();
+    requireAdmin($pdo);
+
+    $userId = (int) ($input['id'] ?? 0);
+    $newPass = trim($input['password'] ?? '');
+    if (!$userId) fail('Invalid user ID');
+    if ($newPass === '' || mb_strlen($newPass) > 20) {
+        fail('Password must be between 1 and 20 characters');
+    }
+    $initials = strtoupper($newPass);
+
+    $pdo->prepare("UPDATE users SET initials = ? WHERE id = ?")->execute([$initials, $userId]);
+    echo json_encode(['success' => true]);
+    exit;
+}
+
+// ADMIN: REMOVE PERSON
+if ($action === 'admin_delete_user' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    requireJson();
+    $admin = requireAdmin($pdo);
+
+    $userId = (int) ($input['id'] ?? 0);
+    if (!$userId) fail('Invalid user ID');
+
+    if ($userId === (int)$admin['id']) {
+        fail('You cannot remove your own admin account');
+    }
+
+    $stmt = $pdo->prepare("SELECT collector_name FROM users WHERE id = ?");
+    $stmt->execute([$userId]);
+    $target = $stmt->fetch();
+    if (!$target) fail('User not found');
+
+    if (strcasecmp($target['collector_name'], 'Anthony') === 0) {
+        fail('User Anthony cannot be removed');
+    }
+
+    $pdo->prepare("DELETE FROM sessions WHERE user_id = ?")->execute([$userId]);
+    $pdo->prepare("DELETE FROM collections WHERE user_id = ?")->execute([$userId]);
+    $pdo->prepare("DELETE FROM users WHERE id = ?")->execute([$userId]);
+
+    echo json_encode(['success' => true]);
+    exit;
+}
+
 // GET CARDS for a collector, or for an entire team (combined).
 // A team can ONLY see their teammates.
 if ($action === 'get_cards') {
@@ -693,6 +918,75 @@ if ($action === 'get_cards') {
     exit;
 }
 
+// SET CARD QUANTITY directly (0-99)
+if ($action === 'set_card_quantity' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    requireJson();
+    $user = currentUser($pdo);
+    if (!$user) {
+        fail('Sign in first', 401);
+    }
+    $userId = (int) $user['id'];
+    $cardId = (int) ($input['card_id'] ?? 0);
+    $quantity = isset($input['quantity']) ? (int) $input['quantity'] : -1;
+
+    if (!$cardId) {
+        fail('Invalid Card ID');
+    }
+    if ($quantity < 0 || $quantity > 99) {
+        fail('Invalid quantity');
+    }
+
+    $dateChecked = $quantity > 0 ? date('Y-m-d H:i:s') : null;
+
+    $stmt = $pdo->prepare("
+        INSERT INTO collections (user_id, card_id, quantity, last_checked)
+        VALUES (?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE quantity = VALUES(quantity), last_checked = VALUES(last_checked)
+    ");
+    $stmt->execute([$userId, $cardId, $quantity, $dateChecked]);
+
+    echo json_encode(['success' => true, 'quantity' => $quantity, 'last_checked' => $dateChecked]);
+    exit;
+}
+
+// TOGGLE QUANTITY: 0 -> 1 -> 2 (Double) -> 0
+if ($action === 'toggle_card' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    requireJson();
+    $user = currentUser($pdo);
+    if (!$user) {
+        fail('Sign in first', 401);
+    }
+    $userId = (int) $user['id'];
+    $cardId = (int) ($input['card_id'] ?? 0);
+
+    if (!$cardId) {
+        fail('Invalid Card ID');
+    }
+
+    $stmt = $pdo->prepare("SELECT quantity FROM collections WHERE user_id = ? AND card_id = ?");
+    $stmt->execute([$userId, $cardId]);
+    $current = (int) $stmt->fetchColumn();
+
+    if ($current === 0) {
+        $newQty = 1;
+    } elseif ($current === 1) {
+        $newQty = 2; // Marked as duplicate/double
+    } else {
+        $newQty = 0; // Cleared / Removed
+    }
+    $dateChecked = $newQty > 0 ? date('Y-m-d H:i:s') : null;
+
+    $stmt = $pdo->prepare("
+        INSERT INTO collections (user_id, card_id, quantity, last_checked)
+        VALUES (?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE quantity = VALUES(quantity), last_checked = VALUES(last_checked)
+    ");
+    $stmt->execute([$userId, $cardId, $newQty, $dateChecked]);
+
+    echo json_encode(['success' => true, 'quantity' => $newQty, 'last_checked' => $dateChecked]);
+    exit;
+}
+
 // ADJUST QUANTITY by +1 / -1 (0-99); every copy past the first is up for trade
 if ($action === 'adjust_card' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     requireJson();
@@ -726,6 +1020,68 @@ if ($action === 'adjust_card' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->execute([$userId, $cardId, $newQty, $dateChecked]);
 
     echo json_encode(['success' => true, 'quantity' => $newQty, 'last_checked' => $dateChecked]);
+    exit;
+}
+
+// WIKIPEDIA PLAYER SUMMARY
+if ($action === 'wiki_player') {
+    $name = trim($_GET['name'] ?? '');
+    if ($name === '') {
+        fail('Player name required');
+    }
+
+    function fetchWikiSummary($title) {
+        $cleanTitle = str_replace([' ', '_'], '_', $title);
+        $url = 'https://en.wikipedia.org/api/rest_v1/page/summary/' . rawurlencode($cleanTitle);
+        $opts = [
+            'http' => [
+                'method' => 'GET',
+                'header' => "User-Agent: CardsKuzub/1.0 (cards.kuzub.com)\r\nAccept: application/json\r\n",
+                'timeout' => 5,
+                'ignore_errors' => true,
+            ],
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+            ]
+        ];
+        $ctx = stream_context_create($opts);
+        $res = @file_get_contents($url, false, $ctx);
+        if ($res === false) return null;
+        $json = json_decode($res, true);
+        return is_array($json) ? $json : null;
+    }
+
+    $data = fetchWikiSummary($name);
+    // If disambiguation or not found, try with (ice hockey)
+    if (!$data || ($data['type'] ?? '') === 'disambiguation' || ($data['title'] ?? '') === 'Not found.' || ($data['type'] ?? '') === 'https://mediawiki.org/wiki/HyperSwitch/errors/not_found') {
+        $alt = fetchWikiSummary($name . ' (ice hockey)');
+        if ($alt && ($alt['type'] ?? '') !== 'disambiguation' && ($alt['title'] ?? '') !== 'Not found.' && ($alt['type'] ?? '') !== 'https://mediawiki.org/wiki/HyperSwitch/errors/not_found') {
+            $data = $alt;
+        }
+    }
+
+    if (!$data || empty($data['title']) || ($data['title'] ?? '') === 'Not found.') {
+        echo json_encode([
+            'success' => false,
+            'name' => $name,
+            'title' => $name,
+            'description' => 'Professional hockey player',
+            'extract' => 'Biographical profile on Wikipedia for ' . $name . '.',
+            'wiki_url' => 'https://en.wikipedia.org/wiki/Special:Search?search=' . urlencode($name),
+        ]);
+        exit;
+    }
+
+    echo json_encode([
+        'success' => true,
+        'name' => $name,
+        'title' => $data['title'] ?? $name,
+        'description' => $data['description'] ?? 'Ice hockey player',
+        'extract' => $data['extract'] ?? '',
+        'thumbnail' => $data['thumbnail']['source'] ?? null,
+        'wiki_url' => $data['content_urls']['desktop']['page'] ?? ('https://en.wikipedia.org/wiki/' . rawurlencode(str_replace(' ', '_', $data['title'] ?? $name))),
+    ]);
     exit;
 }
 

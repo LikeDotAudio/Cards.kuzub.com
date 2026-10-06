@@ -1,8 +1,5 @@
 <?php
-if (empty($_COOKIE['cards_session'])) {
-    header('Location: ./');
-    exit;
-}
+// Open access: strangers can view Bronzo's collection openly without logging in
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -514,7 +511,7 @@ if (empty($_COOKIE['cards_session'])) {
             padding: 8px 16px;
         }
         .bar {
-            max-width: 1200px;
+            max-width: 1600px;
             margin: 0 auto;
             display: flex;
             flex-wrap: wrap;
@@ -635,6 +632,41 @@ if (empty($_COOKIE['cards_session'])) {
             background: #f1f5f9;
             border-color: #94a3b8;
         }
+        .btn-topbar-admin {
+            padding: 3px 8px;
+            font-size: 0.72rem;
+            border-radius: 999px;
+            background: #f1f5f9;
+            border: 1px solid #94a3b8;
+            color: #1e293b;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            white-space: nowrap;
+            transition: all 0.15s;
+        }
+        .btn-topbar-admin:hover {
+            background: #e2e8f0;
+            border-color: #64748b;
+        }
+        .admin-link-btn {
+            display: inline-block;
+            text-align: center;
+            padding: 6px 12px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            color: #1e293b;
+            text-decoration: none;
+            margin-bottom: 6px;
+            transition: background 0.15s;
+        }
+        .admin-link-btn:hover {
+            background: #e2e8f0;
+        }
         .btn-topbar-signout {
             padding: 3px 8px;
             font-size: 0.72rem;
@@ -668,7 +700,7 @@ if (empty($_COOKIE['cards_session'])) {
 
         /* Main content area */
         main {
-            max-width: 1200px;
+            max-width: 1600px;
             width: 100%;
             margin: 0 auto;
             padding: 14px 16px 140px; /* Extra bottom padding for VU meter */
@@ -783,13 +815,241 @@ if (empty($_COOKIE['cards_session'])) {
         }
         .progress > span { display: block; height: 100%; background: var(--row-single-edge); }
 
-        /* Card tiles */
-        .grid {
+        /* Layout switcher */
+        .layout-switcher {
+            display: inline-flex;
+            background: #f1f5f9;
+            border-radius: 6px;
+            padding: 2px;
+            gap: 2px;
+            border: 1px solid var(--border-color);
+            margin-left: 4px;
+        }
+        .layout-btn {
+            padding: 4px 10px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .layout-btn:hover {
+            color: var(--text-color);
+        }
+        .layout-btn.active {
+            background: #fff;
+            color: var(--text-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* Card tiles: Grid layouts */
+        .grid.layout-page {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+            gap: 20px;
+            padding: 10px 12px 18px;
+        }
+        .grid.layout-list {
             column-width: 195px;
             column-gap: 12px;
             padding: 0 8px 10px;
         }
-        .group {
+        .grid {
+            width: 100%;
+        }
+
+        /* 3x3 Binder Page Sheet */
+        .binder-page {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 14px 12px 12px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+            break-inside: avoid;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        }
+        .binder-page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 8px;
+            border-bottom: 1.5px solid #e2e8f0;
+        }
+        .binder-rings-punch {
+            display: flex;
+            gap: 5px;
+        }
+        .ring-hole {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            border: 1px solid #94a3b8;
+        }
+        .binder-page-meta {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+        .binder-page-title {
+            font-size: 0.85rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            color: #1e293b;
+        }
+        .binder-page-subtitle {
+            font-size: 0.72rem;
+            color: var(--muted);
+            font-weight: 600;
+        }
+        .binder-page-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            background: #e2e8f0;
+            border-radius: 12px;
+            color: #334155;
+        }
+
+        /* 3x3 Pocket Grid */
+        .binder-grid-3x3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        /* Cards in Page Mode: authentic 2.5 : 3.5 hockey card ratio */
+        .card.page-card {
+            aspect-ratio: 2.5 / 3.5;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 8px 7px 6px;
+            border-radius: 7px;
+            border: 1.5px solid #e2e8f0;
+            background: #ffffff;
+            position: relative;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+            overflow: hidden;
+            text-align: center;
+        }
+        .card.page-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+            border-color: #94a3b8;
+        }
+        .card.page-card.collected {
+            background: linear-gradient(160deg, #f0fdf4 0%, #dcfce7 100%);
+            border-color: #86efac;
+        }
+        .card.page-card.doubles {
+            background: linear-gradient(160deg, #fefce8 0%, #fef08a 100%);
+            border-color: #fde047;
+        }
+        .card.page-card.empty-pocket {
+            background: #f8fafc;
+            border: 1.5px dashed #cbd5e1;
+            opacity: 0.55;
+            cursor: default;
+            align-items: center;
+            justify-content: center;
+        }
+        .card.page-card.empty-pocket:hover {
+            transform: none;
+            box-shadow: none;
+            border-color: #cbd5e1;
+        }
+
+        .card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 2px;
+        }
+        .page-pos-tag {
+            font-size: 0.62rem;
+            font-weight: 800;
+            background: rgba(0, 0, 0, 0.07);
+            color: var(--muted);
+            padding: 1px 4px;
+            border-radius: 3px;
+            letter-spacing: 0.2px;
+        }
+        .card-num-tag {
+            font-size: 0.68rem;
+            font-weight: 800;
+            color: #475569;
+        }
+        .card-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 0;
+            padding: 2px 0;
+        }
+        .card-player-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            line-height: 1.22;
+            color: var(--text-color);
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            word-break: break-word;
+        }
+        .card-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 2px;
+            gap: 2px;
+        }
+        .card-status-badge {
+            font-size: 0.68rem;
+            font-weight: 800;
+            padding: 1px 5px;
+            border-radius: 4px;
+        }
+        .card.collected .card-status-badge {
+            color: #166534;
+            background: #bbf7d0;
+        }
+        .card.doubles .card-status-badge {
+            color: #854d0e;
+            background: #fef08a;
+        }
+        .card-status-badge.missing {
+            color: #94a3b8;
+            background: #f1f5f9;
+        }
+
+        /* Hold push state */
+        .card.holding {
+            transform: scale(0.96) !important;
+            border-color: #0284c7 !important;
+            box-shadow: 0 0 14px rgba(2, 132, 199, 0.5) !important;
+        }
+
+        /* List mode styles */
+        .group.list-group {
             display: grid;
             gap: 3px;
             break-inside: avoid;
@@ -829,16 +1089,6 @@ if (empty($_COOKIE['cards_session'])) {
         .qty { flex: 0 0 auto; font-size: 0.7rem; font-weight: 700; }
         .collected .qty { color: #2e7d32; }
         .doubles .qty { color: #f57f17; }
-        .minus {
-            flex: 0 0 auto;
-            width: 22px;
-            height: 22px;
-            padding: 0;
-            line-height: 1;
-            font-size: 0.9rem;
-            border-radius: 50%;
-            color: var(--muted);
-        }
         .trade {
             flex: 0 0 auto;
             font-size: 0.7rem;
@@ -862,6 +1112,107 @@ if (empty($_COOKIE['cards_session'])) {
             color: #0369a1;
             padding: 0 6px 0 calc(2.6em + 15px);
             margin-top: -2px;
+        }
+
+        /* Wikipedia Player Bio Modal */
+        .wiki-dialog {
+            width: min(520px, 94vw);
+            border-radius: 14px;
+            padding: 0;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        .wiki-header {
+            padding: 14px 18px;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .wiki-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .wiki-icon {
+            font-size: 1.4rem;
+        }
+        .wiki-header h3 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin: 0;
+            color: #0f172a;
+        }
+        .wiki-subtitle {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+        .wiki-content {
+            padding: 18px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        .wiki-player-card {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            margin-bottom: 14px;
+        }
+        .wiki-player-img {
+            width: 105px;
+            height: 135px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            flex: 0 0 auto;
+            background: #f1f5f9;
+        }
+        .wiki-player-info {
+            flex: 1;
+        }
+        .wiki-player-desc {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+        .wiki-extract {
+            font-size: 0.875rem;
+            line-height: 1.5;
+            color: #334155;
+        }
+        .wiki-footer {
+            padding: 12px 18px;
+            background: #f8fafc;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .wiki-hint {
+            font-size: 0.72rem;
+            color: var(--muted);
+        }
+        .wiki-full-btn {
+            font-size: 0.82rem;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 6px;
+            background: #0284c7;
+            color: #fff;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: background 0.15s;
+        }
+        .wiki-full-btn:hover {
+            background: #0369a1;
         }
 
         /* ==========================================================
@@ -1063,6 +1414,132 @@ if (empty($_COOKIE['cards_session'])) {
             border: 1px solid #334155;
         }
 
+        /* Card Options Modal */
+        .card-opt-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 4px;
+        }
+        .card-opt-title-wrap {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            min-width: 0;
+            overflow: hidden;
+        }
+        .card-opt-num {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--muted);
+            flex: 0 0 auto;
+        }
+        .card-opt-name {
+            font-size: 1.05rem;
+            font-weight: 700;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .card-opt-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            line-height: 1;
+            padding: 2px 6px;
+            cursor: pointer;
+            color: var(--muted);
+            border-radius: 4px;
+        }
+        .card-opt-close:hover {
+            color: var(--text-color);
+            background: #f1f5f9;
+        }
+        .card-opt-current {
+            font-size: 0.82rem;
+            color: var(--muted);
+            margin-bottom: 14px;
+        }
+        .card-opt-buttons {
+            display: grid;
+            gap: 8px;
+        }
+        .card-opt-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s ease;
+        }
+        .card-opt-btn:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+        }
+        .card-opt-btn.double-btn {
+            border-left: 5px solid #f57f17;
+        }
+        .card-opt-btn.triple-btn {
+            border-left: 5px solid #d97706;
+        }
+        .card-opt-btn.single-btn {
+            border-left: 5px solid #2e7d32;
+        }
+        .card-opt-btn.remove-btn {
+            border-left: 5px solid #dc2626;
+            color: #dc2626;
+        }
+        .card-opt-btn.remove-btn:hover {
+            background: #fef2f2;
+            border-color: #dc2626;
+        }
+        .card-opt-btn.active {
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.15);
+            background: #f8fafc;
+        }
+        .card-opt-badge {
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background: #f1f5f9;
+            color: #475569;
+            font-weight: 700;
+        }
+        .card-opt-btn.active .card-opt-badge {
+            background: #334155;
+            color: #fff;
+        }
+        .card-opt-custom-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border-color);
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+        .card-opt-custom-row input {
+            width: 55px;
+            padding: 4px 6px;
+            font-size: 0.85rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+        .card-opt-custom-row button {
+            padding: 4px 10px;
+            font-size: 0.85rem;
+        }
+
         /* Responsive */
         .sidebar-backdrop {
             display: none;
@@ -1160,6 +1637,7 @@ if (empty($_COOKIE['cards_session'])) {
                 <span class="user-team-badge" id="sideUserTeamBadge"></span>
             </div>
             <div class="sidebar-actions">
+                <a href="admin.php" id="sideAdminLink" class="admin-link-btn" hidden>⚙️ Admin</a>
                 <button type="button" id="editTeamBtn">Edit Team</button>
                 <button type="button" id="signOutBtn" onclick="handleSignOut(event)" class="primary">Sign out</button>
             </div>
@@ -1190,6 +1668,11 @@ if (empty($_COOKIE['cards_session'])) {
                     <button data-filter="team_needs" id="teamNeedsFilterBtn" hidden title="Cards nobody on your team has collected yet">Team Needs</button>
                 </div>
 
+                <div class="layout-switcher" id="layoutSwitcher">
+                    <button type="button" class="layout-btn active" data-layout="page" title="3x3 Binder Page Sheet view">📄 3×3 Page</button>
+                    <button type="button" class="layout-btn" data-layout="list" title="Compact List view">☰ List</button>
+                </div>
+
                 <!-- TOP RIGHT ACCOUNT INFORMATION -->
                 <div class="topbar-account" id="topbarAccount">
                     <div class="account-pill" id="accountPill" hidden>
@@ -1198,6 +1681,7 @@ if (empty($_COOKIE['cards_session'])) {
                             <span class="account-name" id="topbarUserName">Bronzo</span>
                             <span class="account-team" id="topbarUserTeam" title="Click to view or edit team">No team</span>
                         </div>
+                        <a href="admin.php" class="btn-topbar-admin" id="topbarAdminBtn" hidden title="Admin Dashboard">⚙️ Admin</a>
                         <button type="button" class="btn-topbar-edit-team" id="topbarEditTeamBtn" title="Change Team">Team ⚙️</button>
                         <button type="button" class="btn-topbar-signout" id="topbarSignOutBtn" onclick="handleSignOut(event)" title="Sign out of this collector account">Sign Out</button>
                     </div>
@@ -1359,6 +1843,67 @@ if (empty($_COOKIE['cards_session'])) {
     </form>
 </dialog>
 
+<!-- CARD OPTIONS OVERLAY -->
+<dialog id="cardOptionsDialog">
+    <div class="card-opt-header">
+        <div class="card-opt-title-wrap">
+            <span class="card-opt-num" id="cardOptNum"></span>
+            <strong class="card-opt-name" id="cardOptName"></strong>
+        </div>
+        <button type="button" id="closeCardOptBtn" class="card-opt-close" aria-label="Close">✕</button>
+    </div>
+    <div class="card-opt-current" id="cardOptCurrent"></div>
+    <div class="card-opt-buttons">
+        <button type="button" class="card-opt-btn double-btn" data-qty="2">
+            <span>Declare Double</span>
+            <span class="card-opt-badge">2x</span>
+        </button>
+        <button type="button" class="card-opt-btn triple-btn" data-qty="3">
+            <span>Declare Triple</span>
+            <span class="card-opt-badge">3x</span>
+        </button>
+        <button type="button" class="card-opt-btn single-btn" data-qty="1">
+            <span>Keep as Single</span>
+            <span class="card-opt-badge">1x</span>
+        </button>
+        <button type="button" class="card-opt-btn remove-btn" data-qty="0">
+            <span>Remove from Collection</span>
+            <span class="card-opt-badge">0</span>
+        </button>
+    </div>
+    <div class="card-opt-custom-row">
+        <span>Other amount:</span>
+        <input type="number" id="cardOptCustomInput" min="0" max="99" value="4">
+        <button type="button" id="cardOptCustomBtn">Set</button>
+    </div>
+</dialog>
+
+<!-- WIKIPEDIA PLAYER MODAL -->
+<dialog id="wikiDialog" class="wiki-dialog">
+    <div class="wiki-header">
+        <div class="wiki-title-wrap">
+            <span class="wiki-icon">🌐</span>
+            <div>
+                <h3 id="wikiPlayerTitle">Player Bio</h3>
+                <span class="wiki-subtitle" id="wikiPlayerSubtitle">Wikipedia NHL Biography</span>
+            </div>
+        </div>
+        <button type="button" id="closeWikiBtn" class="card-opt-close" aria-label="Close">✕</button>
+    </div>
+    <div class="wiki-content" id="wikiContent">
+        <div style="display:flex; align-items:center; gap:12px; padding:20px; justify-content:center; color:var(--muted);">
+            <span>Loading Wikipedia article...</span>
+        </div>
+    </div>
+    <div class="wiki-footer">
+        <span class="wiki-hint">💡 Push and hold any card to view Wikipedia bio</span>
+        <div style="display:flex; gap:8px;">
+            <a href="#" target="_blank" rel="noopener noreferrer" id="wikiFullLink" class="wiki-full-btn">Read on Wikipedia ↗</a>
+            <button type="button" id="dismissWikiBtn">Close</button>
+        </div>
+    </div>
+</dialog>
+
 <script>
     const state = {
         series: '2026-27',  // active series: '2026-27' or '2025-26'
@@ -1369,6 +1914,7 @@ if (empty($_COOKIE['cards_session'])) {
         viewId: null,       // number (user_id) or 'team'
         cards: [],
         filter: 'all',
+        layout: localStorage.getItem('cards_layout') || 'page', // 'page' (3x3 binder sheet) or 'list'
         collapsed: new Set(),
         teamSummary: null,
     };
@@ -1409,15 +1955,12 @@ if (empty($_COOKIE['cards_session'])) {
 
     async function checkAuthAndInit() {
         try {
-            const me = await api('me').catch(() => null);
-            if (!me) {
-                window.location.replace('./');
-                return;
-            }
-            state.currentUser = me;
-            state.userId = me.id;
-            state.viewId = me.id;
+            // Apply saved layout button state
+            document.querySelectorAll('.layout-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.layout === state.layout);
+            });
 
+            const me = await api('me').catch(() => null);
             const [usersData, teamsData] = await Promise.all([
                 api('get_users').catch(() => []),
                 api('get_teams').catch(() => [])
@@ -1425,13 +1968,24 @@ if (empty($_COOKIE['cards_session'])) {
             state.users = usersData;
             state.teams = teamsData;
 
+            if (me) {
+                state.currentUser = me;
+                state.userId = me.id;
+                state.viewId = me.id;
+            } else {
+                // Stranger / Public Guest: display Bronzo's collection openly
+                state.currentUser = null;
+                state.userId = null;
+                const bronzo = state.users.find(u => (u.collector_name || '').toLowerCase() === 'bronzo') || state.users[0];
+                state.viewId = bronzo ? bronzo.id : null;
+            }
+
             populateTeamDropdowns();
             renderAccountInfo();
             renderViewSelect();
             await Promise.all([loadTeamSummary(), loadCards()]);
         } catch (err) {
             console.error('Initialization error:', err);
-            window.location.replace('./');
         }
     }
 
@@ -1555,6 +2109,12 @@ if (empty($_COOKIE['cards_session'])) {
             topUserName.textContent = me.collector_name;
             sideUserName.textContent = me.collector_name;
 
+            const isAdmin = Boolean(me.is_admin || (me.collector_name && me.collector_name.toUpperCase() === 'ANTHONY'));
+            const adminBtn = document.getElementById('topbarAdminBtn');
+            if (adminBtn) adminBtn.hidden = !isAdmin;
+            const sideAdminLink = document.getElementById('sideAdminLink');
+            if (sideAdminLink) sideAdminLink.hidden = !isAdmin;
+
             if (me.team_name) {
                 topUserTeam.textContent = `Team: ${me.team_name}`;
                 sideUserTeamBadge.textContent = `Team: ${me.team_name}`;
@@ -1636,42 +2196,55 @@ if (empty($_COOKIE['cards_session'])) {
 
     function renderViewSelect() {
         const view = document.getElementById('viewSelect');
+        if (!view) return;
         const me = state.currentUser;
-        if (!me) return;
 
         let html = '';
-        html += `<option value="${me.id}">${state.viewId === me.id ? '✓ ' : ''}My collection</option>`;
+        if (me) {
+            html += `<option value="${me.id}">${state.viewId === me.id ? '✓ ' : ''}My collection</option>`;
 
-        if (me.team_name) {
-            html += `<option value="team">${state.viewId === 'team' ? '✓ ' : ''}👥 Team ${esc(me.team_name)} (Combined Progress)</option>`;
+            if (me.team_name) {
+                html += `<option value="team">${state.viewId === 'team' ? '✓ ' : ''}👥 Team ${esc(me.team_name)} (Combined Progress)</option>`;
 
-            // Teammates on the same team
-            const teammates = state.users.filter(u => u.team_name === me.team_name && u.id !== me.id);
-            if (teammates.length > 0) {
-                html += `<optgroup label="Teammates (${esc(me.team_name)})">`;
-                for (const t of teammates) {
-                    html += `<option value="${t.id}">${esc(t.collector_name)}</option>`;
+                // Teammates on the same team
+                const teammates = state.users.filter(u => u.team_name === me.team_name && u.id !== me.id);
+                if (teammates.length > 0) {
+                    html += `<optgroup label="Teammates (${esc(me.team_name)})">`;
+                    for (const t of teammates) {
+                        html += `<option value="${t.id}">${esc(t.collector_name)}</option>`;
+                    }
+                    html += `</optgroup>`;
                 }
-                html += `</optgroup>`;
+            } else {
+                // No team set: allow viewing other collectors
+                const others = state.users.filter(u => u.id !== me.id);
+                if (others.length > 0) {
+                    html += `<optgroup label="Other Collectors">`;
+                    for (const o of others) {
+                        html += `<option value="${o.id}">${esc(o.collector_name)}</option>`;
+                    }
+                    html += `</optgroup>`;
+                }
             }
         } else {
-            // No team set: allow viewing other collectors
-            const others = state.users.filter(u => u.id !== me.id);
-            if (others.length > 0) {
-                html += `<optgroup label="Other Collectors">`;
-                for (const o of others) {
-                    html += `<option value="${o.id}">${esc(o.collector_name)}</option>`;
-                }
-                html += `</optgroup>`;
+            // Stranger / guest viewing public collections
+            html += `<optgroup label="Public Collectors">`;
+            for (const u of state.users) {
+                const isBronzo = (u.collector_name || '').toLowerCase() === 'bronzo';
+                const prefix = isBronzo ? '⭐ ' : '';
+                html += `<option value="${u.id}">${prefix}${esc(u.collector_name)}'s collection</option>`;
             }
+            html += `</optgroup>`;
         }
 
         view.innerHTML = html;
-        view.value = String(state.viewId ?? me.id);
+        if (state.viewId) {
+            view.value = String(state.viewId);
+        }
     }
 
     function isOwn() {
-        return state.viewId === state.userId;
+        return Boolean(state.userId && state.viewId === state.userId);
     }
 
     function isTeamView() {
@@ -1680,7 +2253,7 @@ if (empty($_COOKIE['cards_session'])) {
 
     function viewedName() {
         if (isTeamView()) return `Team ${state.currentUser?.team_name ?? ''}`;
-        return state.users.find(u => u.id === state.viewId)?.collector_name ?? '';
+        return state.users.find(u => u.id === state.viewId)?.collector_name ?? (state.currentUser?.collector_name || 'Bronzo');
     }
 
     async function loadCards() {
@@ -1776,32 +2349,161 @@ if (empty($_COOKIE['cards_session'])) {
                 Cards marked with ✓ are owned by at least one teammate. Team members only see cards within their own team!
             </div>`;
         } else if (!isOwn()) {
+            const isGuest = !state.userId;
             html += `<div class="notice">
                 Viewing <strong>${esc(viewedName())}</strong>'s collection (read-only).
-                ${state.userId ? 'Cards marked <span class="need">NEED</span> are their doubles you\'re missing.' : ''}
+                ${isGuest ? 'Browse the complete 3×3 hockey card binder sheets openly! <a href="./" style="font-weight:700; color:#0284c7; text-decoration:underline;">Sign In</a> or click + Collector to track your own cards.' : (state.userId ? 'Cards marked <span class="need">NEED</span> are their doubles you\'re missing.' : '')}
             </div>`;
         }
+
+        const isPageLayout = state.layout === 'page';
 
         for (const [setName, cards] of sets) {
             const visible = cards.filter(matchesFilter);
             if (!visible.length && state.filter !== 'all') continue;
 
-            const groups = [];
-            cards.forEach((card, i) => {
-                if (!matchesFilter(card)) return;
-                (groups[Math.floor(i / 9)] ??= []).push(card);
-            });
             const have = cards.filter(c => c.quantity > 0).length;
             const setPct = Math.round(have / cards.length * 100);
             const open = state.collapsed.has(setName) ? '' : ' open';
+
+            let gridContent = '';
+            if (isPageLayout) {
+                // 3x3 Binder Page Sheets: 9 cards per sheet (Pos 1 to 9)
+                const totalPages = Math.ceil(cards.length / 9) || 1;
+                const pages = [];
+
+                for (let pIdx = 0; pIdx < totalPages; pIdx++) {
+                    const slice = cards.slice(pIdx * 9, (pIdx + 1) * 9);
+                    const pagePockets = [];
+                    let hasMatching = false;
+                    for (let pos = 1; pos <= 9; pos++) {
+                        const card = slice[pos - 1] || null;
+                        if (card) {
+                            const isMatch = matchesFilter(card);
+                            if (isMatch) hasMatching = true;
+                            pagePockets.push({ pos, card, isMatch });
+                        } else {
+                            pagePockets.push({ pos, card: null, isMatch: false });
+                        }
+                    }
+                    if (state.filter === 'all' || hasMatching) {
+                        pages.push({ pageNum: pIdx + 1, pockets: pagePockets });
+                    }
+                }
+
+                gridContent = pages.map(p => renderBinderPage(p.pockets, p.pageNum, totalPages, setName)).join('');
+            } else {
+                // List Mode: column groups
+                const groups = [];
+                cards.forEach((card, i) => {
+                    if (!matchesFilter(card)) return;
+                    (groups[Math.floor(i / 9)] ??= []).push(card);
+                });
+                gridContent = groups.filter(Boolean).map(g => `<div class="group list-group">${g.map(renderCard).join('')}</div>`).join('');
+            }
+
+            const gridClass = isPageLayout ? 'grid layout-page' : 'grid layout-list';
+
             html += `<details class="set" data-set="${esc(setName)}"${open}>
                 <summary>${esc(setName)} <span class="set-count">${have}/${cards.length}</span>
                     <span class="progress"><span style="width:${setPct}%"></span></span></summary>
-                <div class="grid">${groups.filter(Boolean).map(g => `<div class="group">${g.map(renderCard).join('')}</div>`).join('')}</div>
+                <div class="${gridClass}">${gridContent}</div>
             </details>`;
         }
         if (!html) html = '<div class="notice">No cards match the selected filter.</div>';
         container.innerHTML = html;
+    }
+
+    function renderBinderPage(pockets, pageNum, totalPages, setName) {
+        const pageCollected = pockets.filter(p => p.card && p.card.quantity > 0).length;
+        const pageTotal = pockets.filter(p => p.card).length;
+
+        let html = `<div class="binder-page">
+            <div class="binder-page-header">
+                <div class="binder-rings-punch" title="3-ring binder punch holes">
+                    <span class="ring-hole"></span>
+                    <span class="ring-hole"></span>
+                    <span class="ring-hole"></span>
+                </div>
+                <div class="binder-page-meta">
+                    <span class="binder-page-title">SHEET ${pageNum}</span>
+                    <span class="binder-page-subtitle">of ${totalPages}</span>
+                </div>
+                <span class="binder-page-badge">${pageCollected}/${pageTotal} cards</span>
+            </div>
+            <div class="binder-grid-3x3">`;
+
+        for (const pocket of pockets) {
+            if (pocket.card && (state.filter === 'all' || pocket.isMatch)) {
+                html += renderPageCard(pocket.card, pocket.pos);
+            } else {
+                html += `<div class="card page-card empty-pocket" title="Empty pocket (Position ${pocket.pos})">
+                    <div class="page-pos-tag" style="opacity:0.6;">Pos ${pocket.pos}</div>
+                    <div style="font-size:0.72rem; color:#94a3b8; font-weight:700;">Empty</div>
+                    <div></div>
+                </div>`;
+            }
+        }
+
+        html += `</div></div>`;
+        return html;
+    }
+
+    function renderPageCard(card, pos) {
+        const isTeam = isTeamView();
+        const isCollected = card.quantity >= 1;
+        const isDoubles = card.quantity >= 2;
+        const cls = isDoubles ? 'doubles' : isCollected ? 'collected' : '';
+
+        const teamTraders = card.team_doubles_by ?? [];
+        const otherTraders = card.doubles_by ?? [];
+        const traders = teamTraders.length > 0 ? teamTraders : otherTraders;
+        const holders = card.holders ?? [];
+
+        let tooltipParts = [card.player_name];
+        if (card.card_number) tooltipParts.push(`Card #${card.card_number}`);
+        tooltipParts.push(`Pocket: Position ${pos} (3x3 Sheet)`);
+        if (card.last_checked) tooltipParts.push(`Checked: ${card.last_checked}`);
+        if (holders.length > 0) tooltipParts.push(`Teammates with copies: ${holders.join(', ')}`);
+        if (teamTraders.length > 0) tooltipParts.push(`Teammate doubles: ${teamTraders.join(', ')}`);
+        else if (otherTraders.length > 0) tooltipParts.push(`Doubles: ${otherTraders.join(', ')}`);
+        tooltipParts.push('💡 Push & hold for Wikipedia bio');
+
+        let badgeText = '';
+        let badgeClass = 'card-status-badge';
+        if (isDoubles) {
+            badgeText = `${card.quantity}x`;
+        } else if (isCollected) {
+            badgeText = '✓ Owned';
+        } else {
+            badgeText = 'Missing';
+            badgeClass += ' missing';
+        }
+
+        let tradePill = '';
+        if (isOwn()) {
+            if (teamTraders.length > 0) {
+                tradePill = `<span class="trade team-trade" title="Teammates with doubles: ${esc(teamTraders.join(', '))}">⇄ ${teamTraders.length}</span>`;
+            } else if (otherTraders.length > 0) {
+                tradePill = `<span class="trade" title="Doubles: ${esc(otherTraders.join(', '))}">⇄ ${otherTraders.length}</span>`;
+            }
+        } else if (!isTeam && state.userId && card.quantity >= 2 && card.my_quantity == 0) {
+            tradePill = `<span class="need">NEED</span>`;
+        }
+
+        return `<div class="card page-card ${cls}" data-id="${card.id}" data-player="${esc(card.player_name)}" title="${esc(tooltipParts.join('\n'))}">
+            <div class="card-head">
+                <span class="page-pos-tag">Pos ${pos}</span>
+                <span class="card-num-tag">#${esc(card.card_number)}</span>
+            </div>
+            <div class="card-body">
+                <div class="card-player-title">${esc(card.player_name)}</div>
+            </div>
+            <div class="card-foot">
+                <span class="${badgeClass}">${badgeText}</span>
+                ${tradePill}
+            </div>
+        </div>`;
     }
 
     function renderCard(card) {
@@ -1819,8 +2521,9 @@ if (empty($_COOKIE['cards_session'])) {
         if (holders.length > 0) tooltipParts.push(`Teammates with copies: ${holders.join(', ')}`);
         if (teamTraders.length > 0) tooltipParts.push(`Teammate doubles: ${teamTraders.join(', ')}`);
         else if (otherTraders.length > 0) tooltipParts.push(`Doubles: ${otherTraders.join(', ')}`);
+        tooltipParts.push('💡 Push & hold for Wikipedia bio');
 
-        let html = `<div class="card ${cls}" data-id="${card.id}" title="${esc(tooltipParts.join('\n'))}">
+        let html = `<div class="card ${cls}" data-id="${card.id}" data-player="${esc(card.player_name)}" title="${esc(tooltipParts.join('\n'))}">
             <span class="num">${esc(card.card_number)}</span>
             <span class="name">${esc(card.player_name)}</span>`;
 
@@ -1835,9 +2538,6 @@ if (empty($_COOKIE['cards_session'])) {
         }
 
         html += `<span class="qty">${qty}</span>`;
-        if (isOwn() && card.quantity > 0) {
-            html += `<button class="minus" aria-label="Remove one">−</button>`;
-        }
         html += `</div>`;
 
         if (isTeam && holders.length > 0) {
@@ -1850,14 +2550,16 @@ if (empty($_COOKIE['cards_session'])) {
         return html;
     }
 
-    async function adjustCard(cardId, delta) {
+    let activeOptionCardId = null;
+
+    async function setCardQuantity(cardId, quantity) {
         if (!state.userId) {
             showLoginGate();
             return;
         }
         if (!isOwn()) {
             if (isTeamView()) {
-                toast("Switch Viewing to 'My collection' to add or remove your cards");
+                toast("Switch Viewing to 'My collection' to edit your cards");
             } else {
                 toast(`This is ${viewedName()}'s collection — switch Viewing to 'My collection' to edit`);
             }
@@ -1865,7 +2567,7 @@ if (empty($_COOKIE['cards_session'])) {
         }
         let data;
         try {
-            data = await api('adjust_card', {}, { card_id: cardId, delta });
+            data = await api('set_card_quantity', {}, { card_id: cardId, quantity: quantity });
         } catch (err) {
             toast(err.message);
             return;
@@ -1877,6 +2579,29 @@ if (empty($_COOKIE['cards_session'])) {
         }
         render();
         loadTeamSummary();
+    }
+
+    function openCardOptions(card) {
+        activeOptionCardId = card.id;
+        const dialog = document.getElementById('cardOptionsDialog');
+        document.getElementById('cardOptNum').textContent = card.card_number ? `#${card.card_number} ` : '';
+        document.getElementById('cardOptName').textContent = card.player_name || 'Card Options';
+
+        let statusText = 'Currently: Not in collection';
+        if (card.quantity === 1) statusText = 'Currently: 1 copy (Single)';
+        else if (card.quantity === 2) statusText = 'Currently: 2 copies (Double)';
+        else if (card.quantity === 3) statusText = 'Currently: 3 copies (Triple)';
+        else if (card.quantity > 3) statusText = `Currently: ${card.quantity} copies`;
+        document.getElementById('cardOptCurrent').textContent = statusText;
+
+        document.getElementById('cardOptCustomInput').value = Math.max(4, card.quantity + 1);
+
+        dialog.querySelectorAll('.card-opt-btn').forEach(btn => {
+            const btnQty = Number(btn.dataset.qty);
+            btn.classList.toggle('active', btnQty === card.quantity);
+        });
+
+        dialog.showModal();
     }
 
 
@@ -1935,10 +2660,225 @@ if (empty($_COOKIE['cards_session'])) {
         }
     });
 
-    // Main Card Clicks
-    document.getElementById('cardsContainer').addEventListener('click', e => {
+    // Layout Switcher
+    function setLayout(newLayout) {
+        state.layout = newLayout;
+        try { localStorage.setItem('cards_layout', newLayout); } catch (e) {}
+        document.querySelectorAll('.layout-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.layout === newLayout);
+        });
+        render();
+    }
+
+    document.querySelectorAll('.layout-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            setLayout(btn.dataset.layout);
+        });
+    });
+
+    // Wikipedia Player Bio Modal & Push-and-Hold
+    const wikiDialog = document.getElementById('wikiDialog');
+    if (wikiDialog) {
+        document.getElementById('closeWikiBtn')?.addEventListener('click', () => wikiDialog.close());
+        document.getElementById('dismissWikiBtn')?.addEventListener('click', () => wikiDialog.close());
+        wikiDialog.addEventListener('click', e => {
+            if (e.target === wikiDialog) wikiDialog.close();
+        });
+    }
+
+    async function openWikipediaModal(card) {
+        if (!wikiDialog) return;
+        const titleEl = document.getElementById('wikiPlayerTitle');
+        const subtitleEl = document.getElementById('wikiPlayerSubtitle');
+        const contentEl = document.getElementById('wikiContent');
+        const fullLink = document.getElementById('wikiFullLink');
+
+        titleEl.textContent = card.player_name;
+        subtitleEl.textContent = card.card_number ? `Card #${card.card_number} • ${card.set_name || 'Tim Hortons'}` : 'Wikipedia NHL Bio';
+        fullLink.href = `https://en.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(card.player_name)}`;
+        contentEl.innerHTML = `
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 16px; gap:12px; color:var(--muted);">
+                <div style="font-size:2.4rem;">🏒</div>
+                <div>Loading Wikipedia biography for <strong>${esc(card.player_name)}</strong>...</div>
+            </div>
+        `;
+
+        wikiDialog.showModal();
+
+        try {
+            const data = await api('wiki_player', { name: card.player_name });
+            if (data && data.wiki_url) fullLink.href = data.wiki_url;
+
+            let imgHtml = '';
+            if (data && data.thumbnail) {
+                imgHtml = `<img src="${esc(data.thumbnail)}" alt="${esc(data.title || card.player_name)}" class="wiki-player-img" loading="lazy">`;
+            } else {
+                imgHtml = `<div class="wiki-player-img" style="display:flex; align-items:center; justify-content:center; font-size:2.2rem; color:#94a3b8;">🏒</div>`;
+            }
+
+            const desc = (data && data.description) ? `<div class="wiki-player-desc">${esc(data.description)}</div>` : '';
+            const extract = (data && data.extract) ? `<div class="wiki-extract">${esc(data.extract)}</div>` : `<div class="wiki-extract" style="color:var(--muted);">No biography extract available on Wikipedia.</div>`;
+
+            contentEl.innerHTML = `
+                <div class="wiki-player-card">
+                    ${imgHtml}
+                    <div class="wiki-player-info">
+                        ${desc}
+                        ${extract}
+                    </div>
+                </div>
+            `;
+        } catch (err) {
+            contentEl.innerHTML = `
+                <div style="padding:18px; text-align:center; color:var(--muted);">
+                    <p>Could not load Wikipedia bio: ${esc(err.message)}</p>
+                    <p><a href="https://en.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(card.player_name)}" target="_blank" rel="noopener noreferrer" style="color:#0284c7; font-weight:700;">Search "${esc(card.player_name)}" directly on Wikipedia ↗</a></p>
+                </div>
+            `;
+        }
+    }
+
+    let holdTimer = null;
+    let holdTargetCard = null;
+    let longPressTriggered = false;
+    let holdStartX = 0;
+    let holdStartY = 0;
+
+    function clearCardHold() {
+        if (holdTimer) {
+            clearTimeout(holdTimer);
+            holdTimer = null;
+        }
+        if (holdTargetCard) {
+            holdTargetCard.classList.remove('holding');
+            holdTargetCard = null;
+        }
+    }
+
+    function startCardHold(e, cardEl) {
+        if (!cardEl || cardEl.classList.contains('empty-pocket')) return;
+        clearCardHold();
+        longPressTriggered = false;
+        holdTargetCard = cardEl;
+
+        const point = (e.touches && e.touches.length > 0) ? e.touches[0] : e;
+        holdStartX = point.clientX;
+        holdStartY = point.clientY;
+
+        holdTargetCard.classList.add('holding');
+
+        holdTimer = setTimeout(() => {
+            longPressTriggered = true;
+            const cardId = Number(cardEl.dataset.id);
+            const card = state.cards.find(c => c.id === cardId);
+            clearCardHold();
+            if (card) {
+                openWikipediaModal(card);
+            }
+        }, 460);
+    }
+
+    const cardsContainerEl = document.getElementById('cardsContainer');
+
+    cardsContainerEl.addEventListener('touchstart', e => {
+        const cardEl = e.target.closest('.card');
+        if (cardEl) startCardHold(e, cardEl);
+    }, { passive: true });
+
+    cardsContainerEl.addEventListener('touchmove', e => {
+        if (!holdTimer) return;
+        const point = e.touches[0];
+        if (Math.hypot(point.clientX - holdStartX, point.clientY - holdStartY) > 10) {
+            clearCardHold();
+        }
+    }, { passive: true });
+
+    cardsContainerEl.addEventListener('touchend', () => {
+        setTimeout(clearCardHold, 60);
+    });
+
+    cardsContainerEl.addEventListener('touchcancel', clearCardHold);
+
+    cardsContainerEl.addEventListener('mousedown', e => {
+        if (e.button !== 0) return; // primary left click only
+        const cardEl = e.target.closest('.card');
+        if (cardEl) startCardHold(e, cardEl);
+    });
+
+    window.addEventListener('mousemove', e => {
+        if (!holdTimer) return;
+        if (Math.hypot(e.clientX - holdStartX, e.clientY - holdStartY) > 8) {
+            clearCardHold();
+        }
+    });
+
+    window.addEventListener('mouseup', () => {
+        setTimeout(clearCardHold, 60);
+    });
+
+    // Main Card Clicks: if unchecked -> check it; if already checked -> open options overlay
+    cardsContainerEl.addEventListener('click', e => {
+        if (longPressTriggered) {
+            longPressTriggered = false;
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
         const tile = e.target.closest('.card');
-        if (tile) adjustCard(Number(tile.dataset.id), e.target.closest('.minus') ? -1 : 1);
+        if (!tile || tile.classList.contains('empty-pocket')) return;
+        const cardId = Number(tile.dataset.id);
+        const card = state.cards.find(c => c.id === cardId);
+        if (!card) return;
+
+        if (!state.userId) {
+            showLoginGate();
+            return;
+        }
+        if (!isOwn()) {
+            if (isTeamView()) {
+                toast("Switch Viewing to 'My collection' to edit your cards");
+            } else {
+                toast(`This is ${viewedName()}'s collection — switch Viewing to 'My collection' to edit`);
+            }
+            return;
+        }
+
+        if (card.quantity === 0) {
+            // First push: mark as checked (1x)
+            setCardQuantity(cardId, 1);
+        } else {
+            // Already checked and pushed again: show options overlay
+            openCardOptions(card);
+        }
+    });
+
+    // Card Options Overlay Dialog handlers
+    const cardOptionsDialog = document.getElementById('cardOptionsDialog');
+    document.getElementById('closeCardOptBtn').addEventListener('click', () => cardOptionsDialog.close());
+    cardOptionsDialog.addEventListener('click', e => {
+        if (e.target === cardOptionsDialog) cardOptionsDialog.close();
+    });
+
+    cardOptionsDialog.querySelectorAll('.card-opt-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (!activeOptionCardId) return;
+            const targetQty = Number(btn.dataset.qty);
+            const cardId = activeOptionCardId;
+            cardOptionsDialog.close();
+            setCardQuantity(cardId, targetQty);
+        });
+    });
+
+    document.getElementById('cardOptCustomBtn').addEventListener('click', () => {
+        if (!activeOptionCardId) return;
+        const val = parseInt(document.getElementById('cardOptCustomInput').value, 10);
+        if (isNaN(val) || val < 0 || val > 99) {
+            toast('Please enter a quantity between 0 and 99');
+            return;
+        }
+        const cardId = activeOptionCardId;
+        cardOptionsDialog.close();
+        setCardQuantity(cardId, val);
     });
 
     // Details accordion toggle
