@@ -3364,6 +3364,364 @@
                 font-size: 0.64rem;
             }
         }
+
+        /* ==========================================================
+           DIGIKEY-STYLE PARAMETRIC INVENTORY FILTER
+           ========================================================== */
+        .inventory-filter-section {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: #1e293b;
+            overflow: hidden;
+        }
+        .ifs-header-bar {
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .ifs-title-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .ifs-breadcrumbs {
+            font-size: 0.74rem;
+            color: #64748b;
+        }
+        .ifs-breadcrumbs span {
+            color: #94a3b8;
+            margin: 0 4px;
+        }
+        .ifs-main-title {
+            font-size: 1.12rem;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.01em;
+            margin: 2px 0 0;
+        }
+        .ifs-controls-top {
+            padding: 10px 14px 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #f1f5f9;
+            background: #ffffff;
+        }
+        .ifs-search-within-wrap {
+            display: flex;
+            align-items: center;
+            position: relative;
+            min-width: 260px;
+            max-width: 420px;
+            flex: 1;
+        }
+        .ifs-search-input {
+            width: 100%;
+            padding: 7px 34px 7px 12px;
+            font-size: 0.85rem;
+            border: 1px solid #94a3b8;
+            border-radius: 4px;
+            outline: none;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .ifs-search-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
+        }
+        .ifs-search-icon {
+            position: absolute;
+            right: 10px;
+            pointer-events: none;
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+        .ifs-results-count {
+            font-size: 0.9rem;
+            color: #334155;
+        }
+        .ifs-results-count strong {
+            font-size: 1.12rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .ifs-view-toggles {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: #64748b;
+            font-weight: 600;
+        }
+        .ifs-mode-btn-group {
+            display: inline-flex;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .ifs-mode-btn {
+            background: #fff;
+            border: none;
+            padding: 4px 10px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .ifs-mode-btn:hover {
+            background: #f1f5f9;
+        }
+        .ifs-mode-btn.active {
+            background: #1e293b;
+            color: #ffffff;
+        }
+        .ifs-toggle-panel-btn {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .ifs-toggle-panel-btn:hover {
+            background: #dbeafe;
+        }
+
+        /* Parametric Columns Wrapper (Scrolling vs Stacked) */
+        .ifs-columns-wrapper {
+            padding: 12px 14px;
+            background: #fafafa;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .ifs-columns-wrapper.mode-scrolling {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 14px;
+            scrollbar-width: thin;
+            scrollbar-color: #94a3b8 #f1f5f9;
+        }
+        .ifs-columns-wrapper.mode-scrolling::-webkit-scrollbar {
+            height: 10px;
+        }
+        .ifs-columns-wrapper.mode-scrolling::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        .ifs-columns-wrapper.mode-scrolling::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 4px;
+        }
+        .ifs-columns-wrapper.mode-stacked {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+            gap: 12px;
+        }
+
+        /* Individual Parametric Box Column */
+        .ifs-col {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 3px;
+            display: flex;
+            flex-direction: column;
+            min-width: 195px;
+            max-width: 230px;
+            flex-shrink: 0;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        }
+        .ifs-columns-wrapper.mode-stacked .ifs-col {
+            min-width: 0;
+            max-width: none;
+        }
+        .ifs-col-head {
+            background: #eaeff5;
+            border-bottom: 1px solid #cbd5e1;
+            padding: 6px 10px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: #1e293b;
+            letter-spacing: 0.02em;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .ifs-col-search-box {
+            padding: 5px 8px;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+        .ifs-col-search-input {
+            width: 100%;
+            padding: 4px 6px;
+            font-size: 0.76rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 3px;
+            box-sizing: border-box;
+            outline: none;
+        }
+        .ifs-col-search-input:focus {
+            border-color: #2563eb;
+        }
+        .ifs-col-list {
+            padding: 4px 0;
+            max-height: 195px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+        .ifs-col-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .ifs-col-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        .ifs-col-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            font-size: 0.77rem;
+            color: #1e293b;
+            cursor: pointer;
+            transition: background 0.1s ease;
+            user-select: none;
+        }
+        .ifs-col-item:hover {
+            background: #f1f5f9;
+        }
+        .ifs-col-item.is-selected {
+            background: #eff6ff;
+            font-weight: 700;
+        }
+        .ifs-col-item input[type="checkbox"] {
+            margin: 0;
+            cursor: pointer;
+            accent-color: #2563eb;
+        }
+        .ifs-item-text {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .ifs-item-count {
+            font-size: 0.72rem;
+            color: #64748b;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Bottom Action Bar */
+        .ifs-actions-bar {
+            background: #ffffff;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .ifs-actions-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .ifs-apply-btn {
+            background: #e02424;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            padding: 9px 24px;
+            font-size: 0.94rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background 0.15s ease, transform 0.1s ease;
+            box-shadow: 0 2px 6px rgba(224, 36, 36, 0.35);
+        }
+        .ifs-apply-btn:hover {
+            background: #c81e1e;
+        }
+        .ifs-apply-btn:active {
+            transform: scale(0.98);
+        }
+        .ifs-reset-btn {
+            background: transparent;
+            color: #0284c7;
+            border: none;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: underline;
+            padding: 4px 6px;
+        }
+        .ifs-reset-btn:hover {
+            color: #0369a1;
+        }
+        .ifs-actions-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .ifs-showing-text {
+            font-size: 0.84rem;
+            color: #475569;
+        }
+        .ifs-showing-text strong {
+            color: #0f172a;
+        }
+        .ifs-sort-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.82rem;
+            color: #475569;
+            font-weight: 700;
+        }
+        .ifs-sort-select {
+            padding: 5px 8px;
+            font-size: 0.82rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            background: #fff;
+            color: #0f172a;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+        }
+        .ifs-download-btn {
+            background: #ffffff;
+            border: 1px solid #94a3b8;
+            border-radius: 4px;
+            color: #0f172a;
+            font-size: 0.82rem;
+            font-weight: 700;
+            padding: 6px 14px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s ease;
+        }
+        .ifs-download-btn:hover {
+            background: #f8fafc;
+            border-color: #64748b;
+        }
+    </style>
 </head>
 <body>
 
@@ -3512,6 +3870,141 @@
         </header>
 
         <main id="main">
+            <!-- PARAMETRIC INVENTORY FILTER (DigiKey-style) -->
+            <section class="inventory-filter-section" id="inventoryFilterSection" aria-label="Parametric Inventory and Checklist Filter">
+                <div class="ifs-header-bar">
+                    <div class="ifs-title-group">
+                        <div>
+                            <div class="ifs-breadcrumbs">Product Index <span>›</span> Cards & Collectibles <span>›</span> <strong id="ifsBreadcrumbSeries">2026-27 UD Tim Hortons</strong></div>
+                            <h2 class="ifs-main-title">Inventory & Checklist Filter</h2>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <button type="button" class="ifs-toggle-panel-btn" id="ifsCollapseBtn">▲ Hide Filters</button>
+                    </div>
+                </div>
+
+                <div class="ifs-body" id="ifsBody">
+                    <div class="ifs-controls-top">
+                        <div class="ifs-search-within-wrap">
+                            <input type="search" id="ifsSearchWithin" class="ifs-search-input" placeholder="Search Within (Player, Card #, Subset...)" autocomplete="off">
+                            <span class="ifs-search-icon">🔍</span>
+                        </div>
+                        <div class="ifs-results-count">Results: <strong id="ifsTopResultsCount">135</strong></div>
+                        <div class="ifs-view-toggles">
+                            <span>Filters</span>
+                            <div class="ifs-mode-btn-group">
+                                <button type="button" class="ifs-mode-btn" id="ifsModeStacked">Stacked</button>
+                                <button type="button" class="ifs-mode-btn active" id="ifsModeScrolling">Scrolling</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Parametric Columns Row -->
+                    <div class="ifs-columns-wrapper mode-scrolling" id="ifsColumnsWrapper">
+                        <!-- Column 1: Common Attributes / Collection Status -->
+                        <div class="ifs-col" data-col="status">
+                            <div class="ifs-col-head">Common Attributes</div>
+                            <div class="ifs-col-list" id="ifsColStatusList">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Column 2: Subset / Insert Series -->
+                        <div class="ifs-col" data-col="subsets">
+                            <div class="ifs-col-head">Subsets / Series</div>
+                            <div class="ifs-col-search-box">
+                                <input type="text" class="ifs-col-search-input" placeholder="Search Filter" data-target="ifsColSubsetsList">
+                            </div>
+                            <div class="ifs-col-list" id="ifsColSubsetsList">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Column 3: Season / Series Year -->
+                        <div class="ifs-col" data-col="series">
+                            <div class="ifs-col-head">Checklist Year</div>
+                            <div class="ifs-col-list" id="ifsColSeriesList">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Column 4: Card Number Range -->
+                        <div class="ifs-col" data-col="ranges">
+                            <div class="ifs-col-head">Card Number Range</div>
+                            <div class="ifs-col-list" id="ifsColRangesList">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Column 5: Scarcity / Popularity Tier -->
+                        <div class="ifs-col" data-col="scarcity">
+                            <div class="ifs-col-head">Circulation / Scarcity</div>
+                            <div class="ifs-col-list" id="ifsColScarcityList">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Column 6: Quantity in Collection -->
+                        <div class="ifs-col" data-col="quantity">
+                            <div class="ifs-col-head">Quantity in Deck</div>
+                            <div class="ifs-col-list" id="ifsColQuantityList">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Column 7: Player Name -->
+                        <div class="ifs-col" data-col="players">
+                            <div class="ifs-col-head">Player Name</div>
+                            <div class="ifs-col-search-box">
+                                <input type="text" class="ifs-col-search-input" placeholder="Search Filter" data-target="ifsColPlayersList">
+                            </div>
+                            <div class="ifs-col-list" id="ifsColPlayersList">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Column 8: Trading Partner Doubles -->
+                        <div class="ifs-col" data-col="partners">
+                            <div class="ifs-col-head">Partner Doubles (Trade)</div>
+                            <div class="ifs-col-search-box">
+                                <input type="text" class="ifs-col-search-input" placeholder="Search Filter" data-target="ifsColPartnersList">
+                            </div>
+                            <div class="ifs-col-list" id="ifsColPartnersList">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Action Bar -->
+                    <div class="ifs-actions-bar">
+                        <div class="ifs-actions-left">
+                            <button type="button" class="ifs-apply-btn" id="ifsApplyBtn">Apply All</button>
+                            <button type="button" class="ifs-reset-btn" id="ifsResetBtn">Clear / Reset</button>
+                            <span class="ifs-results-count"><strong id="ifsBottomResultsCount">135</strong> Results</span>
+                        </div>
+                        <div class="ifs-actions-right">
+                            <span class="ifs-showing-text" id="ifsShowingText">Showing <strong>135</strong> of 135 Cards</span>
+                            <div class="ifs-sort-wrap">
+                                <span>Sort By:</span>
+                                <select id="ifsSortBy" class="ifs-sort-select">
+                                    <option value="featured">Featured (Checklist Order)</option>
+                                    <option value="num_asc">Card # (Ascending 1 → 100)</option>
+                                    <option value="num_desc">Card # (Descending 100 → 1)</option>
+                                    <option value="player_asc">Player Name (A → Z)</option>
+                                    <option value="player_desc">Player Name (Z → A)</option>
+                                    <option value="set_asc">Subset Name (A → Z)</option>
+                                    <option value="qty_desc">Quantity Owned (High → Low)</option>
+                                    <option value="hot_desc">Popularity Site-wide (Most Owned)</option>
+                                    <option value="rare_desc">Rarity Site-wide (Fewest Owned)</option>
+                                </select>
+                            </div>
+                            <button type="button" class="ifs-download-btn" id="ifsDownloadTableBtn" title="Download current filtered checklist table as CSV">📥 Download Table</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- DYNAMIC CARDS CONTAINER -->
             <div id="cardsContainer"></div>
         </main>
