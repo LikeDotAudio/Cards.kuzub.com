@@ -90,6 +90,7 @@ if (!$hasIsAdmin) {
     $pdo->exec("ALTER TABLE users ADD COLUMN is_admin TINYINT(1) NOT NULL DEFAULT 0");
 }
 $pdo->exec("UPDATE users SET is_admin = 1 WHERE UPPER(collector_name) = 'ANTHONY'");
+$pdo->exec("UPDATE users SET collector_name = 'doofenshmirtz evil inc' WHERE collector_name = 'Josh'");
 
 $hasEmail = $pdo->query("SHOW COLUMNS FROM users LIKE 'email'")->fetch();
 if (!$hasEmail) {

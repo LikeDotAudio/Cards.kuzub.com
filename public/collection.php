@@ -1158,104 +1158,116 @@
         .series-chips-row {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 8px;
+            gap: 4px;
+            max-height: 180px;
+            overflow-y: auto;
+            padding-right: 2px;
         }
         .series-chip {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 4px 9px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
+            justify-content: space-between;
+            gap: 5px;
+            padding: 3px 6px;
+            border-radius: 5px;
+            border: 1px solid #cbd5e1;
             background: #f8fafc;
-            font-size: 0.78rem;
-            font-weight: 700;
             color: #334155;
+            font-size: 0.72rem;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.15s ease;
+            flex: 1 1 calc(50% - 4px);
+            min-width: 95px;
+            line-height: 1.15;
         }
         .series-chip:hover {
-            background: #f1f5f9;
-            border-color: #94a3b8;
-            transform: translateY(-1px);
+            background: #f0f9ff;
+            border-color: #0284c7;
+            color: #0369a1;
         }
         .series-chip.active {
             background: #0284c7;
             color: #ffffff;
             border-color: #0284c7;
-            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+            box-shadow: 0 1px 4px rgba(2, 132, 199, 0.3);
+            font-weight: 700;
+        }
+        .series-chip .chip-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 72px;
         }
         .series-chip .chip-count {
-            font-size: 0.7rem;
-            opacity: 0.9;
-            background: rgba(0,0,0,0.07);
-            padding: 1px 5px;
-            border-radius: 4px;
-            font-weight: 600;
+            font-size: 0.62rem;
+            opacity: 0.95;
+            background: rgba(0, 0, 0, 0.07);
+            padding: 1px 4px;
+            border-radius: 999px;
+            font-weight: 700;
+            flex-shrink: 0;
         }
         .series-chip.active .chip-count {
-            background: rgba(255,255,255,0.25);
+            background: rgba(255, 255, 255, 0.28);
             color: #fff;
         }
 
         /* Sub-list row for Sheet/Number quick jumps */
         .series-sublist-row {
-            background: #f8fafc;
+            background: #f1f5f9;
             border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 7px 10px;
+            border-radius: 6px;
+            padding: 6px 8px;
             display: flex;
-            align-items: center;
-            gap: 10px;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+            flex-direction: column;
+            gap: 4px;
         }
         .sublist-lead {
-            font-size: 0.74rem;
+            font-size: 0.68rem;
             font-weight: 800;
             color: #1e293b;
             white-space: nowrap;
-            flex-shrink: 0;
         }
         .sublist-pills-wrap {
             display: flex;
-            align-items: center;
-            gap: 5px;
-            overflow-x: auto;
+            flex-wrap: wrap;
+            gap: 4px;
+            max-height: 140px;
+            overflow-y: auto;
             padding: 2px 0;
         }
         .sublist-jump-btn {
             display: inline-flex;
-            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 3px 8px;
-            border-radius: 5px;
+            justify-content: space-between;
+            gap: 4px;
+            padding: 2px 6px;
+            border-radius: 4px;
             border: 1px solid #cbd5e1;
             background: #ffffff;
             cursor: pointer;
             white-space: nowrap;
             transition: all 0.15s ease;
-            flex-shrink: 0;
             line-height: 1.15;
+            flex: 1 1 calc(50% - 4px);
+            min-width: 88px;
         }
         .sublist-jump-btn:hover {
             background: #0284c7;
             color: #fff;
             border-color: #0284c7;
-            transform: translateY(-1px);
             box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
         }
         .sublist-jump-btn:hover .jump-card-range {
-            color: rgba(255,255,255,0.9);
+            color: rgba(255, 255, 255, 0.9);
         }
         .jump-sheet-num {
-            font-size: 0.72rem;
+            font-size: 0.68rem;
             font-weight: 800;
         }
         .jump-card-range {
-            font-size: 0.64rem;
+            font-size: 0.6rem;
             font-weight: 700;
             color: var(--muted);
         }
@@ -2116,6 +2128,15 @@
                 </nav>
             </div>
 
+            <!-- Series Quick Links & Sheet Jump Menu ("to the left side at the top once the deck has been chosen") -->
+            <nav class="series-nav-panel left-bar-series-nav" id="seriesNavPanel" aria-label="Series quick links and sheet jump menu">
+                <div class="series-nav-header">
+                    <span class="series-nav-title">⚡ Subsets & Quick Jump</span>
+                </div>
+                <div class="series-chips-row" id="seriesChipsRow"></div>
+                <div class="series-sublist-row" id="seriesSublistRow"></div>
+            </nav>
+
             <!-- Team Hub Section -->
             <div class="team-hub" id="teamHubSection" hidden>
                 <div class="team-hub-header">
@@ -2223,16 +2244,6 @@
                     <div id="vuStatTeam"><span id="vuStatTeamNum">0</span><span id="vuStatTeamPct">0%</span></div>
                 </div>
             </div>
-
-            <!-- SERIES QUICK LINKS & SUB-LIST JUMP MENU ("use all this real estate to be serias quick links, menu quick jump to those pages and those numbers") -->
-            <nav class="series-nav-panel" id="seriesNavPanel" aria-label="Series quick links and sheet jump menu">
-                <div class="series-nav-header">
-                    <span class="series-nav-title">⚡ Series Quick Links</span>
-                    <span class="series-nav-hint">Click a series to jump, or select a sheet and numbers below:</span>
-                </div>
-                <div class="series-chips-row" id="seriesChipsRow"></div>
-                <div class="series-sublist-row" id="seriesSublistRow"></div>
-            </nav>
 
             <!-- DYNAMIC CARDS CONTAINER -->
             <div id="cardsContainer"></div>
@@ -3723,6 +3734,7 @@
                     targetEl.classList.add('jump-highlight');
                     setTimeout(() => targetEl.classList.remove('jump-highlight'), 1600);
                 }
+                if (window.innerWidth <= 1080) closeSidebar();
             }
         });
     }
