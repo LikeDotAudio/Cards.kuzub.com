@@ -2115,6 +2115,22 @@
             color: var(--text-color);
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
+        .layout-btn-mc {
+            letter-spacing: -0.01em;
+        }
+        .layout-btn-mc .layout-btn-mc-icon {
+            font-size: 0.85em;
+            display: inline-block;
+        }
+        .layout-btn-mc.active {
+            background: #13683a !important; /* Signature McMaster Hunter Green */
+            color: #ffffff !important;
+            box-shadow: 0 1px 3px rgba(19, 104, 58, 0.35);
+        }
+        .layout-btn-mc:hover:not(.active) {
+            color: #13683a;
+            background: rgba(19, 104, 58, 0.08);
+        }
 
         /* Card tiles: Grid layouts */
         /* 2-Page Binder Spread: "two pages... put them upwards if there is room" */
@@ -4689,7 +4705,8 @@
                 <div class="topbar-layout-switcher layout-switcher" id="topbarLayoutSwitcher" title="View Layout Style">
                     <button type="button" class="layout-btn" data-layout="list" title="Compact List view">☰ List</button>
                     <button type="button" class="layout-btn" data-layout="page" title="3x3 Binder Page Sheet view">📄 3×3 by Filter</button>
-                    <button type="button" class="layout-btn" data-layout="job" title="🛠️ By Job: McMaster-Carr Catalog Lens with Player Roles, Specs & Timelines">🛠️ By Job</button>
+                    <button type="button" class="layout-btn layout-btn-mc" data-layout="job" data-job-mode="visual" title="McMaster Visual Grid with Player Cards & Roles"><span class="layout-btn-mc-icon">🖼️</span> Visual Catalog</button>
+                    <button type="button" class="layout-btn layout-btn-mc" data-layout="job" data-job-mode="table" title="McMaster Engineering Specification Table with Timelines & Specs"><span class="layout-btn-mc-icon">📊</span> Engineering Specs Table</button>
                 </div>
 
                 <button type="button" id="newCollectorTopbarBtn" class="primary">+ Collector</button>
@@ -5023,7 +5040,8 @@
             <div class="layout-switcher right-bar-layout-switcher" id="layoutSwitcher">
                 <button type="button" class="layout-btn" data-layout="list" title="Compact List view">☰ List</button>
                 <button type="button" class="layout-btn" data-layout="page" title="3x3 Binder Page Sheet view">📄 3×3 by Filter</button>
-                <button type="button" class="layout-btn" data-layout="job" title="🛠️ By Job: McMaster-Carr Catalog Lens with Player Roles, Specs & Timelines">🛠️ By Job</button>
+                <button type="button" class="layout-btn layout-btn-mc" data-layout="job" data-job-mode="visual" title="McMaster Visual Grid with Player Cards & Roles"><span class="layout-btn-mc-icon">🖼️</span> Visual Catalog</button>
+                <button type="button" class="layout-btn layout-btn-mc" data-layout="job" data-job-mode="table" title="McMaster Engineering Specification Table with Timelines & Specs"><span class="layout-btn-mc-icon">📊</span> Engineering Specs Table</button>
             </div>
         </div>
 
@@ -7176,6 +7194,11 @@
                 const newMode = btn.dataset.mcMode;
                 state.jobMode = newMode;
                 try { localStorage.setItem('cards_job_mode', newMode); } catch (e) {}
+                document.querySelectorAll('.layout-btn').forEach(lb => {
+                    const isMatch = lb.dataset.layout === 'job' &&
+                        (!lb.dataset.jobMode || lb.dataset.jobMode === state.jobMode);
+                    lb.classList.toggle('active', isMatch);
+                });
                 render();
             });
         });
@@ -7991,21 +8014,31 @@
         }
     });
 
-    // Layout Switcher
-    function setLayout(newLayout) {
-        state.layout = newLayout;
-        try { localStorage.setItem('cards_layout', newLayout); } catch (e) {}
+    function syncLayoutButtons() {
         document.querySelectorAll('.layout-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.layout === newLayout);
+            const isMatch = btn.dataset.layout === state.layout &&
+                (!btn.dataset.jobMode || btn.dataset.jobMode === state.jobMode);
+            btn.classList.toggle('active', isMatch);
         });
+    }
+
+    function setLayout(newLayout, newJobMode = null) {
+        state.layout = newLayout;
+        if (newJobMode) {
+            state.jobMode = newJobMode;
+            try { localStorage.setItem('cards_job_mode', newJobMode); } catch (e) {}
+        }
+        try { localStorage.setItem('cards_layout', newLayout); } catch (e) {}
+        syncLayoutButtons();
         render();
     }
 
     document.querySelectorAll('.layout-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            setLayout(btn.dataset.layout);
+            setLayout(btn.dataset.layout, btn.dataset.jobMode || null);
         });
     });
+    syncLayoutButtons();
 
     // Wikipedia Player Bio Modal & Push-and-Hold
     const wikiDialog = document.getElementById('wikiDialog');
