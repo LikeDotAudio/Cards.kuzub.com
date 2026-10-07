@@ -1416,10 +1416,25 @@
             font-size: 0.76rem;
             font-weight: 800;
             border-right: 1px solid #1e293b;
-            flex-shrink: 0;
+            flex: 0 0 290px;
+            width: 290px;
+            min-width: 290px;
+            max-width: 290px;
+            box-sizing: border-box;
             cursor: pointer;
             transition: background 0.15s ease;
             user-select: none;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        @media (max-width: 768px) {
+            .eft-call-chip {
+                flex: 0 0 200px;
+                width: 200px;
+                min-width: 200px;
+                max-width: 200px;
+                padding: 0 6px;
+            }
         }
         .eft-call-chip:hover {
             background: #1e293b;
@@ -1429,19 +1444,24 @@
         }
         .eft-call-lbl {
             color: #38bdf8;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.05em;
             text-transform: uppercase;
-            font-size: 0.80rem;
+            font-size: 0.78rem;
             transition: color 0.3s ease;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-shrink: 1;
         }
         .eft-call-val {
             color: #10b981;
             font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
             font-weight: 900;
-            font-size: 0.88rem;
+            font-size: 0.84rem;
             transition: color 0.3s ease, opacity 0.18s ease, transform 0.18s ease;
             white-space: nowrap;
+            flex-shrink: 0;
+            margin-left: auto;
         }
         .eft-call-chip.flipping .eft-call-val,
         .eft-call-chip.flipping .eft-call-lbl {
@@ -1450,6 +1470,7 @@
         }
         .eft-viewport {
             flex: 1;
+            min-width: 0;
             height: 100%;
             overflow: hidden;
             position: relative;
@@ -1612,24 +1633,92 @@
             z-index: 20;
             background: #fff;
             border-bottom: 1px solid var(--border-color);
-            padding: 8px 16px;
+            padding: 5px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
         .bar {
             max-width: 1600px;
+            width: 100%;
             margin: 0 auto;
             display: flex;
-            flex-wrap: wrap;
             align-items: center;
-            gap: 8px 12px;
+            justify-content: space-between;
+            gap: 8px;
         }
-        .mobile-menu-btn {
-            display: none;
+        .topbar-main-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: nowrap;
+        }
+        .topbar-left-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: nowrap;
+        }
+        .topbar-nav-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             background: #fff;
             border: 1px solid var(--border-color);
-            border-radius: 4px;
-            padding: 4px 8px;
-            font-size: 1rem;
+            border-radius: 5px;
+            padding: 3px 8px;
+            font-size: 0.95rem;
+            line-height: 1.2;
             cursor: pointer;
+            transition: all 0.15s ease;
+            color: #1e293b;
+        }
+        .topbar-nav-btn:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+        .topbar-sub-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding-top: 3px;
+            border-top: 1px solid #f1f5f9;
+        }
+        .topbar-sub-left,
+        .topbar-sub-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .topbar-sub-row h1 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 0.92rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .topbar-sub-row .overall {
+            font-size: 0.80rem;
+            color: #475569;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .topbar-sub-row select {
+            padding: 2px 6px;
+            font-size: 0.80rem;
+        }
+        .topbar-sub-row button.primary {
+            padding: 3px 8px;
+            font-size: 0.80rem;
+        }
+        .mobile-menu-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         h1 {
             margin: 0;
@@ -1666,7 +1755,13 @@
             cursor: pointer;
         }
         button.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
-        .filters { display: flex; flex-wrap: wrap; gap: 4px; }
+        .filters { display: flex; flex-wrap: nowrap; gap: 4px; }
+        .filters button {
+            padding: 3px 8px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
         .filters button.active { background: var(--text-color); border-color: var(--text-color); color: #fff; }
         .filters button.team-active { background: #0284c7; border-color: #0284c7; color: #fff; }
 
@@ -4816,25 +4911,12 @@
     <!-- CONTENT AREA -->
     <div class="content-area">
         <header class="topbar">
-            <div class="bar">
-                <button class="mobile-menu-btn" id="openSidebarBtn" aria-label="Open menu">☰</button>
-                <button type="button" class="mobile-subsets-btn" id="mobileSubsetsBtn" title="Subsets & Quick Jump">⚡ Subsets</button>
-                <h1>
-                    <span id="topbarSeriesTitle">2026-27 UD Tim Hortons</span>
-                    <span class="series-tag" id="topbarSeriesTag">$1 / account</span>
-                </h1>
+            <!-- Row 1: Primary Controls - Head emoji behind hamburger at top left, filters on left top, layout and tools on right -->
+            <div class="bar topbar-main-row">
+                <div class="topbar-left-group">
+                    <button class="topbar-nav-btn mobile-menu-btn" id="openSidebarBtn" title="Toggle left sidebar (checklist &amp; subsets)" aria-label="Open menu">☰</button>
+                    <button class="topbar-nav-btn mobile-menu-btn" id="openRightBarBtn" title="Toggle collector profile &amp; options" aria-label="Open collector options">👤</button>
 
-                <button type="button" id="newCollectorTopbarBtn" class="primary">+ Collector</button>
-
-                <label class="overall">Viewing
-                    <select id="viewSelect" aria-label="Viewing collection"></select>
-                </label>
-
-                <!-- Detailed Filter Flyout Trigger on Left ("the filters are to the left as a fly in filter. they are the detailed filter view") -->
-                <button type="button" class="ifs-flyout-trigger-btn" id="ifsFlyoutTriggerBtn" title="Detailed Filter View (Flies in from left)">⚡ Detailed Filters <span id="ifsFilterActiveBadge" class="ifs-active-badge" hidden>0</span></button>
-
-                <div class="topbar-right-cluster">
-                    <!-- Needs Filters moved all to the right ("these needs all to the right") -->
                     <div class="filters" id="filters">
                         <button data-filter="all" class="active">All</button>
                         <button data-filter="missing">Missing</button>
@@ -4843,7 +4925,10 @@
                         <button data-filter="team_needs" id="teamNeedsFilterBtn" hidden title="Cards nobody on your team has collected yet">Team Needs</button>
                     </div>
 
-                    <!-- Layout Switcher moved over to right side ("and then over to the right side") -->
+                    <button type="button" class="ifs-flyout-trigger-btn" id="ifsFlyoutTriggerBtn" title="Detailed Parametric Filter (Flies in from left)">⚡ Detailed Filters <span id="ifsFilterActiveBadge" class="ifs-active-badge" hidden>0</span></button>
+                </div>
+
+                <div class="topbar-right-cluster">
                     <div class="topbar-layout-switcher layout-switcher" id="topbarLayoutSwitcher" title="View Layout Style">
                         <button type="button" class="layout-btn" data-layout="list" title="Compact List view">☰ List</button>
                         <button type="button" class="layout-btn" data-layout="page" title="3x3 Binder Page Sheet view">📄 3×3 by Filter</button>
@@ -4852,7 +4937,23 @@
                     </div>
                     <button type="button" class="trade-market-topbar-btn" id="topbarStatsHudBtn" title="Toggle Live Stats & Heat Map HUD">📊 HUD</button>
                     <button type="button" class="trade-market-topbar-btn" id="topbarTradeMarketBtn" title="Offer Trade / Simulate Card Market">🤝 Market</button>
-                    <button class="mobile-menu-btn mobile-right-btn" id="openRightBarBtn" aria-label="Open collector options">👤</button>
+                </div>
+            </div>
+
+            <!-- Row 2: Sub-row - Series Context & Viewing Selector (Saves space, compact height) -->
+            <div class="bar topbar-sub-row">
+                <div class="topbar-sub-left">
+                    <h1 class="topbar-title">
+                        <span id="topbarSeriesTitle">2026-27 UD Tim Hortons</span>
+                        <span class="series-tag" id="topbarSeriesTag">$1 / account</span>
+                    </h1>
+                    <button type="button" class="mobile-subsets-btn" id="mobileSubsetsBtn" title="Subsets & Quick Jump">⚡ Subsets</button>
+                </div>
+                <div class="topbar-sub-right">
+                    <label class="overall">Viewing
+                        <select id="viewSelect" aria-label="Viewing collection"></select>
+                    </label>
+                    <button type="button" id="newCollectorTopbarBtn" class="primary">+ Collector</button>
                 </div>
             </div>
             <!-- Mobile Subsets Slide-Down Bar -->
