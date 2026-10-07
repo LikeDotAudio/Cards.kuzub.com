@@ -3011,13 +3011,18 @@
             box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35);
         }
         .mobile-subsets-bar {
-            width: 100%;
-            padding: 8px 10px;
-            background: #f8fafc;
-            border-top: 1px solid #e2e8f0;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
+            display: none !important;
+        }
+        @media (max-width: 900px) {
+            .mobile-subsets-bar:not([hidden]) {
+                width: 100%;
+                padding: 8px 10px;
+                background: #f8fafc;
+                border-top: 1px solid #e2e8f0;
+                display: flex !important;
+                flex-direction: column;
+                gap: 6px;
+            }
         }
         .msb-title {
             font-size: 0.65rem;
@@ -3720,9 +3725,13 @@
             overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             color: #1e293b;
+            visibility: hidden;
+            pointer-events: none;
         }
         .inventory-filter-section.open {
             transform: translateX(0);
+            visibility: visible;
+            pointer-events: auto;
         }
         /* Keep target subsets and sheets visible below sticky header */
         details.set,
@@ -5119,8 +5128,8 @@
             </div>
         </div>
 
-        <!-- SUBSETS & QUICK JUMP ("WITH QUICK JUMP should be abive it") -->
-        <div class="right-bar-section right-bar-quick-jump" id="rightBarQuickJump">
+        <!-- SUBSETS & QUICK JUMP (Moved to left sidebar - hidden here to remove redundancy) -->
+        <div class="right-bar-section right-bar-quick-jump" id="rightBarQuickJump" style="display: none;">
             <div class="right-bar-section-title">⚡ Subsets &amp; Quick Jump</div>
             <div class="rb-quick-jump-container" id="rbQuickJumpContainer">
                 <select id="rbQuickJumpSelect" class="rb-quick-jump-select" aria-label="Jump directly to subset">
@@ -5130,8 +5139,8 @@
             </div>
         </div>
 
-        <!-- TOGGLE PAGE VIEW / LIST VIEW ("on the right bar, toggle page view / list view") -->
-        <div class="right-bar-section">
+        <!-- TOGGLE PAGE VIEW / LIST VIEW (Moved to topbar - hidden here to remove redundancy) -->
+        <div class="right-bar-section" style="display: none;">
             <div class="right-bar-section-title">View Layout</div>
             <div class="layout-switcher right-bar-layout-switcher" id="layoutSwitcher">
                 <button type="button" class="layout-btn" data-layout="list" title="Compact List view">☰ List</button>
@@ -5151,8 +5160,8 @@
             </div>
         </div>
 
-        <!-- SPORTS CHANNEL HIGHLIGHTS PACKAGE & NEWS FEED ("on the bottom right corner like a news feed like a sports channel a highlights package") -->
-        <div class="sports-highlights-deck" id="sportsHighlightsDeck">
+        <!-- SPORTS CHANNEL HIGHLIGHTS PACKAGE & NEWS FEED (Moved to sticky south footer - hidden here to remove redundancy) -->
+        <div class="sports-highlights-deck" id="sportsHighlightsDeck" style="display: none;">
             <div class="hl-broadcast-header">
                 <div class="hl-live-badge"><span class="hl-live-dot"></span>LIVE DESK</div>
                 <div class="hl-series-label" id="hlSeriesLabel">HIGHLIGHTS</div>
@@ -9547,8 +9556,8 @@
             const data = (typeof prefsStr === 'string') ? JSON.parse(prefsStr) : prefsStr;
             if (!data) return;
 
-            // HUD is off by default unless explicitly saved as true
-            hudState.visible = Boolean(data.visible === true);
+            // HUD is off by default ("the HUD should be off by default")
+            hudState.visible = false;
 
             const overlay = document.getElementById('statsHudOverlay');
             if (data.dock && data.dock !== 'custom') {
