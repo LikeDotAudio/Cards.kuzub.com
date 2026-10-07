@@ -34,7 +34,7 @@
             --vu-blue: #38bdf8;
             --topbar-height: 53px;
             --ifs-height: 48px;
-            --footer-height: 68px;
+            --footer-height: 114px;
         }
         * { box-sizing: border-box; }
         body {
@@ -1212,9 +1212,30 @@
             text-overflow: ellipsis;
         }
         .fsd-meta {
+            position: relative;
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: flex-end;
+            min-width: 250px;
+            height: 22px;
+            cursor: pointer;
+        }
+        .fsd-fader-item {
+            position: absolute;
+            right: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(3px);
+        }
+        .fsd-fader-item.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
         }
         .fsd-counts {
             font-weight: 700;
@@ -1252,6 +1273,7 @@
             cursor: crosshair;
             transition: max-width 0.25s ease, border-color 0.2s ease, box-shadow 0.2s ease;
             box-sizing: border-box;
+            min-height: 56px;
         }
         /* Border when narrow vs wide ("and a border when it goes narry and wide") */
         .fsd-canvas-wrap.is-narrow {
@@ -1273,13 +1295,13 @@
         }
         #footerSpectrumCanvas {
             width: 100%;
-            height: 24px;
+            height: 52px;
             display: block;
         }
         /* Magnifying Glass Loupe ("this lower bar should have a magnifying glass when scrubbing") */
         .fsd-magnifier {
             position: absolute;
-            bottom: 34px;
+            bottom: 58px;
             transform: translateX(-50%);
             pointer-events: none;
             z-index: 50;
@@ -3076,6 +3098,7 @@
         }
         .topbar-layout-switcher {
             display: inline-flex;
+            flex: 1 1 auto;
             background: #f1f5f9;
             border: 1px solid var(--border-color);
             border-radius: 6px;
@@ -3083,13 +3106,19 @@
             gap: 2px;
         }
         .topbar-layout-switcher .layout-btn {
-            padding: 4px 8px;
+            flex: 1 1 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 10px;
             font-size: 0.76rem;
             font-weight: 700;
             border-radius: 4px;
             border: none;
             background: transparent;
             color: #64748b;
+            white-space: nowrap;
+            text-align: center;
         }
         .topbar-layout-switcher .layout-btn.active {
             background: #fff;
@@ -3101,6 +3130,8 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            flex: 1 1 auto;
+            max-width: 860px;
         }
         .trade-market-topbar-btn {
             background: #0f172a;
@@ -5164,9 +5195,9 @@
                         <button type="button" class="fsd-width-btn" id="fsdWidthToggleBtn" title="Toggle Narrow / Wide Spectrum View">↔ Wide</button>
                         <span class="fsd-hint" id="footerSpectrumHint">Interactive Map (Hover or Click to Jump)</span>
                     </div>
-                    <div class="fsd-meta">
-                        <span class="fsd-counts" id="footerSpectrumCounts">0 Owned · 0 Needed · 0 Trade</span>
-                        <div class="fsd-legend">
+                    <div class="fsd-meta" id="fsdMeta" title="Click to toggle between collection stats and spectrum legend">
+                        <span class="fsd-fader-item fsd-counts active" id="footerSpectrumCounts">0 Owned · 0 Needed · 0 Trade</span>
+                        <div class="fsd-fader-item fsd-legend" id="footerSpectrumLegend">
                             <span class="leg-item leg-owned">🟩 Owned</span>
                             <span class="leg-item leg-doubles">🟥 2x Trade</span>
                             <span class="leg-item leg-needed">🟩 🔻 Needed</span>
@@ -5174,7 +5205,7 @@
                     </div>
                 </div>
                 <div class="fsd-canvas-wrap is-wide" id="fsdCanvasWrap">
-                    <canvas id="footerSpectrumCanvas" height="32" title="Click or hover any card in the collection"></canvas>
+                    <canvas id="footerSpectrumCanvas" height="52" title="Click or hover any card in the collection"></canvas>
                     <div id="fsdMagnifier" class="fsd-magnifier" style="display: none;"></div>
                 </div>
             </div>
@@ -6387,7 +6418,7 @@
         const dpr = window.devicePixelRatio || 1;
         const rect = canvas.getBoundingClientRect();
         const w = rect.width || canvas.offsetWidth || 600;
-        const h = 32;
+        const h = 52;
 
         if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
             canvas.width = Math.round(w * dpr);
@@ -6402,7 +6433,7 @@
 
         // Baseline tick bar
         ctx.fillStyle = '#1e293b';
-        ctx.fillRect(0, h - 3, w, 3);
+        ctx.fillRect(0, h - 4, w, 4);
 
         const slotW = Math.max(1.2, w / total);
         let activeX = null;
@@ -6415,20 +6446,20 @@
             if (isActive) activeX = x + slotW / 2;
 
             if (qty === 0) {
-                // Needed card: green tick on baseline
+                // Needed card: crisp glowing tick on baseline
                 ctx.fillStyle = isActive ? '#38bdf8' : 'rgba(16, 185, 129, 0.45)';
-                ctx.fillRect(x, h - 4, Math.max(1, slotW - 0.5), 3);
+                ctx.fillRect(x, h - 5, Math.max(1, slotW - 0.5), 4);
             } else if (qty === 1) {
-                // Single owned: vibrant emerald green bar
-                const barH = Math.round(h * 0.55);
+                // Single owned: vibrant emerald green bar with tall rich gradient
+                const barH = Math.round(h * 0.60);
                 const grad = ctx.createLinearGradient(0, h - barH, 0, h);
                 grad.addColorStop(0, isActive ? '#67e8f9' : '#34d399');
                 grad.addColorStop(1, isActive ? '#0284c7' : '#059669');
                 ctx.fillStyle = grad;
                 ctx.fillRect(x, h - barH, Math.max(1.2, slotW), barH);
             } else {
-                // Doubles (2x+): taller red trade surplus bar
-                const barH = Math.round(h * 0.88);
+                // Doubles (2x+): prominent ruby red trade surplus tower
+                const barH = Math.round(h * 0.92);
                 const grad = ctx.createLinearGradient(0, h - barH, 0, h);
                 grad.addColorStop(0, isActive ? '#fbcfe8' : '#f87171');
                 grad.addColorStop(1, isActive ? '#db2777' : '#dc2626');
@@ -8821,6 +8852,38 @@
             try { localStorage.setItem('cards_fsd_wide', String(fsdIsWide)); } catch (e) {}
             applyFsdWidth();
         });
+    }
+
+    // Alternating Fade-In / Fade-Out between Stats counts and Spectrum Legend Key ("the spats and key should be displayed for a bit then fade in and out")
+    const fsdMetaEl = document.getElementById('fsdMeta');
+    const fsdCountsEl = document.getElementById('footerSpectrumCounts');
+    const fsdLegendEl = document.getElementById('footerSpectrumLegend');
+    let fsdMetaTimer = null;
+    let fsdMetaShowCounts = true;
+
+    function toggleFsdMetaDisplay() {
+        if (!fsdCountsEl || !fsdLegendEl) return;
+        fsdMetaShowCounts = !fsdMetaShowCounts;
+        if (fsdMetaShowCounts) {
+            fsdCountsEl.classList.add('active');
+            fsdLegendEl.classList.remove('active');
+        } else {
+            fsdCountsEl.classList.remove('active');
+            fsdLegendEl.classList.add('active');
+        }
+    }
+
+    function startFsdMetaRotation() {
+        if (fsdMetaTimer) clearInterval(fsdMetaTimer);
+        fsdMetaTimer = setInterval(toggleFsdMetaDisplay, 3800);
+    }
+
+    if (fsdMetaEl) {
+        fsdMetaEl.addEventListener('click', () => {
+            toggleFsdMetaDisplay();
+            startFsdMetaRotation();
+        });
+        startFsdMetaRotation();
     }
 
     if (fsdCanvas) {
