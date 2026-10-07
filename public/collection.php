@@ -34,6 +34,7 @@
             --vu-blue: #38bdf8;
             --topbar-height: 53px;
             --ifs-height: 48px;
+            --footer-height: 68px;
         }
         * { box-sizing: border-box; }
         body {
@@ -267,7 +268,7 @@
             position: fixed;
             top: 0;
             left: 0;
-            bottom: 0;
+            bottom: var(--footer-height, 68px);
             width: var(--left-bar-width);
             flex-shrink: 0;
             background: #ffffff;
@@ -649,7 +650,20 @@
             margin-left: var(--left-bar-width);
             margin-right: var(--right-bar-width);
             min-height: 100vh;
+            padding-bottom: var(--footer-height, 68px);
             background: var(--bg);
+        }
+
+        /* Flexible Center when no L-Bar is selected ("there is no LBAR selected... then the all flexible") */
+        body.no-left-bar {
+            --left-bar-width: 0px !important;
+        }
+        body.no-left-bar aside.sidebar,
+        body.no-left-bar aside.left-bar {
+            display: none !important;
+        }
+        body.no-left-bar .content-area {
+            margin-left: 0 !important;
         }
 
         /* Fixed Right Bar ("the right side bar... we call it the right bare - remain fixed all the time") */
@@ -657,7 +671,7 @@
             position: fixed;
             top: 0;
             right: 0;
-            bottom: 0;
+            bottom: var(--footer-height, 68px);
             width: var(--right-bar-width);
             background: #ffffff;
             border-left: 1px solid var(--border-color);
@@ -1131,9 +1145,10 @@
         .app-broadcast-footer {
             position: fixed;
             bottom: 0;
-            left: var(--left-bar-width);
-            right: var(--right-bar-width);
-            z-index: 35;
+            left: 0;
+            right: 0;
+            width: 100%;
+            z-index: 100;
             background: #070b14;
             border-top: 3px solid #2563eb;
             box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.65);
@@ -1141,12 +1156,6 @@
             flex-direction: column;
             user-select: none;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
-        @media (max-width: 1080px) {
-            .app-broadcast-footer {
-                left: 0;
-                right: 0;
-            }
         }
         .election-footer-ticker {
             position: relative;
@@ -3706,19 +3715,20 @@
         .inventory-filter-section {
             position: fixed;
             top: 0;
-            right: 0;
-            bottom: 0;
+            left: 0;
+            right: auto;
+            bottom: var(--footer-height, 68px);
             width: 600px;
             max-width: min(600px, calc(100vw - 20px));
-            height: 100vh;
+            height: calc(100vh - var(--footer-height, 68px));
             z-index: 1200;
             background: #ffffff;
             border: none;
-            border-left: 1px solid #cbd5e1;
+            border-right: 1px solid #cbd5e1;
             border-radius: 0;
             margin: 0;
-            box-shadow: -10px 0 35px rgba(0, 0, 0, 0.38);
-            transform: translateX(100%);
+            box-shadow: 10px 0 35px rgba(0, 0, 0, 0.38);
+            transform: translateX(-100%);
             transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex;
             flex-direction: column;
@@ -4716,7 +4726,7 @@
             </nav>
 
             <!-- Hockey Category -->
-            <div>
+            <div id="sidebarHockeySection">
                 <div class="menu-section-title">Hockey</div>
                 <nav class="menu-nav">
                     <div class="menu-item active" id="menuSeries2026" data-series="2026-27">
@@ -4775,8 +4785,8 @@
                 <div class="srw-dots-row" id="srwDotsRow"></div>
             </div>
 
-            <!-- Compact User Profile Strip & Actions -->
-            <div class="side-user-strip" id="sideUserStrip">
+            <!-- Compact User Profile Strip & Actions (Redundant with Right Bar Collector Profile) -->
+            <div class="side-user-strip" id="sideUserStrip" style="display: none;">
                 <div class="user-summary">
                     <span><strong id="sideUserName"></strong></span>
                     <span class="user-team-badge" id="sideUserTeamBadge"></span>
@@ -4811,15 +4821,19 @@
                     <select id="viewSelect" aria-label="Viewing collection"></select>
                 </label>
 
-                <div class="filters" id="filters">
-                    <button data-filter="all" class="active">All</button>
-                    <button data-filter="missing">Missing</button>
-                    <button data-filter="doubles">My Doubles</button>
-                    <button data-filter="trade" title="Your doubles, plus cards you're missing that teammates have doubles of">For Trade</button>
-                    <button data-filter="team_needs" id="teamNeedsFilterBtn" hidden title="Cards nobody on your team has collected yet">Team Needs</button>
-                </div>
+                <!-- Detailed Filter Flyout Trigger on Left ("the filters are to the left as a fly in filter. they are the detailed filter view") -->
+                <button type="button" class="ifs-flyout-trigger-btn" id="ifsFlyoutTriggerBtn" title="Detailed Filter View (Flies in from left)">⚡ Detailed Filters <span id="ifsFilterActiveBadge" class="ifs-active-badge" hidden>0</span></button>
 
                 <div class="topbar-right-cluster">
+                    <!-- Needs Filters moved all to the right ("these needs all to the right") -->
+                    <div class="filters" id="filters">
+                        <button data-filter="all" class="active">All</button>
+                        <button data-filter="missing">Missing</button>
+                        <button data-filter="doubles">My Doubles</button>
+                        <button data-filter="trade" title="Your doubles, plus cards you're missing that teammates have doubles of">For Trade</button>
+                        <button data-filter="team_needs" id="teamNeedsFilterBtn" hidden title="Cards nobody on your team has collected yet">Team Needs</button>
+                    </div>
+
                     <!-- Layout Switcher moved over to right side ("and then over to the right side") -->
                     <div class="topbar-layout-switcher layout-switcher" id="topbarLayoutSwitcher" title="View Layout Style">
                         <button type="button" class="layout-btn" data-layout="list" title="Compact List view">☰ List</button>
@@ -4827,7 +4841,6 @@
                         <button type="button" class="layout-btn layout-btn-mc" data-layout="job" data-job-mode="visual" title="McMaster Visual Grid with Player Cards & Roles"><span class="layout-btn-mc-icon">🖼️</span> Visual Catalog</button>
                         <button type="button" class="layout-btn layout-btn-mc" data-layout="job" data-job-mode="table" title="McMaster Engineering Specification Table with Timelines & Specs"><span class="layout-btn-mc-icon">📊</span> Engineering Specs Table</button>
                     </div>
-                    <button type="button" class="ifs-flyout-trigger-btn" id="ifsFlyoutTriggerBtn" title="Open Inventory &amp; Checklist Filter (Flies in from right)">⚡ Filter <span id="ifsFilterActiveBadge" class="ifs-active-badge" hidden>0</span></button>
                     <button type="button" class="trade-market-topbar-btn" id="topbarStatsHudBtn" title="Toggle Live Stats & Heat Map HUD">📊 HUD</button>
                     <button type="button" class="trade-market-topbar-btn" id="topbarTradeMarketBtn" title="Offer Trade / Simulate Card Market">🤝 Market</button>
                     <button class="mobile-menu-btn mobile-right-btn" id="openRightBarBtn" aria-label="Open collector options">👤</button>
@@ -5158,6 +5171,11 @@
                 <div class="mqc-text" id="mqcStatusText">Simulate trades, find mutual partner doubles, and test the market.</div>
                 <button type="button" class="btn-open-market" id="rbOpenMarketBtn">🤝 Open Trade Exchange</button>
             </div>
+        </div>
+
+        <!-- L-BAR WIDGET CUSTOMIZER SHORTCUT IN RIGHT BAR -->
+        <div class="right-bar-section" style="padding-top: 4px;">
+            <button type="button" class="btn-customize-widgets" id="btnCustomizeWidgetsRight" title="Customize L-bar widgets" style="width: 100%; justify-content: center;">⚙️ Customize L-Bar</button>
         </div>
 
         <!-- SPORTS CHANNEL HIGHLIGHTS PACKAGE & NEWS FEED (Moved to sticky south footer - hidden here to remove redundancy) -->
@@ -8569,7 +8587,8 @@
         teamDialog.showModal();
     }
 
-    document.getElementById('editTeamBtn').addEventListener('click', openTeamDialog);
+    const editTeamBtn = document.getElementById('editTeamBtn');
+    if (editTeamBtn) editTeamBtn.addEventListener('click', openTeamDialog);
     document.getElementById('topbarEditTeamBtn').addEventListener('click', openTeamDialog);
     document.getElementById('topbarUserTeam').addEventListener('click', openTeamDialog);
     document.getElementById('cancelTeamDialog').addEventListener('click', () => teamDialog.close());
@@ -8903,7 +8922,7 @@
             if (saved) prefs = Object.assign(prefs, JSON.parse(saved));
         } catch (e) {}
 
-        const seriesEl = document.querySelector('.sidebar-section:first-child');
+        const seriesEl = document.getElementById('sidebarHockeySection');
         if (seriesEl) seriesEl.style.display = prefs.series ? '' : 'none';
 
         const subsetsEl = document.getElementById('seriesNavPanel');
@@ -8918,6 +8937,19 @@
         const statsEl = document.getElementById('sideRotatingStatsWidget');
         if (statsEl) statsEl.style.display = prefs.stats ? '' : 'none';
 
+        const sideFooter = document.getElementById('sidebarFooter');
+        if (sideFooter) {
+            sideFooter.style.display = prefs.stats ? '' : 'none';
+        }
+
+        // When no L-BAR modules are active, collapse left bar completely so middle is all flexible
+        const anyLbarActive = !!(prefs.series || prefs.subsets || prefs.team || prefs.stats);
+        if (!anyLbarActive) {
+            document.body.classList.add('no-left-bar');
+        } else {
+            document.body.classList.remove('no-left-bar');
+        }
+
         const cbSeries = document.getElementById('toggleWidgetSeries');
         const cbSubsets = document.getElementById('toggleWidgetSubsets');
         const cbTeam = document.getElementById('toggleWidgetTeam');
@@ -8931,12 +8963,19 @@
     function setupLbarCustomization() {
         const dialog = document.getElementById('lbarCustomizeDialog');
         const btnOpen = document.getElementById('btnCustomizeWidgets');
+        const btnOpenRight = document.getElementById('btnCustomizeWidgetsRight');
         const btnClose = document.getElementById('closeLbarCustomizeBtn');
         const btnSave = document.getElementById('saveLbarCustomizeBtn');
         const btnReset = document.getElementById('resetLbarCustomizeBtn');
 
         if (btnOpen && dialog) {
             btnOpen.addEventListener('click', () => {
+                applyLbarPrefs();
+                dialog.showModal();
+            });
+        }
+        if (btnOpenRight && dialog) {
+            btnOpenRight.addEventListener('click', () => {
                 applyLbarPrefs();
                 dialog.showModal();
             });
