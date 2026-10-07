@@ -791,6 +791,76 @@
         .right-bar-collection-stats .stat-sentence-pill.need .stat-num { color: #dc2626; font-weight: 800; }
         .right-bar-collection-stats .stat-sentence-pill.doubles .stat-num { color: #d97706; font-weight: 800; }
         .right-bar-collection-stats .stat-sentence-pill.team .stat-num { color: #0284c7; font-weight: 800; }
+        /* Right Bar Subsets & Quick Jump */
+        .right-bar-quick-jump {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .rb-quick-jump-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .rb-quick-jump-select {
+            width: 100%;
+            padding: 7px 10px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #0f172a;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        .rb-quick-jump-select:focus {
+            border-color: #0284c7;
+            box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+        }
+        .rb-quick-jump-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        .rb-qj-chip {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 3px 6px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #334155;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.15s;
+        }
+        .rb-qj-chip:hover {
+            background: #0284c7;
+            color: #ffffff;
+            border-color: #0284c7;
+        }
+        .rb-qj-chip .rb-qj-badge {
+            background: rgba(0, 0, 0, 0.08);
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-size: 0.62rem;
+        }
+        .rb-qj-chip:hover .rb-qj-badge {
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+        }
+
+        /* Right Bar Layout Switcher */
         .right-bar-layout-switcher {
             display: flex;
             width: 100%;
@@ -855,18 +925,24 @@
         /* ==========================================================
            SPORTS CHANNEL HIGHLIGHTS PACKAGE & NEWS FEED
            ("bottom right corner, sprinkled cards, green-red gradient, completeness, sports channel news feed")
+           Sticky South in Right Bar ("the live desk should be sticky south")
            ========================================================== */
         .sports-highlights-deck {
             background: #090d16;
             border: 1px solid #1e293b;
+            border-top: 2px solid #2563eb;
             border-radius: 12px;
             padding: 12px;
             color: #e2e8f0;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.45);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin-top: auto;
+            position: sticky;
+            bottom: 0;
+            z-index: 20;
         }
         .hl-broadcast-header {
             display: flex;
@@ -1143,18 +1219,159 @@
             font-weight: 700;
             font-size: 0.64rem;
         }
+        .fsd-width-btn {
+            background: #1e293b;
+            color: #38bdf8;
+            border: 1px solid #334155;
+            border-radius: 4px;
+            font-size: 0.64rem;
+            font-weight: 800;
+            padding: 2px 7px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .fsd-width-btn:hover {
+            background: #38bdf8;
+            color: #0f172a;
+            border-color: #38bdf8;
+        }
         .fsd-canvas-wrap {
             position: relative;
             background: #020409;
-            border: 1px solid #1e293b;
-            border-radius: 4px;
-            padding: 2px 4px;
+            border-radius: 6px;
+            padding: 3px 5px;
             cursor: crosshair;
+            transition: max-width 0.25s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            box-sizing: border-box;
+        }
+        /* Border when narrow vs wide ("and a border when it goes narry and wide") */
+        .fsd-canvas-wrap.is-narrow {
+            max-width: 920px;
+            margin: 0 auto;
+            width: 100%;
+            border: 2px solid #06b6d4; /* Distinct vibrant cyan border when narrow */
+            box-shadow: 0 0 12px rgba(6, 182, 212, 0.25), inset 0 0 6px rgba(6, 182, 212, 0.15);
+        }
+        .fsd-canvas-wrap.is-wide {
+            width: 100%;
+            border: 2px solid #3b82f6; /* Distinct royal blue border when wide */
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.2), inset 0 0 6px rgba(59, 130, 246, 0.1);
+        }
+        /* Active glowing border while scrubbing */
+        .fsd-canvas-wrap.is-scrubbing {
+            border-color: #f59e0b !important;
+            box-shadow: 0 0 16px rgba(245, 158, 11, 0.5), inset 0 0 8px rgba(245, 158, 11, 0.25) !important;
         }
         #footerSpectrumCanvas {
             width: 100%;
             height: 32px;
             display: block;
+        }
+        /* Magnifying Glass Loupe ("this lower bar should have a magnifying glass when scrubbing") */
+        .fsd-magnifier {
+            position: absolute;
+            bottom: 44px;
+            transform: translateX(-50%);
+            pointer-events: none;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: fsdMagPop 0.12s ease-out;
+            filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.65));
+        }
+        @keyframes fsdMagPop {
+            0% { opacity: 0; transform: translateX(-50%) scale(0.85) translateY(6px); }
+            100% { opacity: 1; transform: translateX(-50%) scale(1) translateY(0); }
+        }
+        .fsd-mag-lens {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #090e1a 0%, #172554 100%);
+            border: 3px solid #38bdf8;
+            border-radius: 12px;
+            padding: 8px 12px;
+            min-width: 160px;
+            max-width: 260px;
+            box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.35), 0 0 14px rgba(56, 189, 248, 0.45);
+            text-align: center;
+            position: relative;
+        }
+        .fsd-mag-icon {
+            font-size: 1.15rem;
+            position: absolute;
+            left: -12px;
+            top: -12px;
+            background: #0284c7;
+            color: #ffffff;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+        }
+        .fsd-mag-num {
+            font-size: 1.05rem;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: 0.04em;
+            line-height: 1.2;
+        }
+        .fsd-mag-player {
+            font-size: 0.86rem;
+            font-weight: 800;
+            color: #38bdf8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 220px;
+            margin-top: 2px;
+        }
+        .fsd-mag-subset {
+            font-size: 0.66rem;
+            color: #94a3b8;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 220px;
+        }
+        .fsd-mag-badge {
+            margin-top: 5px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .fsd-mag-badge.owned {
+            background: #059669;
+            color: #ffffff;
+            border: 1px solid #34d399;
+        }
+        .fsd-mag-badge.doubles {
+            background: #dc2626;
+            color: #ffffff;
+            border: 1px solid #f87171;
+        }
+        .fsd-mag-badge.needed {
+            background: #334155;
+            color: #94a3b8;
+            border: 1px solid #475569;
+        }
+        .fsd-mag-pointer {
+            width: 0;
+            height: 0;
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            border-top: 8px solid #38bdf8;
+            margin-top: -1px;
         }
         .eft-desk-badge {
             display: inline-flex;
@@ -4470,8 +4687,8 @@
 
                 <!-- Direct View Layout Switcher in Topbar ("user should be able to click on the style type list or sheet should show up") -->
                 <div class="topbar-layout-switcher layout-switcher" id="topbarLayoutSwitcher" title="View Layout Style">
-                    <button type="button" class="layout-btn active" data-layout="page" title="3x3 Binder Page Sheet view">📄 3×3 Page</button>
                     <button type="button" class="layout-btn" data-layout="list" title="Compact List view">☰ List</button>
+                    <button type="button" class="layout-btn" data-layout="page" title="3x3 Binder Page Sheet view">📄 3×3 by Filter</button>
                     <button type="button" class="layout-btn" data-layout="job" title="🛠️ By Job: McMaster-Carr Catalog Lens with Player Roles, Specs & Timelines">🛠️ By Job</button>
                 </div>
 
@@ -4699,6 +4916,7 @@
                 <div class="fsd-header">
                     <div class="fsd-title-group">
                         <span class="fsd-badge">📊 SET SPECTRUM</span>
+                        <button type="button" class="fsd-width-btn" id="fsdWidthToggleBtn" title="Toggle Narrow / Wide Spectrum View">↔ Wide</button>
                         <span class="fsd-hint" id="footerSpectrumHint">Interactive Map (Hover or Click to Jump)</span>
                     </div>
                     <div class="fsd-meta">
@@ -4710,8 +4928,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="fsd-canvas-wrap">
+                <div class="fsd-canvas-wrap is-wide" id="fsdCanvasWrap">
                     <canvas id="footerSpectrumCanvas" height="32" title="Click or hover any card in the collection"></canvas>
+                    <div id="fsdMagnifier" class="fsd-magnifier" style="display: none;"></div>
                 </div>
             </div>
         </footer>
@@ -4787,12 +5006,23 @@
             </div>
         </div>
 
+        <!-- SUBSETS & QUICK JUMP ("WITH QUICK JUMP should be abive it") -->
+        <div class="right-bar-section right-bar-quick-jump" id="rightBarQuickJump">
+            <div class="right-bar-section-title">⚡ Subsets &amp; Quick Jump</div>
+            <div class="rb-quick-jump-container" id="rbQuickJumpContainer">
+                <select id="rbQuickJumpSelect" class="rb-quick-jump-select" aria-label="Jump directly to subset">
+                    <option value="">Jump to subset...</option>
+                </select>
+                <div class="rb-quick-jump-chips" id="rbQuickJumpChips"></div>
+            </div>
+        </div>
+
         <!-- TOGGLE PAGE VIEW / LIST VIEW ("on the right bar, toggle page view / list view") -->
         <div class="right-bar-section">
             <div class="right-bar-section-title">View Layout</div>
             <div class="layout-switcher right-bar-layout-switcher" id="layoutSwitcher">
-                <button type="button" class="layout-btn active" data-layout="page" title="3x3 Binder Page Sheet view">📄 3×3 Page</button>
                 <button type="button" class="layout-btn" data-layout="list" title="Compact List view">☰ List</button>
+                <button type="button" class="layout-btn" data-layout="page" title="3x3 Binder Page Sheet view">📄 3×3 by Filter</button>
                 <button type="button" class="layout-btn" data-layout="job" title="🛠️ By Job: McMaster-Carr Catalog Lens with Player Roles, Specs & Timelines">🛠️ By Job</button>
             </div>
         </div>
@@ -5152,7 +5382,7 @@
         viewId: null,       // number (user_id) or 'team'
         cards: [],
         filter: 'all',
-        layout: localStorage.getItem('cards_layout') || 'page', // 'page', 'list', or 'job'
+        layout: localStorage.getItem('cards_layout') || 'list', // 'list', 'page', or 'job'
         jobMode: localStorage.getItem('cards_job_mode') || 'visual', // 'visual' or 'table'
         selectedJob: 'all',
         collapsed: new Set(),
@@ -5887,7 +6117,7 @@
         renderStatsHud();
     }
 
-    function renderFooterSpectrum() {
+    function renderFooterSpectrum(activeCardId = null) {
         const total = state.cards?.length || 0;
         if (total === 0) return;
 
@@ -5924,32 +6154,46 @@
         ctx.fillRect(0, h - 3, w, 3);
 
         const slotW = Math.max(1.2, w / total);
+        let activeX = null;
+
         for (let i = 0; i < total; i++) {
             const card = state.cards[i];
             const x = (i / total) * w;
             const qty = card.quantity || 0;
+            const isActive = activeCardId && card.id === activeCardId;
+            if (isActive) activeX = x + slotW / 2;
 
             if (qty === 0) {
                 // Needed card: green tick on baseline
-                ctx.fillStyle = 'rgba(16, 185, 129, 0.45)';
+                ctx.fillStyle = isActive ? '#38bdf8' : 'rgba(16, 185, 129, 0.45)';
                 ctx.fillRect(x, h - 4, Math.max(1, slotW - 0.5), 3);
             } else if (qty === 1) {
                 // Single owned: vibrant emerald green bar
                 const barH = Math.round(h * 0.55);
                 const grad = ctx.createLinearGradient(0, h - barH, 0, h);
-                grad.addColorStop(0, '#34d399');
-                grad.addColorStop(1, '#059669');
+                grad.addColorStop(0, isActive ? '#67e8f9' : '#34d399');
+                grad.addColorStop(1, isActive ? '#0284c7' : '#059669');
                 ctx.fillStyle = grad;
                 ctx.fillRect(x, h - barH, Math.max(1.2, slotW), barH);
             } else {
                 // Doubles (2x+): taller red trade surplus bar
                 const barH = Math.round(h * 0.88);
                 const grad = ctx.createLinearGradient(0, h - barH, 0, h);
-                grad.addColorStop(0, '#f87171');
-                grad.addColorStop(1, '#dc2626');
+                grad.addColorStop(0, isActive ? '#fbcfe8' : '#f87171');
+                grad.addColorStop(1, isActive ? '#db2777' : '#dc2626');
                 ctx.fillStyle = grad;
                 ctx.fillRect(x, h - barH, Math.max(1.5, slotW), barH);
             }
+        }
+
+        // Scrub reticle / needle
+        if (activeX !== null) {
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillRect(Math.max(0, activeX - 1.5), 0, 3, h);
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(activeX, 3, 3, 0, Math.PI * 2);
+            ctx.fill();
         }
     }
 
@@ -8292,24 +8536,96 @@
         });
     }
 
-    // Set Spectrum Footer interactive hover & click
+    // Set Spectrum Footer interactive hover, scrubbing, magnifier & narrow/wide toggle
     const fsdCanvas = document.getElementById('footerSpectrumCanvas');
     const fsdHint = document.getElementById('footerSpectrumHint');
+    const fsdCanvasWrap = document.getElementById('fsdCanvasWrap');
+    const fsdMagnifier = document.getElementById('fsdMagnifier');
+    const fsdWidthToggleBtn = document.getElementById('fsdWidthToggleBtn');
+
+    // Width Toggle: Narrow vs Wide with responsive distinct borders ("and a border when it goes narry and wide")
+    let fsdIsWide = localStorage.getItem('cards_fsd_wide') !== 'false'; // default wide
+    function applyFsdWidth() {
+        if (!fsdCanvasWrap || !fsdWidthToggleBtn) return;
+        if (fsdIsWide) {
+            fsdCanvasWrap.classList.remove('is-narrow');
+            fsdCanvasWrap.classList.add('is-wide');
+            fsdWidthToggleBtn.textContent = '↔ Wide';
+            fsdWidthToggleBtn.title = 'Switch to Narrow Spectrum (Centered)';
+        } else {
+            fsdCanvasWrap.classList.remove('is-wide');
+            fsdCanvasWrap.classList.add('is-narrow');
+            fsdWidthToggleBtn.textContent = '⇥ Narrow';
+            fsdWidthToggleBtn.title = 'Switch to Full-Width Spectrum';
+        }
+        renderFooterSpectrum();
+    }
+    if (fsdWidthToggleBtn) {
+        applyFsdWidth();
+        fsdWidthToggleBtn.addEventListener('click', () => {
+            fsdIsWide = !fsdIsWide;
+            try { localStorage.setItem('cards_fsd_wide', String(fsdIsWide)); } catch (e) {}
+            applyFsdWidth();
+        });
+    }
+
     if (fsdCanvas) {
-        fsdCanvas.addEventListener('mousemove', e => {
+        function updateScrubLoupe(e) {
             if (!state.cards || state.cards.length === 0) return;
             const rect = fsdCanvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
             const idx = Math.min(state.cards.length - 1, Math.max(0, Math.floor((x / rect.width) * state.cards.length)));
             const card = state.cards[idx];
-            if (card && fsdHint) {
-                const status = card.quantity >= 2 ? `${card.quantity}x Trade` : card.quantity === 1 ? 'Owned' : 'Needed';
+            if (!card) return;
+
+            // Highlight scrubbing border on dock
+            if (fsdCanvasWrap) fsdCanvasWrap.classList.add('is-scrubbing');
+
+            const status = card.quantity >= 2 ? `${card.quantity}x Trade` : card.quantity === 1 ? 'Owned' : 'Needed';
+            const badgeCls = card.quantity >= 2 ? 'doubles' : card.quantity === 1 ? 'owned' : 'needed';
+
+            // Update top hint text
+            if (fsdHint) {
                 fsdHint.innerHTML = `<span style="color:#38bdf8; font-weight:800;">#${esc(card.card_number)} ${esc(card.player_name)} (${status.toUpperCase()})</span>`;
             }
-        });
-        fsdCanvas.addEventListener('mouseleave', () => {
+
+            // Draw scrub reticle on canvas
+            renderFooterSpectrum(card.id);
+
+            // Position and show floating magnifying loupe
+            if (fsdMagnifier) {
+                fsdMagnifier.style.display = 'flex';
+                fsdMagnifier.style.left = `${x}px`;
+                fsdMagnifier.innerHTML = `
+                    <div class="fsd-mag-lens">
+                        <div class="fsd-mag-icon" title="Magnifying Loupe">🔍</div>
+                        <div class="fsd-mag-num">#${esc(card.card_number)}</div>
+                        <div class="fsd-mag-player">${esc(card.player_name)}</div>
+                        <div class="fsd-mag-subset">${esc(card.set_name || 'Base Set')}</div>
+                        <div class="fsd-mag-badge ${badgeCls}">${status.toUpperCase()}</div>
+                    </div>
+                    <div class="fsd-mag-pointer"></div>
+                `;
+            }
+        }
+
+        function clearScrubLoupe() {
             if (fsdHint) fsdHint.textContent = 'Interactive Map (Hover or Click to Jump)';
-        });
+            if (fsdCanvasWrap) fsdCanvasWrap.classList.remove('is-scrubbing');
+            if (fsdMagnifier) fsdMagnifier.style.display = 'none';
+            renderFooterSpectrum(null);
+        }
+
+        fsdCanvas.addEventListener('mousemove', updateScrubLoupe);
+        fsdCanvas.addEventListener('touchmove', e => {
+            e.preventDefault();
+            updateScrubLoupe(e);
+        }, { passive: false });
+
+        fsdCanvas.addEventListener('mouseleave', clearScrubLoupe);
+        fsdCanvas.addEventListener('touchend', clearScrubLoupe);
+
         fsdCanvas.addEventListener('click', e => {
             if (!state.cards || state.cards.length === 0) return;
             const rect = fsdCanvas.getBoundingClientRect();
@@ -8404,21 +8720,45 @@
 
     function setupMobileSubsetsBar(sets) {
         const chipsEl = document.getElementById('mobileSubsetsChips');
-        if (!chipsEl) return;
+        const rbSelect = document.getElementById('rbQuickJumpSelect');
+        const rbChips = document.getElementById('rbQuickJumpChips');
+
         if (!sets || sets.size === 0) {
-            chipsEl.innerHTML = '<span style="color:#64748b; font-size:0.75rem;">No subsets available</span>';
+            if (chipsEl) chipsEl.innerHTML = '<span style="color:#64748b; font-size:0.75rem;">No subsets available</span>';
+            if (rbChips) rbChips.innerHTML = '<span style="color:#64748b; font-size:0.75rem;">No subsets</span>';
             return;
         }
-        let html = '';
+
+        let mobileHtml = '';
+        let rbSelectHtml = '<option value="">⚡ Jump to subset...</option>';
+        let rbChipsHtml = '';
+
         for (const [setName, cards] of sets) {
             const have = cards.filter(c => c.quantity > 0).length;
             const cleanId = cleanSetId(setName);
-            html += `<button type="button" class="msb-chip" onclick="jumpToSet('${cleanId}')">
+            mobileHtml += `<button type="button" class="msb-chip" onclick="jumpToSet('${cleanId}')">
                 <span>${esc(setName)}</span>
                 <span class="msb-badge">${have}/${cards.length}</span>
             </button>`;
+
+            rbSelectHtml += `<option value="${cleanId}">${esc(setName)} (${have}/${cards.length})</option>`;
+            rbChipsHtml += `<button type="button" class="rb-qj-chip" onclick="jumpToSet('${cleanId}')" title="${esc(setName)}">
+                <span>${esc(setName)}</span>
+                <span class="rb-qj-badge">${have}/${cards.length}</span>
+            </button>`;
         }
-        chipsEl.innerHTML = html;
+
+        if (chipsEl) chipsEl.innerHTML = mobileHtml;
+        if (rbSelect) {
+            rbSelect.innerHTML = rbSelectHtml;
+            rbSelect.onchange = function() {
+                if (this.value) {
+                    jumpToSet(this.value);
+                    this.value = '';
+                }
+            };
+        }
+        if (rbChips) rbChips.innerHTML = rbChipsHtml;
     }
 
     const mobileSubsetsBtn = document.getElementById('mobileSubsetsBtn');
