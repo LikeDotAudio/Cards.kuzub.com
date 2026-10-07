@@ -2165,8 +2165,8 @@
             }
         }
         .grid.layout-list {
-            column-width: 195px;
-            column-gap: 12px;
+            column-width: 260px;
+            column-gap: 14px;
             padding: 0 8px 10px;
         }
         .grid {
@@ -2375,11 +2375,11 @@
         .card {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             padding: 4px 6px;
             border: 1px solid transparent;
             border-left: 3px solid #ddd;
-            border-radius: 3px;
+            border-radius: 4px;
             cursor: pointer;
             user-select: none;
             min-width: 0;
@@ -2398,9 +2398,18 @@
         }
         .card.collected { background: var(--row-single); border-left-color: var(--row-single-edge); }
         .card.doubles { background: var(--row-double); border-left-color: var(--row-double-edge); }
-        .num { flex: 0 0 auto; min-width: 2.6em; font-weight: 700; font-size: 0.75rem; color: var(--muted); }
-        .card.missing .num { font-size: 0.95rem; font-weight: 900; color: #0f172a; }
-        .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .num { flex: 0 0 auto; min-width: 2.2em; font-weight: 700; font-size: 0.75rem; color: var(--muted); }
+        .card.missing .num { font-size: 0.92rem; font-weight: 900; color: #0f172a; }
+        .name {
+            flex: 1 1 auto;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 0.84rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
         .qty { flex: 0 0 auto; font-size: 0.7rem; font-weight: 700; }
         .collected .qty { color: #2e7d32; }
         .doubles .qty { color: #f57f17; }
@@ -2418,34 +2427,34 @@
             grid-column: 1 / -1;
             font-size: 0.75rem;
             color: var(--trade);
-            padding: 0 6px 0 calc(2.6em + 15px);
+            padding: 0 6px 0 calc(2.2em + 15px);
             margin-top: -2px;
         }
         .holders-info {
             grid-column: 1 / -1;
             font-size: 0.72rem;
             color: #0369a1;
-            padding: 0 6px 0 calc(2.6em + 15px);
+            padding: 0 6px 0 calc(2.2em + 15px);
             margin-top: -2px;
         }
         .card-nhl-team {
             flex: 0 0 auto;
-            font-size: 0.65rem;
+            font-size: 0.62rem;
             font-weight: 800;
             color: #475569;
             background: #f1f5f9;
-            padding: 1px 4px;
+            padding: 1px 3px;
             border-radius: 3px;
             border: 1px solid #e2e8f0;
-            letter-spacing: 0.02em;
+            letter-spacing: 0.01em;
         }
         .card-wiki-lookup-btn {
             flex: 0 0 auto;
             border: 1px solid #cbd5e1;
             background: #ffffff;
-            font-size: 0.72rem;
+            font-size: 0.68rem;
             line-height: 1;
-            padding: 2px 4px;
+            padding: 1px 3px;
             border-radius: 3px;
             cursor: pointer;
             transition: all 0.15s ease;
