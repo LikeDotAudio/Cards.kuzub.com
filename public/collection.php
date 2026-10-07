@@ -2771,6 +2771,11 @@
         .trade-market-topbar-btn:hover {
             background: #1e293b;
         }
+        .trade-market-topbar-btn.active {
+            background: #2563eb;
+            color: #fff;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35);
+        }
         .mobile-subsets-bar {
             width: 100%;
             padding: 8px 10px;
@@ -3189,6 +3194,11 @@
         .hud-minimize-btn {
             font-weight: 900;
             line-height: 0.8;
+        }
+        .hud-close-btn:hover {
+            background: #991b1b;
+            color: #fff;
+            border-color: #ef4444;
         }
 
         /* Body Content */
@@ -4844,7 +4854,7 @@
 
 <!-- DRAGGABLE & MOVABLE STATS & HEAT MAP OVERLAY HUD -->
 <!-- ("the base percentages, the above the ice and other series percentages... then all the heat maps of the popularity site wide. this should be on the tablet view and the iphone view always. all these overlays the user should be able to drag them and move them around stereatech and shift bump over move change windows and that vierw saves with them locally and it could push it to the DB") -->
-<aside id="statsHudOverlay" class="stats-hud-overlay hud-dock-bottom-right" role="region" aria-label="Live Statistics and Heat Map HUD">
+<aside id="statsHudOverlay" class="stats-hud-overlay hud-dock-bottom-right" role="region" aria-label="Live Statistics and Heat Map HUD" style="display: none;">
     <!-- Minimized pill bar -->
     <div id="statsHudMiniBar" class="stats-hud-mini-bar" style="display: none;">
         <span class="hud-mini-drag" id="hudMiniDragHandle" title="Drag to move anywhere">⠿</span>
@@ -4854,6 +4864,7 @@
         </button>
         <button type="button" class="hud-btn hud-btn-mini hud-bump-btn" id="hudMiniBumpBtn" title="Bump dock corner (⇄ Bump Over)">⇄</button>
         <button type="button" class="hud-btn hud-btn-mini" id="hudMiniExpandBtn" title="Expand Window">◻</button>
+        <button type="button" class="hud-btn hud-btn-mini hud-close-btn" id="hudMiniCloseBtn" title="Close HUD (Turn Off)">✕</button>
     </div>
 
     <!-- Main floating draggable window -->
@@ -4872,6 +4883,7 @@
             <div class="hud-actions">
                 <button type="button" class="hud-btn hud-bump-btn" id="hudBumpBtn" title="Shift / Bump window to opposite side or next corner (⇄ Bump Over)">⇄ Bump</button>
                 <button type="button" class="hud-btn hud-minimize-btn" id="hudMinimizeBtn" title="Minimize to compact bar">_</button>
+                <button type="button" class="hud-btn hud-close-btn" id="hudCloseBtn" title="Close HUD (Turn Off)">✕</button>
             </div>
         </div>
 
@@ -8738,6 +8750,7 @@
        ("the base percentages, the above the ice and other series percentages... then all the heat maps of the popularity site wide. this should be on the tablet view and the iphone view always. all these overlays the user should be able to drag them and move them around stereatech and shift bump over move change windows and that vierw saves with them locally and it could push it to the DB")
        ========================================================== */
     const hudState = {
+        visible: false, // Off by default
         dock: 'bottom-right',
         x: null,
         y: null,
@@ -8870,6 +8883,22 @@
             });
         }
 
+        // Close Buttons (Turn Off HUD)
+        const closeBtn = document.getElementById('hudCloseBtn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', e => {
+                e.stopPropagation();
+                toggleStatsHud(false);
+            });
+        }
+        const miniCloseBtn = document.getElementById('hudMiniCloseBtn');
+        if (miniCloseBtn) {
+            miniCloseBtn.addEventListener('click', e => {
+                e.stopPropagation();
+                toggleStatsHud(false);
+            });
+        }
+
         // Expand Buttons
         const expBtn = document.getElementById('hudMiniExpandBtn');
         const miniLabelBtn = document.getElementById('hudMiniLabelBtn');
@@ -8881,21 +8910,11 @@
             });
         });
 
-        // Topbar HUD Button
+        // Topbar HUD Button (Toggles HUD on/off)
         const topbarHudBtn = document.getElementById('topbarStatsHudBtn');
         if (topbarHudBtn) {
             topbarHudBtn.addEventListener('click', () => {
-                if (hudState.minimized) {
-                    minimizeHud(false);
-                } else {
-                    // Flash brief focus glow
-                    overlay.classList.add('hud-animating');
-                    overlay.style.transform = 'scale(1.04)';
-                    setTimeout(() => {
-                        overlay.style.transform = '';
-                        setTimeout(() => overlay.classList.remove('hud-animating'), 200);
-                    }, 180);
-                }
+                toggleStatsHud();
             });
         }
 
@@ -8915,6 +8934,9 @@
                 setHudDock('bottom-right');
             });
         }
+
+        // Apply initial visibility (off by default)
+        updateHudVisibilityUI();
 
         // Site-wide Heatmap Canvas hover / tap interaction
         setupHeatmapCanvasInteraction();
