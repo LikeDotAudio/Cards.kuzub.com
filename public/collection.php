@@ -1150,7 +1150,7 @@
         }
         .election-footer-ticker {
             position: relative;
-            height: 52px;
+            height: 40px;
             background: linear-gradient(90deg, #070b14 0%, #0d1527 50%, #070b14 100%);
             display: flex;
             align-items: center;
@@ -1159,11 +1159,11 @@
             flex-shrink: 0;
         }
         .footer-spectrum-dock {
-            padding: 5px 12px 6px;
+            padding: 3px 10px 4px;
             background: #040711;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 2px;
             flex-shrink: 0;
         }
         .fsd-header {
@@ -1264,13 +1264,13 @@
         }
         #footerSpectrumCanvas {
             width: 100%;
-            height: 32px;
+            height: 24px;
             display: block;
         }
         /* Magnifying Glass Loupe ("this lower bar should have a magnifying glass when scrubbing") */
         .fsd-magnifier {
             position: absolute;
-            bottom: 44px;
+            bottom: 34px;
             transform: translateX(-50%);
             pointer-events: none;
             z-index: 50;
@@ -1376,13 +1376,13 @@
         .eft-desk-badge {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 6px;
             background: #dc2626;
             color: #ffffff;
-            font-size: 0.95rem;
+            font-size: 0.76rem;
             font-weight: 900;
-            letter-spacing: 0.1em;
-            padding: 0 16px;
+            letter-spacing: 0.08em;
+            padding: 0 10px;
             height: 100%;
             flex-shrink: 0;
             text-transform: uppercase;
@@ -1390,8 +1390,8 @@
             border-right: 1px solid rgba(255, 255, 255, 0.15);
         }
         .eft-live-dot {
-            width: 12px;
-            height: 12px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             background: #ffffff;
             animation: hlPulse 1.2s infinite ease-in-out;
@@ -1399,12 +1399,12 @@
         .eft-call-chip {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             background: #111827;
             color: #f1f5f9;
             height: 100%;
-            padding: 0 16px;
-            font-size: 0.90rem;
+            padding: 0 10px;
+            font-size: 0.76rem;
             font-weight: 800;
             border-right: 1px solid #1e293b;
             flex-shrink: 0;
@@ -1467,19 +1467,19 @@
         .eft-item {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 6px 14px;
-            border-radius: 6px;
+            gap: 6px;
+            padding: 3px 10px;
+            border-radius: 4px;
             background: rgba(15, 23, 42, 0.94);
             border: 1px solid #1e293b;
-            font-size: 0.9rem;
+            font-size: 0.78rem;
             color: #cbd5e1;
             flex-shrink: 0;
             cursor: pointer;
             transition: all 0.15s ease;
         }
         .eft-item:hover {
-            transform: translateY(-2px);
+            transform: translateY(-1px);
             box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
         }
         /* Red and blue text: needed cards in red, owned/secured cards in blue */
@@ -1522,30 +1522,30 @@
         .eft-item-num {
             font-weight: 900;
             font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-            font-size: 1.05rem;
+            font-size: 0.88rem;
         }
         .eft-item-name {
             font-weight: 700;
-            font-size: 0.92rem;
+            font-size: 0.80rem;
         }
         .eft-item-set {
-            font-size: 0.72rem;
+            font-size: 0.64rem;
             color: #94a3b8;
             text-transform: uppercase;
             background: rgba(255, 255, 255, 0.08);
-            padding: 1px 5px;
+            padding: 1px 4px;
             border-radius: 3px;
         }
         .eft-callout {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            padding: 8px 18px;
-            border-radius: 8px;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 6px;
             background: linear-gradient(90deg, rgba(30, 58, 138, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
             border: 1px solid #2563eb;
             color: #93c5fd;
-            font-size: 0.92rem;
+            font-size: 0.78rem;
             font-weight: 800;
             flex-shrink: 0;
             letter-spacing: 0.04em;
@@ -1553,17 +1553,17 @@
         .eft-callout-badge {
             background: #2563eb;
             color: #ffffff;
-            font-size: 0.76rem;
+            font-size: 0.68rem;
             font-weight: 900;
-            padding: 2px 7px;
+            padding: 1px 5px;
             border-radius: 3px;
             text-transform: uppercase;
         }
         .eft-actions {
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            padding: 0 10px;
+            gap: 2px;
+            padding: 0 6px;
             height: 100%;
             background: #0b1120;
             border-left: 1px solid #1e293b;
@@ -1573,9 +1573,9 @@
             background: transparent;
             border: none;
             color: #94a3b8;
-            font-size: 1.15rem;
+            font-size: 0.88rem;
             cursor: pointer;
-            padding: 6px 10px;
+            padding: 3px 6px;
             border-radius: 4px;
             line-height: 1;
         }
@@ -1584,11 +1584,11 @@
             background: #1e293b;
         }
         .eft-speed-btn {
-            font-size: 0.82rem;
+            font-size: 0.72rem;
             font-weight: 800;
             color: #38bdf8;
             font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-            padding: 4px 8px;
+            padding: 2px 5px;
             border: 1px solid #1e293b;
             border-radius: 4px;
         }
@@ -1793,12 +1793,13 @@
             background: var(--primary-hover);
         }
 
-        /* Main content area */
+        /* Main content area (95% List and Views) */
         main {
             max-width: 1600px;
             width: 100%;
             margin: 0 auto;
-            padding: 14px 16px 120px;
+            padding: 8px 16px 82px;
+            flex: 1;
         }
 
         /* Collector Dashboard Unit: Sentence Stats + Pro Audio VU Meter (no visual void) */
@@ -2932,7 +2933,7 @@
             .mobile-subsets-btn { display: inline-flex !important; }
             .mobile-right-btn { display: inline-flex; }
             header.topbar { padding: 6px 10px; }
-            main { padding: 8px 10px 120px; }
+            main { padding: 8px 10px 82px; }
             .collector-dashboard-unit {
                 padding: 8px 10px;
                 gap: 10px;
@@ -3680,51 +3681,138 @@
         }
 
         /* ==========================================================
-           DIGIKEY-STYLE PARAMETRIC INVENTORY FILTER
+           DIGIKEY-STYLE PARAMETRIC INVENTORY FILTER (FLY-IN / FLY-OUT DRAWER)
            ========================================================== */
+        .ifs-drawer-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(2px);
+            z-index: 1190;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .ifs-drawer-backdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
         .inventory-filter-section {
-            position: sticky;
-            top: var(--topbar-height, 53px);
-            z-index: 18;
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 600px;
+            max-width: min(600px, calc(100vw - 20px));
+            height: 100vh;
+            z-index: 1200;
             background: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            margin-bottom: 16px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            border: none;
+            border-left: 1px solid #cbd5e1;
+            border-radius: 0;
+            margin: 0;
+            box-shadow: -10px 0 35px rgba(0, 0, 0, 0.38);
+            transform: translateX(100%);
+            transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             color: #1e293b;
-            overflow: hidden;
-            transition: box-shadow 0.2s ease, border-color 0.2s ease;
         }
-        .inventory-filter-section.is-stuck {
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-            border-color: #94a3b8;
+        .inventory-filter-section.open {
+            transform: translateX(0);
         }
-        .inventory-filter-section.is-stuck .ifs-col-list {
-            max-height: 170px;
-        }
-        /* Keep target subsets and sheets visible below sticky header and sticky filter */
+        /* Keep target subsets and sheets visible below sticky header */
         details.set,
         .binder-page-sheet,
         .binder-grid-group,
         .cards-group,
         .card {
-            scroll-margin-top: calc(var(--topbar-height, 53px) + var(--ifs-height, 48px) + 14px);
+            scroll-margin-top: calc(var(--topbar-height, 53px) + 8px);
         }
         .ifs-header-bar {
-            background: #f8fafc;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 8px 14px;
+            background: #0f172a;
+            color: #ffffff;
+            border-bottom: 1px solid #1e293b;
+            padding: 10px 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-            flex-wrap: wrap;
+            flex-shrink: 0;
         }
         .ifs-title-group {
             display: flex;
             align-items: center;
             gap: 10px;
+        }
+        .ifs-close-drawer-btn {
+            background: #1e293b;
+            color: #f8fafc;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 5px 12px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+        .ifs-close-drawer-btn:hover {
+            background: #ef4444;
+            border-color: #ef4444;
+            color: #ffffff;
+        }
+        .ifs-flyout-trigger-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 11px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            background: #ffffff;
+            color: #1e293b;
+            border: 1px solid #cbd5e1;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+        .ifs-flyout-trigger-btn:hover {
+            background: #eff6ff;
+            border-color: #3b82f6;
+            color: #1d4ed8;
+        }
+        .ifs-flyout-trigger-btn.has-active {
+            background: #eff6ff;
+            border-color: #2563eb;
+            color: #1d4ed8;
+        }
+        .ifs-active-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 4px;
+            border-radius: 9px;
+            background: #e02424;
+            color: #ffffff;
+            font-size: 0.68rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+        .ifs-body {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+            background: #f8fafc;
         }
         .ifs-breadcrumbs {
             font-size: 0.74rem;
@@ -3835,14 +3923,18 @@
 
         /* Parametric Columns Wrapper (Scrolling vs Stacked) */
         .ifs-columns-wrapper {
-            padding: 12px 14px;
-            background: #fafafa;
+            padding: 10px 12px;
+            background: #f8fafc;
             border-bottom: 1px solid #e2e8f0;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
         }
         .ifs-columns-wrapper.mode-scrolling {
             display: flex;
             gap: 10px;
             overflow-x: auto;
+            overflow-y: hidden;
             padding-bottom: 14px;
             scrollbar-width: thin;
             scrollbar-color: #94a3b8 #f1f5f9;
@@ -3860,8 +3952,8 @@
         }
         .ifs-columns-wrapper.mode-stacked {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 10px;
         }
 
         /* Individual Parametric Box Column - Same height and scrolls */
@@ -3873,9 +3965,9 @@
             flex-direction: column;
             min-width: 200px;
             max-width: 235px;
-            height: 235px;
-            min-height: 235px;
-            max-height: 235px;
+            height: 220px;
+            min-height: 220px;
+            max-height: 220px;
             flex-shrink: 0;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
             overflow: hidden;
@@ -3883,9 +3975,9 @@
         .ifs-columns-wrapper.mode-stacked .ifs-col {
             min-width: 0;
             max-width: none;
-            height: 235px;
-            min-height: 235px;
-            max-height: 235px;
+            height: 210px;
+            min-height: 210px;
+            max-height: 210px;
         }
         .ifs-col-head {
             background: #eaeff5;
@@ -3971,12 +4063,15 @@
         /* Bottom Action Bar */
         .ifs-actions-bar {
             background: #ffffff;
-            padding: 12px 16px;
+            padding: 10px 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 16px;
+            gap: 12px;
             flex-wrap: wrap;
+            flex-shrink: 0;
+            border-top: 1px solid #cbd5e1;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
         }
         .ifs-actions-left {
             display: flex;
@@ -4723,6 +4818,7 @@
                         <button type="button" class="layout-btn layout-btn-mc" data-layout="job" data-job-mode="visual" title="McMaster Visual Grid with Player Cards & Roles"><span class="layout-btn-mc-icon">🖼️</span> Visual Catalog</button>
                         <button type="button" class="layout-btn layout-btn-mc" data-layout="job" data-job-mode="table" title="McMaster Engineering Specification Table with Timelines & Specs"><span class="layout-btn-mc-icon">📊</span> Engineering Specs Table</button>
                     </div>
+                    <button type="button" class="ifs-flyout-trigger-btn" id="ifsFlyoutTriggerBtn" title="Open Inventory &amp; Checklist Filter (Flies in from right)">⚡ Filter <span id="ifsFilterActiveBadge" class="ifs-active-badge" hidden>0</span></button>
                     <button type="button" class="trade-market-topbar-btn" id="topbarStatsHudBtn" title="Toggle Live Stats & Heat Map HUD">📊 HUD</button>
                     <button type="button" class="trade-market-topbar-btn" id="topbarTradeMarketBtn" title="Offer Trade / Simulate Card Market">🤝 Market</button>
                     <button class="mobile-menu-btn mobile-right-btn" id="openRightBarBtn" aria-label="Open collector options">👤</button>
@@ -4736,21 +4832,26 @@
         </header>
 
         <main id="main">
-            <!-- PARAMETRIC INVENTORY FILTER (DigiKey-style) -->
-            <section class="inventory-filter-section" id="inventoryFilterSection" aria-label="Parametric Inventory and Checklist Filter">
-                <div class="ifs-header-bar">
-                    <div class="ifs-title-group">
-                        <div>
-                            <div class="ifs-breadcrumbs">Product Index <span>›</span> Cards & Collectibles <span>›</span> <strong id="ifsBreadcrumbSeries">2026-27 UD Tim Hortons</strong></div>
-                            <h2 class="ifs-main-title">Inventory & Checklist Filter</h2>
-                        </div>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <button type="button" class="ifs-toggle-panel-btn" id="ifsCollapseBtn">▲ Hide Filters</button>
+            <!-- DYNAMIC CARDS CONTAINER (Center is 95% List and Views) -->
+            <div id="cardsContainer"></div>
+        </main>
+
+        <!-- PARAMETRIC INVENTORY FILTER DRAWER (Flies in / flies out from the right) -->
+        <div class="ifs-drawer-backdrop" id="ifsDrawerBackdrop" aria-hidden="true"></div>
+        <aside class="inventory-filter-section" id="inventoryFilterSection" aria-label="Parametric Inventory and Checklist Filter">
+            <div class="ifs-header-bar">
+                <div class="ifs-title-group">
+                    <div>
+                        <div class="ifs-breadcrumbs">Product Index <span>›</span> Cards <span>›</span> <strong id="ifsBreadcrumbSeries">2026-27 UD Tim Hortons</strong></div>
+                        <h2 class="ifs-main-title">Inventory &amp; Checklist Filter</h2>
                     </div>
                 </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <button type="button" class="ifs-close-drawer-btn" id="ifsCloseDrawerBtn" title="Close Filter Drawer (Esc)">✕ Close</button>
+                </div>
+            </div>
 
-                <div class="ifs-body" id="ifsBody">
+            <div class="ifs-body" id="ifsBody">
                     <div class="ifs-controls-top">
                         <div class="ifs-search-within-wrap">
                             <input type="search" id="ifsSearchWithin" class="ifs-search-input" placeholder="Search Within (Player, Card #, Subset...)" autocomplete="off">
@@ -4895,11 +4996,7 @@
                         </div>
                     </div>
                 </div>
-            </section>
-
-            <!-- DYNAMIC CARDS CONTAINER -->
-            <div id="cardsContainer"></div>
-        </main>
+        </aside>
 
         <!-- BROADCAST DUAL FOOTER: SELECTION DESK TICKER + SET SPECTRUM -->
         <!-- ("this is so goo d that it should be the footer below the selection desk") -->
@@ -5852,8 +5949,8 @@
        ========================================================== */
     const paramState = {
         searchWithin: '',
-        mode: 'scrolling', // 'scrolling' | 'stacked'
-        collapsed: false,
+        mode: localStorage.getItem('cards_ifs_mode') || 'scrolling', // 'scrolling' | 'stacked'
+        collapsed: localStorage.getItem('cards_ifs_collapsed') !== 'false', // Default collapsed (true) so center is just the lists
         status: new Set(),
         series: new Set(),
         year: new Set(),
@@ -8304,30 +8401,17 @@
        ========================================================== */
     function updateStickyOffsets() {
         const topbar = document.querySelector('header.topbar');
-        const filterSec = document.getElementById('inventoryFilterSection');
         const topbarH = topbar ? Math.round(topbar.getBoundingClientRect().height) : 53;
         document.documentElement.style.setProperty('--topbar-height', `${topbarH}px`);
-
-        if (filterSec) {
-            const filterH = Math.round(filterSec.getBoundingClientRect().height) || 48;
-            document.documentElement.style.setProperty('--ifs-height', `${filterH}px`);
-            const rect = filterSec.getBoundingClientRect();
-            if (rect.top <= topbarH + 4) {
-                filterSec.classList.add('is-stuck');
-            } else {
-                filterSec.classList.remove('is-stuck');
-            }
-        }
+        document.documentElement.style.setProperty('--ifs-height', `0px`);
     }
 
     function scrollToElementWithStickyOffset(el) {
         if (!el) return;
         updateStickyOffsets();
         const topbar = document.querySelector('header.topbar');
-        const filterSec = document.getElementById('inventoryFilterSection');
         const topbarH = topbar ? Math.round(topbar.getBoundingClientRect().height) : 53;
-        const filterH = (filterSec && filterSec.offsetParent !== null) ? Math.round(filterSec.getBoundingClientRect().height) : 0;
-        const totalOffset = topbarH + filterH + 14;
+        const totalOffset = topbarH + 8;
 
         const elRect = el.getBoundingClientRect();
         const targetY = window.pageYOffset + elRect.top - totalOffset;
@@ -9768,6 +9852,7 @@
         if (bottomCount) bottomCount.textContent = totalMatched.toLocaleString();
         if (showingText) showingText.innerHTML = `Showing <strong>${totalMatched}</strong> of ${total} Cards`;
         if (seriesTitle) seriesTitle.textContent = state.series === '2025-26' ? '2025-26 Tim Hortons' : '2026-27 UD Tim Hortons';
+        if (typeof updateIfsBadge === 'function') updateIfsBadge();
 
         // 1. Common Attributes
         const statusListEl = document.getElementById('ifsColStatusList');
@@ -10016,6 +10101,30 @@
         toast(`📥 Exported ${matchingCards.length} cards to CSV table!`);
     }
 
+    function updateIfsBadge() {
+        const badge = document.getElementById('ifsFilterActiveBadge');
+        const trigger = document.getElementById('ifsFlyoutTriggerBtn');
+        let count = 0;
+        if (paramState.searchWithin) count++;
+        count += paramState.status.size;
+        count += paramState.series.size;
+        count += paramState.year.size;
+        count += paramState.subsets.size;
+        count += paramState.ranges.size;
+        count += paramState.scarcity.size;
+        count += paramState.quantity.size;
+        count += paramState.players.size;
+        count += paramState.partners.size;
+
+        if (badge) {
+            badge.textContent = count;
+            badge.hidden = count === 0;
+        }
+        if (trigger) {
+            trigger.classList.toggle('has-active', count > 0);
+        }
+    }
+
     let paramFilterDebounce = null;
     function initParamInventoryFilter() {
         const wrapper = document.getElementById('ifsColumnsWrapper');
@@ -10053,6 +10162,7 @@
             if (topCount) topCount.textContent = totalMatched.toLocaleString();
             if (bottomCount) bottomCount.textContent = totalMatched.toLocaleString();
             if (showingText && state.cards) showingText.innerHTML = `Showing <strong>${totalMatched}</strong> of ${state.cards.length} Cards`;
+            updateIfsBadge();
 
             // Live re-render results grouped below as user selects multiple filters
             clearTimeout(paramFilterDebounce);
@@ -10085,6 +10195,7 @@
                 const bottomCount = document.getElementById('ifsBottomResultsCount');
                 if (topCount) topCount.textContent = totalMatched.toLocaleString();
                 if (bottomCount) bottomCount.textContent = totalMatched.toLocaleString();
+                updateIfsBadge();
 
                 clearTimeout(paramFilterDebounce);
                 paramFilterDebounce = setTimeout(() => {
@@ -10104,6 +10215,7 @@
         const applyBtn = document.getElementById('ifsApplyBtn');
         if (applyBtn) {
             applyBtn.addEventListener('click', () => {
+                updateIfsBadge();
                 render();
                 const totalMatched = state.cards ? state.cards.filter(matchesFilter).length : 0;
                 toast(`🔍 Parametric filter applied: ${totalMatched} matching card(s) found!`);
@@ -10132,6 +10244,7 @@
 
                 document.querySelectorAll('.ifs-col-search-input').forEach(si => si.value = '');
 
+                updateIfsBadge();
                 render();
                 toast('↺ All inventory filters cleared.');
             });
@@ -10147,7 +10260,7 @@
                 wrapper.classList.add('mode-stacked');
                 modeStacked.classList.add('active');
                 modeScrolling.classList.remove('active');
-                updateStickyOffsets();
+                try { localStorage.setItem('cards_ifs_mode', 'stacked'); } catch (e) {}
             });
             modeScrolling.addEventListener('click', () => {
                 paramState.mode = 'scrolling';
@@ -10155,21 +10268,52 @@
                 wrapper.classList.add('mode-scrolling');
                 modeScrolling.classList.add('active');
                 modeStacked.classList.remove('active');
-                updateStickyOffsets();
+                try { localStorage.setItem('cards_ifs_mode', 'scrolling'); } catch (e) {}
             });
         }
 
-        // Minimize / Collapse button
+        // Flyout Drawer Open/Close Controller ("the filter should fly in and fly out from the right")
+        const ifsDrawer = document.getElementById('inventoryFilterSection');
+        const ifsBackdrop = document.getElementById('ifsDrawerBackdrop');
+        const ifsTriggerBtn = document.getElementById('ifsFlyoutTriggerBtn');
+        const ifsCloseBtn = document.getElementById('ifsCloseDrawerBtn');
         const collapseBtn = document.getElementById('ifsCollapseBtn');
-        const bodyEl = document.getElementById('ifsBody');
-        if (collapseBtn && bodyEl) {
-            collapseBtn.addEventListener('click', () => {
-                paramState.collapsed = !paramState.collapsed;
-                bodyEl.style.display = paramState.collapsed ? 'none' : 'block';
-                collapseBtn.textContent = paramState.collapsed ? '▼ Show Filters' : '▲ Hide Filters';
-                updateStickyOffsets();
-            });
+
+        function openIfsDrawer() {
+            if (!ifsDrawer) return;
+            ifsDrawer.classList.add('open');
+            if (ifsBackdrop) ifsBackdrop.classList.add('open');
+            document.body.classList.add('ifs-drawer-active');
+            if (searchInput) {
+                setTimeout(() => searchInput.focus(), 120);
+            }
         }
+
+        function closeIfsDrawer() {
+            if (!ifsDrawer) return;
+            ifsDrawer.classList.remove('open');
+            if (ifsBackdrop) ifsBackdrop.classList.remove('open');
+            document.body.classList.remove('ifs-drawer-active');
+        }
+
+        function toggleIfsDrawer() {
+            if (ifsDrawer && ifsDrawer.classList.contains('open')) {
+                closeIfsDrawer();
+            } else {
+                openIfsDrawer();
+            }
+        }
+
+        if (ifsTriggerBtn) ifsTriggerBtn.addEventListener('click', toggleIfsDrawer);
+        if (ifsCloseBtn) ifsCloseBtn.addEventListener('click', closeIfsDrawer);
+        if (collapseBtn) collapseBtn.addEventListener('click', toggleIfsDrawer);
+        if (ifsBackdrop) ifsBackdrop.addEventListener('click', closeIfsDrawer);
+
+        window.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && ifsDrawer && ifsDrawer.classList.contains('open')) {
+                closeIfsDrawer();
+            }
+        });
 
         // Sort By dropdown
         const sortBySelect = document.getElementById('ifsSortBy');
@@ -10187,6 +10331,8 @@
                 downloadFilteredTableCSV();
             });
         }
+
+        updateIfsBadge();
     }
 
     // Initialize Parametric Inventory Filter
