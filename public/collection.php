@@ -4602,6 +4602,15 @@
         </div>
 
         <div class="sidebar-content">
+            <!-- Series Quick Links & Sheet Jump Menu placed at the top on left side ("this should be on side or top the left side") -->
+            <nav class="series-nav-panel left-bar-series-nav" id="seriesNavPanel" aria-label="Series quick links and sheet jump menu">
+                <div class="series-nav-header">
+                    <span class="series-nav-title">⚡ Subsets &amp; Quick Jump</span>
+                </div>
+                <div class="series-chips-row" id="seriesChipsRow"></div>
+                <div class="series-sublist-row" id="seriesSublistRow"></div>
+            </nav>
+
             <!-- Hockey Category -->
             <div>
                 <div class="menu-section-title">Hockey</div>
@@ -4622,15 +4631,6 @@
                     </div>
                 </nav>
             </div>
-
-            <!-- Series Quick Links & Sheet Jump Menu ("to the left side at the top once the deck has been chosen") -->
-            <nav class="series-nav-panel left-bar-series-nav" id="seriesNavPanel" aria-label="Series quick links and sheet jump menu">
-                <div class="series-nav-header">
-                    <span class="series-nav-title">⚡ Subsets & Quick Jump</span>
-                </div>
-                <div class="series-chips-row" id="seriesChipsRow"></div>
-                <div class="series-sublist-row" id="seriesSublistRow"></div>
-            </nav>
 
             <!-- Team Hub Section -->
             <div class="team-hub" id="teamHubSection" hidden>
@@ -4701,14 +4701,6 @@
                     <span class="series-tag" id="topbarSeriesTag">$1 / account</span>
                 </h1>
 
-                <!-- Direct View Layout Switcher in Topbar ("user should be able to click on the style type list or sheet should show up") -->
-                <div class="topbar-layout-switcher layout-switcher" id="topbarLayoutSwitcher" title="View Layout Style">
-                    <button type="button" class="layout-btn" data-layout="list" title="Compact List view">☰ List</button>
-                    <button type="button" class="layout-btn" data-layout="page" title="3x3 Binder Page Sheet view">📄 3×3 by Filter</button>
-                    <button type="button" class="layout-btn layout-btn-mc" data-layout="job" data-job-mode="visual" title="McMaster Visual Grid with Player Cards & Roles"><span class="layout-btn-mc-icon">🖼️</span> Visual Catalog</button>
-                    <button type="button" class="layout-btn layout-btn-mc" data-layout="job" data-job-mode="table" title="McMaster Engineering Specification Table with Timelines & Specs"><span class="layout-btn-mc-icon">📊</span> Engineering Specs Table</button>
-                </div>
-
                 <button type="button" id="newCollectorTopbarBtn" class="primary">+ Collector</button>
 
                 <label class="overall">Viewing
@@ -4724,6 +4716,13 @@
                 </div>
 
                 <div class="topbar-right-cluster">
+                    <!-- Layout Switcher moved over to right side ("and then over to the right side") -->
+                    <div class="topbar-layout-switcher layout-switcher" id="topbarLayoutSwitcher" title="View Layout Style">
+                        <button type="button" class="layout-btn" data-layout="list" title="Compact List view">☰ List</button>
+                        <button type="button" class="layout-btn" data-layout="page" title="3x3 Binder Page Sheet view">📄 3×3 by Filter</button>
+                        <button type="button" class="layout-btn layout-btn-mc" data-layout="job" data-job-mode="visual" title="McMaster Visual Grid with Player Cards & Roles"><span class="layout-btn-mc-icon">🖼️</span> Visual Catalog</button>
+                        <button type="button" class="layout-btn layout-btn-mc" data-layout="job" data-job-mode="table" title="McMaster Engineering Specification Table with Timelines & Specs"><span class="layout-btn-mc-icon">📊</span> Engineering Specs Table</button>
+                    </div>
                     <button type="button" class="trade-market-topbar-btn" id="topbarStatsHudBtn" title="Toggle Live Stats & Heat Map HUD">📊 HUD</button>
                     <button type="button" class="trade-market-topbar-btn" id="topbarTradeMarketBtn" title="Offer Trade / Simulate Card Market">🤝 Market</button>
                     <button class="mobile-menu-btn mobile-right-btn" id="openRightBarBtn" aria-label="Open collector options">👤</button>
