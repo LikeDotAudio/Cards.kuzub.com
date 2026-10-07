@@ -8976,11 +8976,48 @@
         saveHudLayout();
     }
 
+    function updateHudVisibilityUI() {
+        const overlay = document.getElementById('statsHudOverlay');
+        const topbarHudBtn = document.getElementById('topbarStatsHudBtn');
+        if (!overlay) return;
+
+        if (hudState.visible) {
+            overlay.style.display = '';
+            if (topbarHudBtn) topbarHudBtn.classList.add('active');
+            const hudWindow = document.getElementById('statsHudWindow');
+            const miniBar = document.getElementById('statsHudMiniBar');
+            if (hudState.minimized) {
+                if (hudWindow) hudWindow.style.display = 'none';
+                if (miniBar) miniBar.style.display = 'flex';
+            } else {
+                if (hudWindow) hudWindow.style.display = 'flex';
+                if (miniBar) miniBar.style.display = 'none';
+                renderStatsHud(true);
+            }
+        } else {
+            overlay.style.display = 'none';
+            if (topbarHudBtn) topbarHudBtn.classList.remove('active');
+        }
+    }
+
+    function toggleStatsHud(forceState) {
+        if (typeof forceState === 'boolean') {
+            hudState.visible = forceState;
+        } else {
+            hudState.visible = !hudState.visible;
+        }
+        updateHudVisibilityUI();
+        saveHudLayout();
+        if (hudState.visible) {
+            toast(hudState.minimized ? '📊 HUD enabled (minimized bar)' : '📊 Live Stats & Heat Map HUD enabled');
+        }
+    }
+
     function minimizeHud(minimized) {
         hudState.minimized = Boolean(minimized);
         const hudWindow = document.getElementById('statsHudWindow');
         const miniBar = document.getElementById('statsHudMiniBar');
-        if (hudWindow && miniBar) {
+        if (hudWindow && miniBar && hudState.visible) {
             if (hudState.minimized) {
                 hudWindow.style.display = 'none';
                 miniBar.style.display = 'flex';
@@ -9018,6 +9055,7 @@
 
     function saveHudLayout() {
         const payload = {
+            visible: hudState.visible,
             dock: hudState.dock,
             x: hudState.x,
             y: hudState.y,
@@ -9052,6 +9090,9 @@
         try {
             const data = (typeof prefsStr === 'string') ? JSON.parse(prefsStr) : prefsStr;
             if (!data) return;
+
+            // HUD is off by default unless explicitly saved as true
+            hudState.visible = Boolean(data.visible === true);
 
             const overlay = document.getElementById('statsHudOverlay');
             if (data.dock && data.dock !== 'custom') {
@@ -9090,6 +9131,7 @@
     }
 
     function renderStatsHud(forceRedraw = false) {
+        if (!hudState.visible) return;
         if (!state.cards || state.cards.length === 0) return;
 
         const total = state.cards.length;
